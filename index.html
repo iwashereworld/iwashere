@@ -1304,11 +1304,13 @@ function switchTab(tab) {
   document.getElementById('auth-modal').dataset.tab = tab;
 }
 function submitAuth() {
-  var tab = document.getElementById('auth-modal').dataset.tab||'login';
+  var modal = document.getElementById('auth-modal');
+  var tab = (modal && modal.dataset.tab) || 'login';
   var email = document.getElementById('aemail').value.trim();
   var pw = document.getElementById('apw').value;
   var name = document.getElementById('aname').value.trim();
   var btn = document.getElementById('auth-btn');
+  console.log('submitAuth called, tab:', tab, 'email:', email, 'pw length:', pw.length);
   if (!email||!pw) { btn.style.animation='shake .4s'; setTimeout(function(){btn.style.animation='';},400); return; }
   btn.textContent='...'; btn.disabled=true;
   setTimeout(function() {
