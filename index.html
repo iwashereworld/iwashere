@@ -544,7 +544,7 @@ var osmImagery = null;
 var borderDataSource = null;
 
 // Initialize CesiumJS
-function initCesium() {
+async function initCesium() {
   // Use Cesium Ion default token (free tier - 5000 sessions/month)
   // For production, get your own token at https://cesium.com/ion/tokens
   Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkOTcxZGIzNS05OTJmLTRiNDItYjIyOS02YTM4ZTk1YjhhNmMiLCJpZCI6MjU5LCJpYXQiOjE1MTgxOTc3MTd9.PnYfT4IuD3JBLQQ21AZ_gCvnpSfx28eEV7c-u1dPJ1A';
@@ -561,16 +561,6 @@ function initCesium() {
     selectionIndicator: false,
     navigationHelpButton: false,
     baseLayerPicker: false,
-    skyBox: new Cesium.SkyBox({
-      sources: {
-        positiveX: 'https://cesium.com/public/SandcastleSampleData/skybox_px.jpg',
-        negativeX: 'https://cesium.com/public/SandcastleSampleData/skybox_mx.jpg',
-        positiveY: 'https://cesium.com/public/SandcastleSampleData/skybox_py.jpg',
-        negativeY: 'https://cesium.com/public/SandcastleSampleData/skybox_my.jpg',
-        positiveZ: 'https://cesium.com/public/SandcastleSampleData/skybox_pz.jpg',
-        negativeZ: 'https://cesium.com/public/SandcastleSampleData/skybox_mz.jpg'
-      }
-    }),
     skyAtmosphere: new Cesium.SkyAtmosphere(),
     scene3DOnly: true,
     shadows: false,
@@ -579,27 +569,23 @@ function initCesium() {
     maximumRenderTimeChange: Infinity
   });
 
-  // Remove default imagery and add Bing Maps Aerial (high quality satellite)
+  // Remove default imagery and add high quality satellite imagery
   viewer.imageryLayers.removeAll();
   
-  // Bing Maps Aerial - Free tier: 125,000 transactions/year
-  bingImagery = viewer.imageryLayers.addImageryProvider(
-    new Cesium.BingMapsImageryProvider({
-      url: 'https://dev.virtualearth.net',
-      key: 'AmE6fJzKPrm3SPv1Kg_fAIaJsUxGCnBx9o6E3vFQ-eM8a-7b5c3k7cY4u6aFj5vV', // Free Bing Maps key (replace with your own for production)
-      mapStyle: Cesium.BingMapsStyle.AERIAL
-    })
-  );
-
-  // Alternative: ESRI World Imagery (also high quality, free for non-commercial)
-  // Uncomment below if Bing doesn't work
-  /*
-  viewer.imageryLayers.addImageryProvider(
-    new Cesium.ArcGisMapServerImageryProvider({
-      url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
-    })
-  );
-  */
+  // Use ESRI World Imagery - Free, high quality, unlimited for most uses
+  try {
+    var esriImagery = await Cesium.ArcGisMapServerImageryProvider.fromUrl(
+      'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
+    );
+    bingImagery = viewer.imageryLayers.addImageryProvider(esriImagery);
+  } catch (e) {
+    console.log('[v0] ESRI failed, using OpenStreetMap:', e);
+    // Fallback to OpenStreetMap
+    var osmImageryProvider = new Cesium.OpenStreetMapImageryProvider({
+      url: 'https://tile.openstreetmap.org/'
+    });
+    bingImagery = viewer.imageryLayers.addImageryProvider(osmImageryProvider);
+  }
 
   // Set initial camera position
   viewer.camera.flyTo({
@@ -774,28 +760,28 @@ function tglRot() {
   document.getElementById('brot').classList.toggle('on', _autoRot);
 }
 
-function tglImagery() {
+async function tglImagery() {
   _useSatellite = !_useSatellite;
   document.getElementById('bsat').classList.toggle('on', _useSatellite);
   
   viewer.imageryLayers.removeAll();
   
   if (_useSatellite) {
-    // Bing Maps Aerial
-    viewer.imageryLayers.addImageryProvider(
-      new Cesium.BingMapsImageryProvider({
-        url: 'https://dev.virtualearth.net',
-        key: 'AmE6fJzKPrm3SPv1Kg_fAIaJsUxGCnBx9o6E3vFQ-eM8a-7b5c3k7cY4u6aFj5vV',
-        mapStyle: Cesium.BingMapsStyle.AERIAL
-      })
-    );
+    // ESRI World Imagery - high quality satellite
+    try {
+      var esriImagery = await Cesium.ArcGisMapServerImageryProvider.fromUrl(
+        'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
+      );
+      viewer.imageryLayers.addImageryProvider(esriImagery);
+    } catch (e) {
+      console.log('[v0] ESRI toggle failed:', e);
+    }
   } else {
     // OpenStreetMap (free, unlimited)
-    viewer.imageryLayers.addImageryProvider(
-      new Cesium.OpenStreetMapImageryProvider({
-        url: 'https://a.tile.openstreetmap.org/'
-      })
-    );
+    var osmProvider = new Cesium.OpenStreetMapImageryProvider({
+      url: 'https://tile.openstreetmap.org/'
+    });
+    viewer.imageryLayers.addImageryProvider(osmProvider);
   }
 }
 
