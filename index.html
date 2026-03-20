@@ -600,7 +600,7 @@ var ST = {
 // SUPABASE
 var _supabase = null;
 try {
-  _supabase = supabase.createClient('https://ctjgxonismqdxprlohcz.supabase.co', 'sb_publishable_LaCcFjtJjvakgVZHQSXP3Q_OSqVBLCC');
+  _supabase = supabase.createClient('https://ctjgxonismqdxprlohcz.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0amd4b25pc21xZHhwcmxvaGN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5ODg1NDcsImV4cCI6MjA4OTU2NDU0N30.y88CJt4uH9ueZShKVIYc8xRFCQ7borr9wZ5sr9nhpEs');
   _supabase.auth.getSession().then(function(r) {
     if (r.data && r.data.session) {
       var u = r.data.session.user;
