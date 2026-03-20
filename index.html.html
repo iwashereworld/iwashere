@@ -463,7 +463,9 @@ input[type=file]{display:none;}
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/globe.gl@2.30.0/dist/globe.gl.min.js"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/globe.gl@2.30.0/dist/globe.gl.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 <script>
 const COUNTRIES = [
@@ -664,6 +666,59 @@ var ST = {
     {id:69,name:"Ethan M.",code:"704",cname:"Vietnam",lat:14.1,lon:107.2,msg:"From this moment, hello future.",years:4,photo:null,added:new Date(Date.now()-19094400000).toISOString()}
   ]
 };
+
+// SUPABASE
+var _supabase = null;
+try {
+  _supabase = supabase.createClient('https://ctjgxonismqdxprlohcz.supabase.co', 'sb_publishable_LaCcFjtJjvakgVZHQSXP3Q_OSqVBLCC');
+  _supabase.auth.getSession().then(function(r) {
+    if (r.data && r.data.session) {
+      var u = r.data.session.user;
+      AUTH.user = {name: u.user_metadata.name || u.email.split('@')[0], email: u.email, id: u.id};
+      updateUserUI();
+      loadMarksFromDB();
+    }
+  });
+  _supabase.auth.onAuthStateChange(function(event, session) {
+    if (session) {
+      var u = session.user;
+      AUTH.user = {name: u.user_metadata.name || u.email.split('@')[0], email: u.email, id: u.id};
+      updateUserUI();
+      loadMarksFromDB();
+    } else {
+      AUTH.user = null;
+      updateUserUI();
+    }
+  });
+} catch(e) { console.log('Supabase error:', e); }
+
+function loadMarksFromDB() {
+  if (!_supabase) return;
+  _supabase.from('marks').select('*').order('created_at', {ascending: false}).then(function(r) {
+    if (!r.data || !r.data.length) return;
+    r.data.forEach(function(m) {
+      if (ST.pins.find(function(p) { return String(p.id) === String(m.id); })) return;
+      ST.pins.unshift({
+        id: m.id, name: m.name, code: m.country_code, cname: m.country_name,
+        lat: m.lat, lon: m.lon, msg: m.message,
+        years: m.capsule_days > 0 ? Math.ceil(m.capsule_days/365) : 0,
+        capsuleDays: m.capsule_days, photo: m.photo, added: m.created_at, owner: m.user_id
+      });
+    });
+    if (globe) globe.pointsData(ST.pins.slice());
+    renderLists();
+  });
+}
+
+async function saveMarkToDB(pin) {
+  if (!_supabase || !AUTH.user || !AUTH.user.id) return;
+  var r = await _supabase.from('marks').insert({
+    user_id: AUTH.user.id, name: pin.name, country_code: pin.code,
+    country_name: pin.cname, lat: pin.lat, lon: pin.lon, message: pin.msg,
+    photo: pin.photo, capsule_days: ST.capsuleDays || 0, capsule_date: ST.capsuleDate || null
+  });
+  if (r.error) console.error('Save error:', r.error);
+}
 
 var AUTH = {
   user: null,
@@ -1225,6 +1280,27 @@ function submit() {
   };
   ST.pins.unshift(newPin);
   window._lastPin = newPin;
+  saveMarkToDB(newPin);
+  // Save to Supabase if logged in
+  if (AUTH.user && AUTH.user.id) {
+    _supabase.from('marks').insert({
+      user_id: AUTH.user.id,
+      name: newPin.name,
+      country_code: newPin.code,
+      country_name: newPin.cname,
+      lat: newPin.lat,
+      lon: newPin.lon,
+      message: newPin.msg,
+      photo: newPin.photo,
+      capsule_days: ST.capsuleDays || 0,
+      capsule_date: ST.capsuleDate || null,
+      capsule_for: ST.rc || 'myself',
+      recipient_email: document.getElementById('iem') ? document.getElementById('iem').value : null
+    }).then(function(r) {
+      if (r.error) console.error('Save error:', r.error);
+      else { newPin.owner = AUTH.user.id; }
+    });
+  }
   if (globe) globe.pointsData(ST.pins.slice());
   renderLists();
   var yr=ST.yr;
