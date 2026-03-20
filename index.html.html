@@ -730,8 +730,6 @@ function showGlobe() {
     landing.style.display = 'none';
     gc.style.display = 'block';
     app.style.display = 'block';
-    var vt = document.getElementById('view-toggle');
-    if (vt) vt.style.display = 'block';
     if (!_globeInited) {
       _globeInited = true;
       setTimeout(initGlobe, 150);
@@ -1129,6 +1127,9 @@ function bSmry() {
     '<div class="pr tot"><span>Total</span><span>$'+tot.toFixed(2)+'</span></div>';
 }
 function submit() {
+  var inameEl=document.getElementById('iname');
+  if(inameEl) ST.name=inameEl.value.trim();
+  var imsgEl=document.getElementById('imsg');
   var c = COUNTRIES.find(function(x){return x.code===ST.selCode;})||{lat:0,lon:0};
   var newPin = {
     id:Date.now(), name:ST.name, code:ST.selCode, cname:ST.selName,
@@ -1398,13 +1399,15 @@ setTimeout(function(){
 },1000);
 
 // Touch - stop rotation on touch
-document.getElementById('globe-container').addEventListener('touchstart', function() {
-  if (globe) {
-    globe.controls().autoRotate = false;
-    document.getElementById('brot').classList.remove('on');
+document.addEventListener('DOMContentLoaded', function() {
+  var gc = document.getElementById('globe-container');
+  if (gc) gc.addEventListener('touchstart', function() {
     _autoRot = false;
-  }
-}, {passive:true});
+    if(window._cesiumRotating) window._cesiumRotating(false);
+    var br = document.getElementById('brot');
+    if(br) br.classList.remove('on');
+  }, {passive:true});
+});
 
 // KEYBOARD ZOOM
 document.addEventListener('keydown', function(e) {
