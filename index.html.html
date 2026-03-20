@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>I Was Here</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css">
 <style>
+
 :root{--gold:#c8a96e;--gold2:#e2c898;--dark:#020408;--text:#f0ede8;--muted:rgba(240,237,232,0.5);--surface:rgba(8,14,24,0.96);--border:rgba(255,255,255,0.07);}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
@@ -200,21 +202,23 @@ input[type=file]{display:none;}
 .ctrls{pointer-events:auto;}
 #srch{pointer-events:auto;}
 #cpanel{pointer-events:auto;}
+
+
+/* CESIUM OVERRIDES */
+#globe-container { position:fixed; inset:0; z-index:1; display:none; }
+.cesium-widget-credits { display:none !important; }
+.cesium-viewer-toolbar { display:none !important; }
+.cesium-viewer-animationContainer { display:none !important; }
+.cesium-viewer-timelineContainer { display:none !important; }
+.cesium-viewer-fullscreenContainer { display:none !important; }
+.cesium-viewer { background:#020408 !important; }
+.cesium-widget canvas { border-radius:0 !important; }
+
 </style>
 </head>
 <body>
 <div id="stars"></div>
 
-<!-- LOADING SCREEN -->
-<div id="loader" style="position:fixed;inset:0;z-index:9999;background:#020408;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .6s ease">
-  <div style="font-family:'Cormorant Garamond',serif;font-size:2.5rem;color:#c8a96e;letter-spacing:.1em;animation:pulse 1.5s ease infinite">I Was Here</div>
-  <div style="font-size:.72rem;color:rgba(240,237,232,.4);letter-spacing:.2em;text-transform:uppercase">Loading the world...</div>
-  <div style="width:120px;height:1px;background:rgba(255,255,255,.08);border-radius:1px;margin-top:4px;overflow:hidden">
-    <div id="load-bar" style="height:100%;background:#c8a96e;width:0%;transition:width 2s ease"></div>
-  </div>
-</div>
-
-<!-- LANDING -->
 <div id="landing">
 <div id="globe-bg"></div>
 <div id="overlay"></div>
@@ -290,17 +294,11 @@ input[type=file]{display:none;}
 </footer>
 </div>
 
-<!-- GLOBE CONTAINER (outside all page divs) -->
+<!-- GLOBE CONTAINER
+
 <div id="globe-container"></div>
-<div id="map-container" style="position:fixed;inset:0;z-index:1;display:none;"></div>
-<div id="view-toggle" style="position:fixed;bottom:1.5rem;left:1.5rem;z-index:100;display:none;">
-  <button onclick="toggleView()" style="background:rgba(8,14,24,.95);border:1px solid rgba(200,169,110,.4);border-radius:8px;padding:8px 14px;color:#c8a96e;font-size:.73rem;cursor:pointer;font-family:sans-serif;backdrop-filter:blur(10px);transition:all .2s" id="view-btn">
-    &#127758; 2D Map
-  </button>
-</div>
 <div id="globe-dim" style="position:fixed;inset:0;z-index:15;background:rgba(2,4,8,0.5);opacity:0;pointer-events:none;transition:opacity .3s ease;backdrop-filter:blur(2px)" onclick="closeSB()"></div>
 
-<!-- GLOBE APP UI -->
 <div id="globe-app">
 <header>
   <div style="display:flex;align-items:center;gap:10px">
@@ -334,7 +332,7 @@ input[type=file]{display:none;}
   <span style="font-size:1.3rem;line-height:1">+</span>
   <span style="font-size:.5rem;letter-spacing:.06em;font-weight:500">MARK</span>
 </button>
-<div id="sb" class="hidden">
+<div id="sb"<div id="sb" class="hidden">
   <div class="sbi">
     <div class="step active" id="sb-0"><h3>Place your mark</h3><p class="sub3">Spin the globe. Leave your name and a message sealed in time.</p><button class="btn bp" onclick="goS(1)">+ Add my mark</button><button class="btn bs" onclick="closeSB()">Close</button><div style="margin-top:1.2rem" id="rpl"></div></div>
     <div class="step" id="sb-1"><div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><h3>Your country</h3><p class="sub3">Click the globe or choose below.</p><label class="fl">Country</label><select id="csel" onchange="sDrop(this.value)"><option value="">Select...</option></select><button class="btn bp" id="b1" onclick="goS(2)" disabled>Continue</button><button class="btn bs" onclick="goS(0)">Back</button></div>
@@ -439,6 +437,7 @@ input[type=file]{display:none;}
   <div class="plsec"><div class="pltit">Latest marks</div><div id="plist"></div></div>
 </div>
 </div>
+</div>
 
 <!-- AUTH -->
 <div id="auth-modal" onclick="if(event.target===this)closeAuth()">
@@ -469,6 +468,18 @@ input[type=file]{display:none;}
 </div>
 
 <!-- SHARE MODAL -->
+
+<!-- MY MARKS -->
+<div id="mmarks" onclick="if(event.target===this)closeMarks()">
+  <div class="mbox">
+    <div class="mhead"><div class="mtitle">My Marks</div><button onclick="closeMarks()" style="background:transparent;border:none;color:rgba(240,237,232,.4);font-size:1.1rem;cursor:pointer">x</button></div>
+    <div class="mbody" id="mbody"></div>
+  </div>
+</div>
+
+<!-- SHARE
+
+<!-- SHARE MODAL -->
 <div id="share-modal" onclick="if(event.target===this)this.style.display='none'">
   <div id="share-card"></div>
   <div style="display:flex;gap:8px">
@@ -477,9 +488,9 @@ input[type=file]{display:none;}
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
-<script src="https://cdn.jsdelivr.net/npm/globe.gl@2.30.0/dist/globe.gl.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script
+
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 <script>
 const COUNTRIES = [
@@ -689,7 +700,7 @@ var AUTH = {
   }
 };
 
-var globe = null;
+var globe = null; // legacy
 var _autoRot = true;
 var _nightMode = false;
 var _globeInited = false;
@@ -744,280 +755,164 @@ function showLanding() {
 
 // GLOBE INIT
 function initGlobe() {
-  if (typeof Globe === 'undefined') {
-    setTimeout(initGlobe, 300);
-    return;
-  }
-  var gc = document.getElementById('globe-container');
-  gc.style.width = window.innerWidth + 'px';
-  gc.style.height = window.innerHeight + 'px';
-  globe = Globe()(gc);
-  globe.width(window.innerWidth);
-  globe.height(window.innerHeight);
-  globe.globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
-  globe.bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png');
-  globe.backgroundImageUrl('');
-  globe.showAtmosphere(true);
-  globe.atmosphereColor('#4a9fd4');
-  globe.atmosphereAltitude(0.22);
+  Cesium.Ion.defaultAccessToken =  + CESIUM_TOKEN + ;
+  var viewer = new Cesium.Viewer('globe-container', {
+    imageryProvider: new Cesium.IonImageryProvider({ assetId: 2 }),
+    terrainProvider: Cesium.createWorldTerrain(),
+    baseLayerPicker: false,
+    geocoder: false,
+    homeButton: false,
+    sceneModePicker: false,
+    navigationHelpButton: false,
+    animation: false,
+    timeline: false,
+    fullscreenButton: false,
+    infoBox: false,
+    selectionIndicator: false,
+    creditContainer: document.createElement('div')
+  });
+  window._cesiumViewer = viewer;
 
-  // Load country borders
-  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
-    .then(function(r) { return r.json(); })
-    .then(function(world) {
-      if (typeof topojson === 'undefined') return;
-      var countries = topojson.feature(world, world.objects.countries);
-      globe
-        .polygonsData(countries.features)
-        .polygonCapColor(function() { return 'rgba(255,255,255,0.04)'; })
-        .polygonSideColor(function() { return 'rgba(255,255,255,0.01)'; })
-        .polygonStrokeColor(function() { return 'rgba(100,200,100,0.35)'; })
-        .polygonAltitude(0.004)
-        .polygonLabel(function(d) {
-          var name = (d.properties && d.properties.name) ? d.properties.name : '';
-          var cnt = ST.pins.filter(function(p){ return p.cname === name; }).length;
-          return '<div style="background:rgba(6,10,18,.92);border:1px solid rgba(200,169,110,.35);border-radius:8px;padding:7px 14px;font-family:sans-serif;font-size:13px;color:#f0ede8">' +
-            '<strong style="color:#c8a96e">' + name + '</strong>' +
-            (cnt > 0 ? '<br><span style="font-size:11px;opacity:.7">' + cnt + ' mark' + (cnt>1?'s':'') + ' here</span>' : '') + '</div>';
-        })
-        .onPolygonClick(function(p) {
-          if (!p) return;
-          var name = (p.properties && p.properties.name) ? p.properties.name : '';
-          var coords = p.geometry.coordinates;
-          var lat=0, lon=0, cnt=0;
-          function ex(a,dep){if(dep===0){lon+=a[0];lat+=a[1];cnt++;}else a.forEach(function(x){ex(x,dep-1);});}
-          ex(coords, p.geometry.type==='Polygon'?1:2);
-          if(cnt>0){lat/=cnt;lon/=cnt;}
-          var best=null,bd=Infinity;
-          COUNTRIES.forEach(function(c){var d=Math.sqrt((c.lat-lat)*(c.lat-lat)+(c.lon-lon)*(c.lon-lon));if(d<bd){bd=d;best=c;}});
-          if(best) selC(best.code, best.name);
-        });
-    })
-    .catch(function(){});
+  // Dark space background
+  viewer.scene.backgroundColor = Cesium.Color.fromCssColorString('#020408');
+  viewer.scene.skyBox.show = true;
+  viewer.scene.sun.show = true;
+  viewer.scene.moon.show = false;
+  viewer.scene.skyAtmosphere.show = true;
 
-  globe
-    .pointsData(ST.pins)
-    .pointLat(function(d) { return d.lat; })
-    .pointLng(function(d) { return d.lon; })
-    .pointColor(function(d) {
-      if (d.years > 5) return '#e8c97e';
-      if (d.years > 2) return '#c8a96e';
-      return '#a8894e';
-    })
-    .pointAltitude(0.005)
-    .pointRadius(0.35)
-    .pointResolution(8)
-    .pointsMerge(false)
-    .onPointHover(function(p) {
-      var tt = document.getElementById('tt');
-      if (p) {
-        window._hovPin = p;
-        var cd = countdown(p.added, p.years);
-        var year = new Date(p.added||Date.now()).getFullYear();
-        tt.style.pointerEvents = 'auto';
-        var igSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="white" style="flex-shrink:0"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>';
-        tt.innerHTML =
-          '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">' +
-            '<div class="tav">' + (p.photo ? '<img src="'+p.photo+'">' : p.name.charAt(0)) + '</div>' +
-            '<div>' +
-              '<div class="tn2">' + p.name + '</div>' +
-              '<div class="tc2">' + p.cname + ' - ' + year + '</div>' +
-            '</div>' +
-          '</div>' +
-          (p.msg ? '<div class="tm2">"' + p.msg.substring(0,80) + (p.msg.length>80?'..':'') + '"</div>' : '') +
-          (cd ? '<div style="margin-top:8px;font-size:.68rem;color:rgba(200,169,110,.8);background:rgba(200,169,110,.1);padding:4px 10px;border-radius:20px;display:inline-block;border:1px solid rgba(200,169,110,.2)">Capsule opens in ' + cd + '</div>' : '<div style="margin-top:8px;font-size:.68rem;color:rgba(240,237,232,.35)">No capsule</div>') +
-          (AUTH.user && p.owner === AUTH.user.email ?
-            '<div style="display:flex;gap:6px;margin-top:10px">' +
-              '<button onclick="shareToInstagram(window._hovPin)" style="flex:1;padding:7px 6px;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:#fff;border:none;border-radius:8px;font-size:.72rem;cursor:pointer;font-family:sans-serif;font-weight:500;display:flex;align-items:center;justify-content:center;gap:5px">' +
-                igSvg + 'Instagram' +
-              '</button>' +
-              '<button onclick="showShareCard(window._hovPin)" style="flex:1;padding:7px 6px;background:var(--gold);color:#020408;border:none;border-radius:8px;font-size:.72rem;cursor:pointer;font-family:sans-serif;font-weight:500">Share card</button>' +
-            '</div>'
-          : '');
-        tt.classList.add('show');
-      } else {
-        setTimeout(function() {
-          if (!tt.matches(':hover')) tt.classList.remove('show');
-        }, 300);
-      }
-    })
-    .onPointClick(function(p) {
-      if (!p) return;
-      globe.pointOfView({lat:p.lat,lng:p.lon,altitude:0.8},800);
-      showShareCard(p);
-    })
-    .onGlobeClick(function(coords) {
-      var lat = coords.lat, lng = coords.lng;
+  // Set initial camera position
+  viewer.camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(10, 20, 20000000),
+    orientation: { heading: 0, pitch: -Cesium.Math.PI_OVER_TWO, roll: 0 }
+  });
+
+  // Auto rotate
+  viewer.clock.shouldAnimate = true;
+  var _rotating = true;
+  viewer.scene.postRender.addEventListener(function() {
+    if (_rotating) {
+      viewer.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, -0.0001);
+    }
+  });
+  window._cesiumRotating = function(v) { _rotating = v; };
+
+  // Click handler
+  var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+  handler.setInputAction(function(click) {
+    // Stop rotation on drag
+    _rotating = false;
+    document.getElementById('brot').classList.remove('on');
+    
+    var ray = viewer.camera.getPickRay(click.position);
+    var pos = viewer.scene.globe.pick(ray, viewer.scene);
+    if (pos) {
+      var carto = Cesium.Cartographic.fromCartesian(pos);
+      var lat = Cesium.Math.toDegrees(carto.latitude);
+      var lon = Cesium.Math.toDegrees(carto.longitude);
       var best = null, bd = Infinity;
       COUNTRIES.forEach(function(c) {
-        var d = Math.sqrt((c.lat-lat)*(c.lat-lat)+(c.lon-lng)*(c.lon-lng));
+        var d = Math.sqrt((c.lat-lat)*(c.lat-lat)+(c.lon-lon)*(c.lon-lon));
         if (d < bd) { bd = d; best = c; }
       });
       if (best) selC(best.code, best.name);
-    });
-
-  // Load country borders
-  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
-    .then(function(r) { return r.json(); })
-    .then(function(world) {
-      if (typeof topojson === 'undefined') return;
-      var countries = topojson.feature(world, world.objects.countries);
-      globe
-        .polygonsData(countries.features)
-        .polygonCapColor(function() { return 'rgba(255,255,255,0.04)'; })
-        .polygonSideColor(function() { return 'rgba(255,255,255,0.01)'; })
-        .polygonStrokeColor(function() { return 'rgba(100,200,100,0.3)'; })
-        .polygonAltitude(0.005)
-        .polygonLabel(function(d) {
-          var name = (d.properties||{}).name || '';
-          var cnt = ST.pins.filter(function(p){return p.cname===name;}).length;
-          return '<div style="background:rgba(6,10,18,.92);border:1px solid rgba(200,169,110,.35);border-radius:8px;padding:7px 14px;font-family:sans-serif;font-size:13px;color:#f0ede8"><strong style="color:#c8a96e">'+name+'</strong>'+(cnt>0?'<br><span style="font-size:11px;opacity:.7">'+cnt+' mark'+(cnt>1?'s':'')+'</span>':'')+'</div>';
-        })
-        .onPolygonHover(function(p) {
-          globe.polygonCapColor(function(d) { return d===p ? 'rgba(200,169,110,0.2)' : 'rgba(255,255,255,0.04)'; });
-          globe.polygonAltitude(function(d) { return d===p ? 0.012 : 0.005; });
-          document.getElementById('globe-container').style.cursor = p ? 'pointer' : 'default';
-        })
-        .onPolygonClick(function(p) {
-          if (!p) return;
-          var coords = p.geometry.coordinates;
-          var lat=0,lon=0,cnt=0;
-          function ex(a,dep){if(dep===0){lon+=a[0];lat+=a[1];cnt++;}else a.forEach(function(x){ex(x,dep-1);});}
-          ex(coords, p.geometry.type==='Polygon'?1:2);
-          if(cnt>0){lat/=cnt;lon/=cnt;}
-          var best=null,bd=Infinity;
-          COUNTRIES.forEach(function(c){var d=Math.sqrt((c.lat-lat)*(c.lat-lat)+(c.lon-lon)*(c.lon-lon));if(d<bd){bd=d;best=c;}});
-          if(best) selC(best.code,best.name);
-        });
-      
-
-    })
-    .catch(function(){});
-
-  globe
-    .labelsData(CITIES)
-    .labelLat(function(d) { return d.lat; })
-    .labelLng(function(d) { return d.lon; })
-    .labelText(function(d) { return d.name; })
-    .labelSize(function(d) {
-      var a = globe.pointOfView().altitude;
-      if (a > 3) return 0;
-      if (a > 2) return d.pop >= 15 ? 0.25 : 0;
-      if (a > 1.2) return d.pop >= 8 ? 0.2 : 0;
-      if (a > 0.6) return d.pop >= 3 ? 0.16 : 0;
-      return d.pop >= 1 ? 0.13 : 0;
-    })
-    .labelDotRadius(function(d) {
-      var a = globe.pointOfView().altitude;
-      if (a > 3) return 0;
-      if (a > 2) return d.pop >= 15 ? 0.15 : 0;
-      if (a > 1.2) return d.pop >= 8 ? 0.12 : 0;
-      if (a > 0.6) return d.pop >= 3 ? 0.1 : 0;
-      return d.pop >= 1 ? 0.08 : 0;
-    })
-    .labelColor(function() { return 'rgba(255,225,170,0.88)'; })
-    .labelResolution(3)
-    .labelAltitude(0.01);
-
-  // Name labels - only show when zoomed in
-  globe
-    .htmlElementsData(ST.pins)
-    .htmlLat(function(d) { return d.lat; })
-    .htmlLng(function(d) { return d.lon; })
-    .htmlAltitude(0.04)
-    .htmlElement(function(d) {
-      var el = document.createElement('div');
-      var alt = globe.pointOfView ? globe.pointOfView().altitude : 3;
-      if (alt > 1.5) {
-        el.style.display = 'none';
-        return el;
-      }
-      el.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;pointer-events:auto;transform:translateY(-4px)';
-      el.innerHTML =
-        '<div style="background:rgba(2,4,8,0.88);border:1px solid rgba(200,169,110,0.35);border-radius:6px;padding:2px 6px;font-family:sans-serif;font-size:9px;font-weight:500;color:#f0ede8;white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em">' + d.name + '</div>';
-      el.title = d.name + ' - ' + d.cname;
-      return el;
-    });
-
-  // Fix lighting
-  setTimeout(function() {
-    var scene = globe.scene();
-    if (scene) {
-      scene.traverse(function(obj) {
-        if (obj.isDirectionalLight) {
-          obj.intensity *= 0.65;
-          obj.position.set(5, 3, 5); // Sun angle
-        }
-        if (obj.isAmbientLight) obj.intensity *= 0.55;
-      });
     }
-    var renderer = globe.renderer();
-    if (renderer) renderer.setClearColor(0x020408, 1);
-  }, 600);
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-  // Hide tooltip on mouseleave
-document.addEventListener('DOMContentLoaded', function() {
-  var tt = document.getElementById('tt');
-  if (tt) tt.addEventListener('mouseleave', function() { tt.classList.remove('show'); });
-});
-
-// Mouse tooltip
-  document.addEventListener('mousemove', function(e) {
-    var tt = document.getElementById('tt');
-    if (tt && tt.classList.contains('show')) {
-      tt.style.left = Math.min(e.clientX+14, window.innerWidth-240) + 'px';
-      tt.style.top = Math.min(e.clientY-10, window.innerHeight-160) + 'px';
-    }
-  });
-
-  // Stop rotation on mouse down, resume on mouse up
-  var _isDragging = false;
-  document.getElementById('globe-container').addEventListener('mousedown', function() {
-    _isDragging = true;
-    globe.controls().autoRotate = false;
-    document.getElementById('brot').classList.remove('on');
-    _autoRot = false;
-  });
-  document.addEventListener('mouseup', function() {
-    _isDragging = false;
-  });
-
-  // Zoom handler
-  globe.controls().addEventListener('change', function() {
-    globe.labelsData(CITIES.slice());
-    var a = globe.pointOfView().altitude;
-    var r = a > 3 ? 0.4 : a > 2 ? 0.32 : a > 1 ? 0.2 : a > 0.5 ? 0.12 : 0.08;
-    globe.pointRadius(r);
-    // Refresh name labels based on zoom
-    globe.htmlElementsData(ST.pins.slice());
-  });
-
-  globe.controls().autoRotate = true;
-  globe.controls().autoRotateSpeed = 0.5;
-  globe.controls().enableZoom = true;
-  globe.controls().zoomSpeed = 3;
-  globe.controls().minDistance = 120;
-  globe.controls().maxDistance = 600;
-  globe.width(window.innerWidth);
-  globe.height(window.innerHeight);
-  globe.pointOfView({lat:20,lng:10,altitude:2.2});
-
-  window.addEventListener('resize', function() {
-    globe.width(window.innerWidth);
-    globe.height(window.innerHeight);
-  });
-
+  // Add pins
+  addCesiumPins(viewer);
   renderLists();
   populateDrop();
 }
 
-// CONTROLS
+function addCesiumPins(viewer) {
+  if (!viewer) viewer = window._cesiumViewer;
+  if (!viewer) return;
+  viewer.entities.removeAll();
+  ST.pins.forEach(function(p) {
+    var cd = countdown(p.added, p.years);
+    viewer.entities.add({
+      position: Cesium.Cartesian3.fromDegrees(p.lon, p.lat, 10000),
+      billboard: {
+        image: createPinIcon(p),
+        width: 28, height: 28,
+        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY
+      },
+      label: {
+        text: p.name,
+        font: '11px sans-serif',
+        fillColor: Cesium.Color.fromCssColorString('#f0ede8'),
+        outlineColor: Cesium.Color.fromCssColorString('#020408'),
+        outlineWidth: 2,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+        pixelOffset: new Cesium.Cartesian2(0, -32),
+        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        translucencyByDistance: new Cesium.NearFarScalar(500000, 0, 2000000, 1)
+      },
+      _pinData: p
+    });
+  });
+
+  // Pick handler for pin tooltips
+  var handler2 = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+  handler2.setInputAction(function(move) {
+    var picked = viewer.scene.pick(move.endPosition);
+    var tt = document.getElementById('tt');
+    if (picked && picked.id && picked.id._pinData) {
+      var p = picked.id._pinData;
+      var cd = countdown(p.added, p.years);
+      var igSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>';
+      var isOwn = AUTH.user && p.owner === AUTH.user.email;
+      tt.style.pointerEvents = 'auto';
+      tt.innerHTML =
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">' +
+          '<div class="tav">'+(p.photo?'<img src="'+p.photo+'">':p.name.charAt(0))+'</div>' +
+          '<div><div class="tn2">'+p.name+'</div><div class="tc2">'+p.cname+' - '+new Date(p.added||Date.now()).getFullYear()+'</div></div>' +
+        '</div>' +
+        (p.msg?'<div class="tm2">"'+p.msg.substring(0,80)+'"</div>':'') +
+        (cd?'<div style="margin-top:8px;font-size:.68rem;color:rgba(200,169,110,.8);background:rgba(200,169,110,.1);padding:4px 10px;border-radius:20px;display:inline-block">Capsule opens in '+cd+'</div>':'<div style="margin-top:8px;font-size:.68rem;color:rgba(240,237,232,.35)">No capsule</div>') +
+        (isOwn?'<div style="display:flex;gap:6px;margin-top:10px">' +
+          '<button onclick="shareToInstagram(window._hovPin)" style="flex:1;padding:7px 6px;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:#fff;border:none;border-radius:8px;font-size:.72rem;cursor:pointer;font-family:sans-serif;font-weight:500;display:flex;align-items:center;justify-content:center;gap:5px">'+igSvg+'Instagram</button>' +
+          '<button onclick="showShareCard(window._hovPin)" style="flex:1;padding:7px 6px;background:var(--gold);color:#020408;border:none;border-radius:8px;font-size:.72rem;cursor:pointer;font-family:sans-serif;font-weight:500">Share card</button>' +
+        '</div>':'');
+      window._hovPin = p;
+      tt.classList.add('show');
+      tt.style.left = move.endPosition.x + 14 + 'px';
+      tt.style.top = move.endPosition.y - 10 + 'px';
+    } else {
+      setTimeout(function(){if(!tt.matches(':hover'))tt.classList.remove('show');},300);
+    }
+  }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+}
+
+function createPinIcon(p) {
+  var c = document.createElement('canvas');
+  c.width = 28; c.height = 28;
+  var ctx = c.getContext('2d');
+  ctx.beginPath();
+  ctx.arc(14, 14, 11, 0, Math.PI*2);
+  ctx.fillStyle = p.years > 3 ? '#e8c97e' : p.years > 1 ? '#c8a96e' : '#a8894e';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(2,4,8,0.8)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#020408';
+  ctx.font = 'bold 10px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(p.name.charAt(0), 14, 14);
+  return c.toDataURL();
+}
+
 function tRot() {
   _autoRot = !_autoRot;
-  if (globe) globe.controls().autoRotate = _autoRot;
+  if(window._cesiumRotating) window._cesiumRotating(_autoRot);
   document.getElementById('brot').classList.toggle('on', _autoRot);
 }
-function rView() { if (globe) globe.pointOfView({lat:20,lng:10,altitude:2.2},1000); }
+function rView() { var v=window._cesiumViewer; if(v) v.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(10,20,20000000),duration:1}); }
 function tNights() {
   _nightMode = !_nightMode;
   document.getElementById('bnights').classList.toggle('on', _nightMode);
@@ -1067,7 +962,8 @@ function onSearch(val) {
   res.style.display = 'block';
 }
 function flyTo(lat, lon, alt, name, code) {
-  if (globe) globe.pointOfView({lat:lat,lng:lon,altitude:alt},1200);
+  var v=window._cesiumViewer;
+  if(v) v.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(lon,lat,alt*3000000),duration:1.5});
   document.getElementById('si').value = name;
   document.getElementById('sres').style.display = 'none';
   if (code) selC(code, name);
@@ -1125,7 +1021,7 @@ function goS(n) {
   if(el) { el.classList.add('active'); }
   if(n===4) bSmry();
 }
-function selC(code, name) { ST.selCode=code; ST.selName=name; document.getElementById('csel').value=code; document.getElementById('b1').disabled=false; openSB(); if(!document.getElementById('sb-1').classList.contains('active')) goS(1); var c=COUNTRIES.find(function(x){return x.code===code;}); if(c&&globe) globe.pointOfView({lat:c.lat,lng:c.lon,altitude:1.5},1000); }
+function selC(code, name) { ST.selCode=code; ST.selName=name; document.getElementById('csel').value=code; document.getElementById('b1').disabled=false; openSB(); if(!document.getElementById('sb-1').classList.contains('active')) goS(1); var c=COUNTRIES.find(function(x){return x.code===code;}); var v=window._cesiumViewer; if(c&&v) v.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(c.lon,c.lat,5000000),duration:1}); }
 function sDrop(v) { if(!v)return; var c=COUNTRIES.find(function(x){return x.code===v;}); if(c){ST.selCode=v;ST.selName=c.name;document.getElementById('b1').disabled=false;if(globe)globe.pointOfView({lat:c.lat,lng:c.lon,altitude:1.5},1000);} }
 function chkN() { ST.name=document.getElementById('iname').value.trim(); document.getElementById('b2').disabled=ST.name.length<2; }
 function hPh(inp) { var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){ST.photo=e.target.result;document.getElementById('pp').src=e.target.result;document.getElementById('pp').style.display='block';document.getElementById('pu').style.display='none';};r.readAsDataURL(f); }
@@ -1483,39 +1379,9 @@ function showToast(msg) {
 
 // LANDING BG GLOBE
 function initBgGlobe() {
-  if (typeof Globe === 'undefined') { setTimeout(initBgGlobe, 300); return; }
-  var g = Globe()(document.getElementById('globe-bg'));
-  g.globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-   .bumpImageUrl('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png')
-   .backgroundImageUrl('').showAtmosphere(true).atmosphereColor('#1565a8').atmosphereAltitude(0.18)
-   .width(window.innerWidth).height(window.innerHeight)
-   .pointsData([{lat:41,lng:29},{lat:51.5,lng:-0.1},{lat:40.7,lng:-74},{lat:35.6,lng:139.6},{lat:48.8,lng:2.3},{lat:-23.5,lng:-46.6},{lat:28.6,lng:77.2},{lat:39.9,lng:116.3}])
-   .pointLat(function(d){return d.lat;}).pointLng(function(d){return d.lng;})
-   .pointColor(function(){return '#c8a96e';}).pointAltitude(0.01).pointRadius(0.35);
-  g.controls().autoRotate=true; g.controls().autoRotateSpeed=0.4;
-  g.controls().enableZoom=false; g.controls().enableRotate=false;
-  g.pointOfView({lat:20,lng:10,altitude:2.0});
-  setTimeout(function() {
-    var sc=g.scene(); if(sc) sc.traverse(function(o){if(o.isDirectionalLight)o.intensity*=0.5;if(o.isAmbientLight)o.intensity*=0.6;});
-    var r=g.renderer(); if(r) r.setClearColor(0x020408,1);
-  },600);
-  window.addEventListener('resize',function(){g.width(window.innerWidth);g.height(window.innerHeight);});
-  // Make bg globe non-interactive
-  var bgCanvas = document.querySelector('#globe-bg canvas');
-  if (bgCanvas) bgCanvas.style.pointerEvents = 'none';
-  setTimeout(function() {
-    var bgCanvas2 = document.querySelector('#globe-bg canvas');
-    if (bgCanvas2) bgCanvas2.style.pointerEvents = 'none';
-  }, 1000);
+  // Cesium handles bg
 }
 
-// SCROLL REVEAL
-var revObs = new IntersectionObserver(function(entries) {
-  entries.forEach(function(e,i) { if(e.isIntersecting) setTimeout(function(){e.target.classList.add('visible');},i*80); });
-},{threshold:0.1});
-document.querySelectorAll('.reveal').forEach(function(el){revObs.observe(el);});
-
-// COUNTER ANIMATION
 function animCount(el, target, dur) {
   var start=Date.now();
   (function up(){
@@ -1689,6 +1555,19 @@ document.addEventListener('DOMContentLoaded', function() {
   }, 1800);
 
   initBgGlobe();
+});
+
+
+// LOADING SCREEN
+document.addEventListener('DOMContentLoaded', function() {
+  populateDrop();
+  renderLists();
+  var bar = document.getElementById('load-bar');
+  if (bar) bar.style.width = '100%';
+  setTimeout(function() {
+    var loader = document.getElementById('loader');
+    if (loader) { loader.style.opacity = '0'; setTimeout(function() { loader.style.display = 'none'; }, 600); }
+  }, 1800);
 });
 </script>
 </body>
