@@ -755,7 +755,7 @@ function showLanding() {
 
 // GLOBE INIT
 function initGlobe() {
-  Cesium.Ion.defaultAccessToken =  + CESIUM_TOKEN + ;
+  Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzZGNiMDdmOS03NTNkLTRlMTctYWVmNC1jZDcwYzMzODUxODkiLCJpZCI6NDA2NTAwLCJpYXQiOjE3NzM5ODQ5NjF9.BGOWTCoVloIu0kBPih9HI6hEW1hu8QwEcGglJUI_qN4';
   var viewer = new Cesium.Viewer('globe-container', {
     imageryProvider: new Cesium.IonImageryProvider({ assetId: 2 }),
     terrainProvider: Cesium.createWorldTerrain(),
