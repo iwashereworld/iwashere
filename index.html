@@ -640,14 +640,13 @@ function loadMarksFromDB() {
   });
 }
 
-async function saveMarkToDB(pin) {
+function saveMarkToDB(pin) {
   if (!_supabase || !AUTH.user || !AUTH.user.id) return;
-  var r = await _supabase.from('marks').insert({
+  _supabase.from('marks').insert({
     user_id: AUTH.user.id, name: pin.name, country_code: pin.code,
     country_name: pin.cname, lat: pin.lat, lon: pin.lon, message: pin.msg,
     photo: pin.photo, capsule_days: ST.capsuleDays || 0, capsule_date: ST.capsuleDate || null
-  });
-  if (r.error) console.error('Save error:', r.error);
+  }).then(function(r){if(r.error)console.error('Save error:',r.error);});
 }
 
 var AUTH = {
