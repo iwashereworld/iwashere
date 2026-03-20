@@ -230,9 +230,9 @@ input[type=file]{display:none;}
     <a class="hb gh" href="#how">How it works</a>
   </div>
   <div class="hst">
-    <div class="st"><span class="sn" id="s1">2,847</span><span class="sl">Marks placed</span></div>
-    <div class="st"><span class="sn" id="s2">94</span><span class="sl">Countries</span></div>
-    <div class="st"><span class="sn" id="s3">1,203</span><span class="sl">Capsules</span></div>
+    <div class="st"><span class="sn" id="s1">0</span><span class="sl">Marks placed</span></div>
+    <div class="st"><span class="sn" id="s2">0</span><span class="sl">Countries</span></div>
+    <div class="st"><span class="sn" id="s3">0</span><span class="sl">Capsules</span></div>
   </div>
 
   <!-- Social proof ticker -->
@@ -243,7 +243,7 @@ input[type=file]{display:none;}
       <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#c8a96e,#2a6e3f);border:2px solid #020408;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#020408;margin-left:-4px">A</div>
       <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#3a8fd4,#c8a96e);border:2px solid #020408;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#020408;margin-left:-4px">K</div>
     </div>
-    <div style="font-size:.75rem;color:rgba(240,237,232,.55)"><span style="color:#c8a96e;font-weight:500">47 people</span> placed their mark in the last hour</div>
+    <div style="font-size:.75rem;color:rgba(240,237,232,.55)"><span style="color:#c8a96e;font-weight:500">Be the first</span> to leave your mark on the world</div>
   </div>
 </section>
 <div id="how" class="sec">
@@ -271,7 +271,7 @@ input[type=file]{display:none;}
 </div>
 <div style="position:relative;z-index:10;padding:10rem 3rem;text-align:center">
   <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(2.5rem,6vw,5.5rem);font-weight:300;line-height:1.1;margin-bottom:1.5rem" class="reveal">The world is waiting<br>for <em style="font-style:italic;color:var(--gold2)">your</em> mark.</h2>
-  <p style="font-size:1rem;color:var(--muted);margin-bottom:3rem;max-width:400px;margin-left:auto;margin-right:auto" class="reveal">Over 2,847 people have already left their trace. Will you?</p>
+  <p style="font-size:1rem;color:var(--muted);margin-bottom:3rem;max-width:400px;margin-left:auto;margin-right:auto" class="reveal">Be the first to leave your mark on the world.</p>
   <div class="reveal"><button class="hb g" onclick="showGlobe()" style="font-size:1rem;padding:16px 48px">Place my mark - $1</button></div>
   <p style="margin-top:1.5rem;font-size:.72rem;color:rgba(240,237,232,.25)" class="reveal">One time payment - No subscription - Permanent</p>
 </div>
@@ -294,9 +294,9 @@ input[type=file]{display:none;}
     <div><span class="logo" style="font-size:1.1rem">I <em>Was</em> Here</span><div style="font-size:.6rem;color:rgba(240,237,232,.4);letter-spacing:.14em;text-transform:uppercase;margin-top:1px">Leave your mark on the world</div></div>
   </div>
   <div class="ghs">
-    <div><strong id="sp">2,847</strong>marks</div>
-    <div><strong id="sc2">94</strong>countries</div>
-    <div><strong id="sk2">1,203</strong>capsules</div>
+    <div><strong id="sp">0</strong>marks</div>
+    <div><strong id="sc2">0</strong>countries</div>
+    <div><strong id="sk2">0</strong>capsules</div>
   </div>
   <button id="signin-btn2" class="nbtn" onclick="openAuth('login')" style="font-size:.72rem;padding:6px 14px">Sign in</button>
 </header>
@@ -594,77 +594,7 @@ const CITIES = [
 var ST = {
   selCode:null, selName:null, name:'', photo:null,
   ct:'w', rc:'s', yr:1, vis:'pub', capsuleDays:365, capsuleDate:null,
-  pins:[
-    {id:1,name:"Omar A.",code:"004",cname:"Afghanistan",lat:34.4,lon:67.2,msg:"This place means everything.",years:2,photo:null,added:new Date(Date.now()-29980800000).toISOString()},
-    {id:2,name:"Luna C.",code:"012",cname:"Algeria",lat:28.2,lon:0.7,msg:"Left my mark.",years:4,photo:null,added:new Date(Date.now()-10368000000).toISOString()},
-    {id:3,name:"Eva T.",code:"024",cname:"Angola",lat:-12.1,lon:17.2,msg:"Life is beautiful here.",years:7,photo:null,added:new Date(Date.now()-9763200000).toISOString()},
-    {id:4,name:"Emma S.",code:"032",cname:"Argentina",lat:-38.8,lon:-62.9,msg:"This place means everything.",years:7,photo:null,added:new Date(Date.now()-15120000000).toISOString()},
-    {id:5,name:"Leo E.",code:"036",cname:"Australia",lat:-25.8,lon:134.2,msg:"Left my mark.",years:2,photo:null,added:new Date(Date.now()-16848000000).toISOString()},
-    {id:6,name:"Ivan L.",code:"040",cname:"Austria",lat:48.2,lon:14.7,msg:"I was here.",years:8,photo:null,added:new Date(Date.now()-23760000000).toISOString()},
-    {id:7,name:"Omar M.",code:"050",cname:"Bangladesh",lat:22.8,lon:89.9,msg:"Never forget this day.",years:6,photo:null,added:new Date(Date.now()-25574400000).toISOString()},
-    {id:8,name:"Luca W.",code:"056",cname:"Belgium",lat:49.6,lon:4.7,msg:"From this moment, hello future.",years:2,photo:null,added:new Date(Date.now()-10368000000).toISOString()},
-    {id:9,name:"Ivan M.",code:"068",cname:"Bolivia",lat:-16.6,lon:-63.2,msg:"One day I will return.",years:3,photo:null,added:new Date(Date.now()-16416000000).toISOString()},
-    {id:10,name:"Maria G.",code:"076",cname:"Brazil",lat:-13.9,lon:-51.5,msg:"Left my mark.",years:10,photo:null,added:new Date(Date.now()-28166400000).toISOString()},
-    {id:11,name:"Pablo R.",code:"100",cname:"Bulgaria",lat:43.2,lon:24.7,msg:"Standing here, thinking of you.",years:5,photo:null,added:new Date(Date.now()-28339200000).toISOString()},
-    {id:12,name:"Aria H.",code:"116",cname:"Cambodia",lat:12.9,lon:105.6,msg:"I was here.",years:4,photo:null,added:new Date(Date.now()-1468800000).toISOString()},
-    {id:13,name:"Ayse M.",code:"120",cname:"Cameroon",lat:6.8,lon:11.7,msg:"Never forget this day.",years:6,photo:null,added:new Date(Date.now()-9417600000).toISOString()},
-    {id:14,name:"Nina M.",code:"124",cname:"Canada",lat:56.9,lon:-106.0,msg:"This place means everything.",years:5,photo:null,added:new Date(Date.now()-6220800000).toISOString()},
-    {id:15,name:"Chris X.",code:"152",cname:"Chile",lat:-35.5,lon:-72.0,msg:"Never forget this day.",years:7,photo:null,added:new Date(Date.now()-25833600000).toISOString()},
-    {id:16,name:"Priya L.",code:"156",cname:"China",lat:35.2,lon:105.1,msg:"Life is beautiful here.",years:8,photo:null,added:new Date(Date.now()-4060800000).toISOString()},
-    {id:17,name:"Ahmed D.",code:"170",cname:"Colombia",lat:3.8,lon:-74.9,msg:"Standing here, thinking of you.",years:10,photo:null,added:new Date(Date.now()-2851200000).toISOString()},
-    {id:18,name:"Yuki M.",code:"188",cname:"Costa Rica",lat:9.9,lon:-83.8,msg:"From this moment, hello future.",years:9,photo:null,added:new Date(Date.now()-518400000).toISOString()},
-    {id:19,name:"Omar V.",code:"192",cname:"Cuba",lat:22.3,lon:-79.4,msg:"One day I will return.",years:2,photo:null,added:new Date(Date.now()-13046400000).toISOString()},
-    {id:20,name:"Sofia F.",code:"203",cname:"Czech Republic",lat:49.7,lon:16.3,msg:"From this moment, hello future.",years:9,photo:null,added:new Date(Date.now()-7948800000).toISOString()},
-    {id:21,name:"Eva D.",code:"208",cname:"Denmark",lat:56.9,lon:11.0,msg:"Life is beautiful here.",years:10,photo:null,added:new Date(Date.now()-8812800000).toISOString()},
-    {id:22,name:"Kenji L.",code:"218",cname:"Ecuador",lat:-1.3,lon:-78.0,msg:"Life is beautiful here.",years:1,photo:null,added:new Date(Date.now()-26524800000).toISOString()},
-    {id:23,name:"Ayse P.",code:"818",cname:"Egypt",lat:25.8,lon:31.7,msg:"From this moment, hello future.",years:4,photo:null,added:new Date(Date.now()-2592000000).toISOString()},
-    {id:24,name:"Chris S.",code:"231",cname:"Ethiopia",lat:10.0,lon:39.6,msg:"The journey continues.",years:2,photo:null,added:new Date(Date.now()-23587200000).toISOString()},
-    {id:25,name:"Lucas E.",code:"246",cname:"Finland",lat:62.2,lon:26.6,msg:"This place means everything.",years:5,photo:null,added:new Date(Date.now()-23414400000).toISOString()},
-    {id:26,name:"Chloe N.",code:"250",cname:"France",lat:47.1,lon:3.1,msg:"A memory sealed in time.",years:5,photo:null,added:new Date(Date.now()-17712000000).toISOString()},
-    {id:27,name:"Fatima O.",code:"276",cname:"Germany",lat:51.9,lon:10.3,msg:"A memory sealed in time.",years:4,photo:null,added:new Date(Date.now()-2851200000).toISOString()},
-    {id:28,name:"Sarah A.",code:"288",cname:"Ghana",lat:8.1,lon:-1.5,msg:"A memory sealed in time.",years:1,photo:null,added:new Date(Date.now()-3196800000).toISOString()},
-    {id:29,name:"Ahmed H.",code:"300",cname:"Greece",lat:38.1,lon:20.9,msg:"One day I will return.",years:2,photo:null,added:new Date(Date.now()-22809600000).toISOString()},
-    {id:30,name:"Chris I.",code:"356",cname:"India",lat:20.8,lon:78.3,msg:"This place means everything.",years:10,photo:null,added:new Date(Date.now()-25574400000).toISOString()},
-    {id:31,name:"Leila H.",code:"360",cname:"Indonesia",lat:-0.1,lon:114.5,msg:"A memory sealed in time.",years:2,photo:null,added:new Date(Date.now()-4320000000).toISOString()},
-    {id:32,name:"Sofia L.",code:"364",cname:"Iran",lat:32.2,lon:53.5,msg:"I was here.",years:2,photo:null,added:new Date(Date.now()-2764800000).toISOString()},
-    {id:33,name:"Priya X.",code:"368",cname:"Iraq",lat:32.9,lon:44.3,msg:"A memory sealed in time.",years:4,photo:null,added:new Date(Date.now()-8467200000).toISOString()},
-    {id:34,name:"Luna O.",code:"372",cname:"Ireland",lat:52.4,lon:-8.8,msg:"The journey continues.",years:4,photo:null,added:new Date(Date.now()-3369600000).toISOString()},
-    {id:35,name:"Emma Z.",code:"376",cname:"Israel",lat:31.7,lon:34.9,msg:"I was here.",years:9,photo:null,added:new Date(Date.now()-691200000).toISOString()},
-    {id:36,name:"Raj Y.",code:"380",cname:"Italy",lat:42.5,lon:11.8,msg:"The journey continues.",years:8,photo:null,added:new Date(Date.now()-9504000000).toISOString()},
-    {id:37,name:"Priya B.",code:"392",cname:"Japan",lat:35.5,lon:137.2,msg:"Standing here, thinking of you.",years:5,photo:null,added:new Date(Date.now()-20131200000).toISOString()},
-    {id:38,name:"Noah N.",code:"400",cname:"Jordan",lat:30.9,lon:36.7,msg:"Life is beautiful here.",years:8,photo:null,added:new Date(Date.now()-6912000000).toISOString()},
-    {id:39,name:"Luca J.",code:"398",cname:"Kazakhstan",lat:47.4,lon:66.0,msg:"Life is beautiful here.",years:1,photo:null,added:new Date(Date.now()-13910400000).toISOString()},
-    {id:40,name:"Ahmed B.",code:"404",cname:"Kenya",lat:0.2,lon:37.9,msg:"Life is beautiful here.",years:3,photo:null,added:new Date(Date.now()-2592000000).toISOString()},
-    {id:41,name:"Eva C.",code:"410",cname:"South Korea",lat:36.6,lon:126.8,msg:"Left my mark.",years:4,photo:null,added:new Date(Date.now()-17884800000).toISOString()},
-    {id:42,name:"Omar S.",code:"434",cname:"Libya",lat:25.8,lon:17.4,msg:"Never forget this day.",years:2,photo:null,added:new Date(Date.now()-18576000000).toISOString()},
-    {id:43,name:"Lily S.",code:"458",cname:"Malaysia",lat:4.2,lon:110.3,msg:"A memory sealed in time.",years:6,photo:null,added:new Date(Date.now()-10627200000).toISOString()},
-    {id:44,name:"Max M.",code:"484",cname:"Mexico",lat:22.9,lon:-102.2,msg:"The journey continues.",years:6,photo:null,added:new Date(Date.now()-3283200000).toISOString()},
-    {id:45,name:"Ali O.",code:"504",cname:"Morocco",lat:31.9,lon:-6.9,msg:"Left my mark.",years:2,photo:null,added:new Date(Date.now()-23846400000).toISOString()},
-    {id:46,name:"Felix Q.",code:"528",cname:"Netherlands",lat:51.6,lon:6.1,msg:"Left my mark.",years:4,photo:null,added:new Date(Date.now()-16416000000).toISOString()},
-    {id:47,name:"Noah F.",code:"554",cname:"New Zealand",lat:-41.0,lon:174.9,msg:"From this moment, hello future.",years:10,photo:null,added:new Date(Date.now()-28944000000).toISOString()},
-    {id:48,name:"Zara A.",code:"566",cname:"Nigeria",lat:9.3,lon:8.7,msg:"Left my mark.",years:3,photo:null,added:new Date(Date.now()-11750400000).toISOString()},
-    {id:49,name:"Omar D.",code:"578",cname:"Norway",lat:60.9,lon:7.7,msg:"From this moment, hello future.",years:10,photo:null,added:new Date(Date.now()-9331200000).toISOString()},
-    {id:50,name:"Sarah G.",code:"586",cname:"Pakistan",lat:30.7,lon:70.0,msg:"Life is beautiful here.",years:8,photo:null,added:new Date(Date.now()-11145600000).toISOString()},
-    {id:51,name:"Ahmed C.",code:"604",cname:"Peru",lat:-8.8,lon:-74.3,msg:"I was here.",years:1,photo:null,added:new Date(Date.now()-14774400000).toISOString()},
-    {id:52,name:"Lucas U.",code:"608",cname:"Philippines",lat:13.8,lon:121.0,msg:"The journey continues.",years:9,photo:null,added:new Date(Date.now()-31276800000).toISOString()},
-    {id:53,name:"Sofia R.",code:"616",cname:"Poland",lat:50.9,lon:18.3,msg:"This place means everything.",years:9,photo:null,added:new Date(Date.now()-1641600000).toISOString()},
-    {id:54,name:"Fatima S.",code:"620",cname:"Portugal",lat:39.4,lon:-8.3,msg:"I was here.",years:5,photo:null,added:new Date(Date.now()-16156800000).toISOString()},
-    {id:55,name:"Carlos L.",code:"642",cname:"Romania",lat:45.3,lon:24.4,msg:"Left my mark.",years:6,photo:null,added:new Date(Date.now()-24796800000).toISOString()},
-    {id:56,name:"Anna T.",code:"643",cname:"Russia",lat:62.0,lon:106.2,msg:"A memory sealed in time.",years:3,photo:null,added:new Date(Date.now()-7862400000).toISOString()},
-    {id:57,name:"Anna A.",code:"682",cname:"Saudi Arabia",lat:23.2,lon:45.8,msg:"Standing here, thinking of you.",years:4,photo:null,added:new Date(Date.now()-11836800000).toISOString()},
-    {id:58,name:"Pablo Z.",code:"710",cname:"South Africa",lat:-30.1,lon:22.7,msg:"I was here.",years:8,photo:null,added:new Date(Date.now()-9849600000).toISOString()},
-    {id:59,name:"Luca O.",code:"724",cname:"Spain",lat:40.1,lon:-3.1,msg:"A memory sealed in time.",years:4,photo:null,added:new Date(Date.now()-1123200000).toISOString()},
-    {id:60,name:"Luca M.",code:"752",cname:"Sweden",lat:59.8,lon:19.3,msg:"From this moment, hello future.",years:6,photo:null,added:new Date(Date.now()-28425600000).toISOString()},
-    {id:61,name:"Eva M.",code:"756",cname:"Switzerland",lat:47.2,lon:8.9,msg:"One day I will return.",years:1,photo:null,added:new Date(Date.now()-5184000000).toISOString()},
-    {id:62,name:"Max F.",code:"764",cname:"Thailand",lat:16.0,lon:101.9,msg:"I was here.",years:2,photo:null,added:new Date(Date.now()-26438400000).toISOString()},
-    {id:63,name:"Sofia L.",code:"792",cname:"Turkey",lat:39.4,lon:34.8,msg:"Never forget this day.",years:9,photo:null,added:new Date(Date.now()-5184000000).toISOString()},
-    {id:64,name:"Yuki S.",code:"804",cname:"Ukraine",lat:47.7,lon:30.2,msg:"Standing here, thinking of you.",years:1,photo:null,added:new Date(Date.now()-23068800000).toISOString()},
-    {id:65,name:"Luna V.",code:"784",cname:"UAE",lat:23.8,lon:54.3,msg:"A memory sealed in time.",years:6,photo:null,added:new Date(Date.now()-19094400000).toISOString()},
-    {id:66,name:"Wei V.",code:"826",cname:"United Kingdom",lat:56.1,lon:-3.2,msg:"Left my mark.",years:5,photo:null,added:new Date(Date.now()-22464000000).toISOString()},
-    {id:67,name:"Ethan V.",code:"840",cname:"United States",lat:36.8,lon:-95.9,msg:"From this moment, hello future.",years:9,photo:null,added:new Date(Date.now()-5702400000).toISOString()},
-    {id:68,name:"Luca N.",code:"858",cname:"Uruguay",lat:-32.2,lon:-55.9,msg:"This place means everything.",years:10,photo:null,added:new Date(Date.now()-25228800000).toISOString()},
-    {id:69,name:"Ethan M.",code:"704",cname:"Vietnam",lat:14.1,lon:107.2,msg:"From this moment, hello future.",years:4,photo:null,added:new Date(Date.now()-19094400000).toISOString()}
-  ]
+  pins:[]
 };
 
 // SUPABASE
@@ -1309,9 +1239,9 @@ function submit() {
   else{opens=new Date();opens.setDate(opens.getDate()+(ST.capsuleDays||365));}
   document.getElementById('ss4').textContent = yr>0 ? 'Your mark is on the globe. Capsule opens '+opens.toLocaleDateString('en-US',{year:'numeric',month:'long'})+'.' : 'Your mark is now visible on the globe.';
   if(yr>0){document.getElementById('cbdg').style.display='block';document.getElementById('cdt').textContent=opens.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});}
-  document.getElementById('sp').textContent=(2847+ST.pins.length-6).toLocaleString();
+  document.getElementById('sp').textContent=ST.pins.length.toLocaleString();
   var capCount = ST.pins.filter(function(p){return p.years>0;}).length;
-  var sk2=document.getElementById('sk2'); if(sk2) sk2.textContent=(1203+capCount).toLocaleString();
+  var sk2=document.getElementById('sk2'); if(sk2) sk2.textContent=capCount.toLocaleString();
   if(globe) {
     globe.pointsData(ST.pins.slice());
     globe.pointOfView({lat:newPin.lat,lng:newPin.lon,altitude:1.0},1500);
@@ -1321,10 +1251,10 @@ function submit() {
 }
 function doShr() { if(navigator.share){navigator.share({title:'I Was Here',text:ST.name+' left a mark.',url:'https://iwashereworld.com'});}else{showToast('Share: iwashereworld.com');} }
 function updateStats() {
-  var sp=document.getElementById('sp'); if(sp) sp.textContent=(2847+ST.pins.length-6).toLocaleString();
+  var sp=document.getElementById('sp'); if(sp) sp.textContent=ST.pins.length.toLocaleString();
   var sc2=document.getElementById('sc2');
   if(sc2){var codes=ST.pins.map(function(p){return p.code;}).filter(function(v,i,a){return a.indexOf(v)===i;});sc2.textContent=codes.length;}
-  var sk2=document.getElementById('sk2'); if(sk2) sk2.textContent=(1203+ST.pins.filter(function(p){return p.years>0;}).length).toLocaleString();
+  var sk2=document.getElementById('sk2'); if(sk2) sk2.textContent=ST.pins.filter(function(p){return p.years>0;}).length.toLocaleString();
 }
 
 function renderLists() {
@@ -1583,11 +1513,8 @@ function animCount(el, target, dur) {
     if(p<1) requestAnimationFrame(up);
   })();
 }
-setTimeout(function(){
-  var e1=document.getElementById('s1'); if(e1) animCount(e1,2847);
-  var e2=document.getElementById('s2'); if(e2) animCount(e2,94,1500);
-  var e3=document.getElementById('s3'); if(e3) animCount(e3,1203,1800);
-},1000);
+// Stats updated dynamically from DB
+
 
 // Touch - stop rotation on touch
 document.getElementById('globe-container').addEventListener('touchstart', function() {
