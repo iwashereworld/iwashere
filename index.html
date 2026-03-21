@@ -295,6 +295,7 @@ input[type=file]{display:none;}
 </div>
 <div class="ctrls">
   <button class="cb on" id="brot" onclick="tglRot()">Auto-rotate</button>
+  
 </div>
 <button id="fab" onclick="openSb()">+</button>
 <div id="tt"><div class="tav" id="tav"></div><div class="tn2" id="tn"></div><div class="tc2" id="tc"></div><div class="tm2" id="tm"></div></div>
@@ -460,9 +461,29 @@ input[type=file]{display:none;}
 <script>
 // SUPABASE
 var _supabase = supabase.createClient(
-  'https://ysajmjfpheypdvbkvsob.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzYWptamZwaGV5cGR2Ymt2c29iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MTk3MjAsImV4cCI6MjA2NTM5NTcyMH0.8RBPwk_Kwy_IeI2Bt7BN0HEgdPSnwWcpkdBJZJPP4fE'
+  'https://ctjgxonismqdxprlohcz.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0amd4b25pc21xZHhwcmxvaGN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5ODg1NDcsImV4cCI6MjA4OTU2NDU0N30.y88CJt4uH9ueZShKVIYc8xRFCQ7borr9wZ5sr9nhpEs'
 );
+
+// AUTH STATE LISTENER
+_supabase.auth.getSession().then(function(r) {
+  if (r.data && r.data.session) {
+    var u = r.data.session.user;
+    AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id };
+    updateUserUI();
+  }
+});
+_supabase.auth.onAuthStateChange(function(event, session) {
+  if (session) {
+    var u = session.user;
+    AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id };
+    updateUserUI();
+    if (viewer) loadMarks();
+  } else {
+    AUTH.user = null;
+    updateUserUI();
+  }
+});
 
 // COUNTRIES DATABASE
 var COUNTRIES = [
@@ -546,7 +567,7 @@ var borderDataSource = null;
 async function initCesium() {
   // Use Cesium Ion default token (free tier - 5000 sessions/month)
   // For production, get your own token at https://cesium.com/ion/tokens
-  Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkOTcxZGIzNS05OTJmLTRiNDItYjIyOS02YTM4ZTk1YjhhNmMiLCJpZCI6MjU5LCJpYXQiOjE1MTgxOTc3MTd9.PnYfT4IuD3JBLQQ21AZ_gCvnpSfx28eEV7c-u1dPJ1A';
+  Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzZGNiMDdmOS03NTNkLTRlMTctYWVmNC1jZDcwYzMzODUxODkiLCJpZCI6NDA2NTAwLCJpYXQiOjE3NzM5ODQ5NjF9.BGOWTCoVloIu0kBPih9HI6hEW1hu8QwEcGglJUI_qN4';
 
   viewer = new Cesium.Viewer('cesiumContainer', {
     animation: false,
@@ -604,10 +625,8 @@ async function initCesium() {
   var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
   
   handler.setInputAction(function(click) {
-    // Stop rotation on click
     _autoRot = false;
     document.getElementById('brot').classList.remove('on');
-
     var cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
     if (cartesian) {
       var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
@@ -1227,16 +1246,20 @@ function saveMarkToDB(pin) {
 }
 
 function loadMarks() {
-  _supabase.from('marks').select('*').order('created_at', { ascending: false }).limit(100).then(function(res) {
-    if (res.data && res.data.length > 0) {
+  console.log('[IWH] Loading marks from Supabase...');
+  _supabase.from('marks').select('*').order('created_at', { ascending: false }).limit(500).then(function(res) {
+    console.log('[IWH] Marks response:', res);
+    if (res.error) { console.error('[IWH] Load error:', res.error); return; }
+    if (res.data) {
+      ST.pins = [];
       res.data.forEach(function(m) {
         var pin = {
           id: m.id,
           name: m.name,
           code: m.country_code,
           cname: m.country_name,
-          lat: m.lat,
-          lon: m.lon,
+          lat: parseFloat(m.lat) || 0,
+          lon: parseFloat(m.lon) || 0,
           msg: m.message,
           years: Math.round((m.capsule_days || 0) / 365),
           capsule_days: m.capsule_days || 0,
@@ -1245,8 +1268,9 @@ function loadMarks() {
           owner: m.user_id
         };
         ST.pins.push(pin);
-        addPinToGlobe(pin);
+        if (viewer) addPinToGlobe(pin);
       });
+      console.log('[IWH] Loaded ' + ST.pins.length + ' marks');
       updateStats();
       renderLists();
     }
@@ -1265,18 +1289,15 @@ function loadStats() {
 function updateStats() {
   var sp = document.getElementById('sp');
   if (sp) sp.textContent = ST.pins.length.toLocaleString();
-
+  
   var sc2 = document.getElementById('sc2');
   if (sc2) {
     var codes = ST.pins.map(function(p) { return p.code; }).filter(function(v, i, a) { return a.indexOf(v) === i; });
     sc2.textContent = codes.length;
   }
-
+  
   var sk2 = document.getElementById('sk2');
-  if (sk2) {
-    var capCount = ST.pins.filter(function(p) { return p.years > 0 || p.capsule_days > 0; }).length;
-    sk2.textContent = capCount.toLocaleString();
-  }
+  if (sk2) sk2.textContent = ST.pins.filter(function(p) { return p.years > 0; }).length.toLocaleString();
 }
 
 function countdown(added, years) {
@@ -1357,53 +1378,33 @@ function submitAuth() {
   var tab = (modal && modal.dataset.tab) || 'login';
   var email = document.getElementById('aemail').value.trim();
   var pw = document.getElementById('apw').value;
-  var name = document.getElementById('aname').value.trim();
+  var nameEl = document.getElementById('aname');
+  var name = nameEl ? nameEl.value.trim() : '';
   var btn = document.getElementById('auth-btn');
-  
-  if (!email || !pw) {
-    btn.style.animation = 'shake .4s';
-    setTimeout(function() { btn.style.animation = ''; }, 400);
-    return;
-  }
-  
-  btn.textContent = '...';
-  btn.disabled = true;
-  
-  setTimeout(function() {
-    if (tab === 'register') {
-      if (!name) {
-        btn.textContent = 'Create account';
-        btn.disabled = false;
-        return;
-      }
-      AUTH.users[email] = { name: name, email: email, password: pw };
-      AUTH.user = { name: name, email: email };
-    } else {
-      var u = AUTH.users[email];
-      if (!u || u.password !== pw) {
-        btn.textContent = 'Sign in';
-        btn.disabled = false;
-        var pwEl = document.getElementById('apw');
-        pwEl.style.borderColor = 'rgba(220,60,60,.6)';
-        setTimeout(function() { pwEl.style.borderColor = ''; }, 1500);
-        showToast('Wrong credentials. Try admin / admin');
-        return;
-      }
-      AUTH.user = { name: u.name, email: email };
-    }
-    updateUserUI();
-    closeAuth();
-    showToast('Welcome, ' + AUTH.user.name.split(' ')[0] + '!');
+  if (!email || !pw) { btn.style.animation='shake .4s'; setTimeout(function(){btn.style.animation='';},400); return; }
+  btn.textContent = '...'; btn.disabled = true;
+  var promise = tab === 'register'
+    ? _supabase.auth.signUp({ email: email, password: pw, options: { data: { name: name } } })
+    : _supabase.auth.signInWithPassword({ email: email, password: pw });
+  promise.then(function(result) {
     btn.textContent = tab === 'login' ? 'Sign in' : 'Create account';
     btn.disabled = false;
-  }, 700);
+    if (result.error) {
+      showToast(result.error.message || 'Error. Please try again.');
+      var pwEl = document.getElementById('apw');
+      if (pwEl) { pwEl.style.borderColor='rgba(220,60,60,.6)'; setTimeout(function(){pwEl.style.borderColor='';},1500); }
+      return;
+    }
+    showToast(tab === 'register' ? 'Account created! You can now sign in.' : 'Welcome back!');
+    closeAuth();
+  }).catch(function(err) {
+    btn.textContent = tab === 'login' ? 'Sign in' : 'Create account';
+    btn.disabled = false;
+    showToast(err.message || 'Error. Please try again.');
+  });
 }
 
-function signOut() {
-  AUTH.user = null;
-  updateUserUI();
-  showToast('Signed out.');
-}
+function signOut() { _supabase.auth.signOut().then(function(){ AUTH.user=null; updateUserUI(); showToast('Signed out.'); }); }
 
 function showMarks() {
   if (!AUTH.user) {
