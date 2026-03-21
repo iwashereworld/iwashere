@@ -1344,11 +1344,40 @@ function updateUserUI() {
   var chip = document.getElementById('signin-btn');
   var chip2 = document.getElementById('signin-btn2');
   if (AUTH.user) {
-    if (chip) chip.textContent = AUTH.user.name.split(' ')[0];
-    if (chip2) chip2.textContent = AUTH.user.name.split(' ')[0];
+    var firstName = AUTH.user.name.split(' ')[0];
+    if (chip) {
+      chip.textContent = firstName + ' v';
+      chip.onclick = function(e) {
+        e.stopPropagation();
+        var existing = document.getElementById('user-dd');
+        if (existing) { existing.remove(); return; }
+        var dd = document.createElement('div');
+        dd.id = 'user-dd';
+        dd.style.cssText = 'position:fixed;top:60px;right:20px;background:rgba(8,14,24,.98);border:1px solid rgba(200,169,110,.25);border-radius:12px;padding:.4rem;min-width:180px;z-index:600;box-shadow:0 8px 32px rgba(0,0,0,.4)';
+        var mi1 = document.createElement('div');
+        mi1.style.cssText = 'padding:10px 14px;font-size:.82rem;color:rgba(240,237,232,.7);cursor:pointer;border-radius:8px';
+        mi1.textContent = 'My Marks';
+        mi1.onclick = function() { dd.remove(); showMarks(); };
+        var sep = document.createElement('div');
+        sep.style.cssText = 'height:1px;background:rgba(255,255,255,.06);margin:4px 0';
+        var mi2 = document.createElement('div');
+        mi2.style.cssText = 'padding:10px 14px;font-size:.82rem;color:rgba(255,100,100,.8);cursor:pointer;border-radius:8px';
+        mi2.textContent = 'Sign out';
+        mi2.onclick = function() { dd.remove(); signOut(); };
+        dd.appendChild(mi1); dd.appendChild(sep); dd.appendChild(mi2);
+        document.body.appendChild(dd);
+        setTimeout(function() {
+          document.addEventListener('click', function rm() { var d=document.getElementById('user-dd'); if(d)d.remove(); document.removeEventListener('click',rm); });
+        }, 10);
+      };
+    }
+    if (chip2) {
+      chip2.textContent = firstName;
+      chip2.onclick = function() { showMarks(); };
+    }
   } else {
-    if (chip) chip.textContent = 'Sign in';
-    if (chip2) chip2.textContent = 'Sign in';
+    if (chip) { chip.textContent = 'Sign in'; chip.onclick = function(){ openAuth('login'); }; }
+    if (chip2) { chip2.textContent = 'Sign in'; chip2.onclick = function(){ openAuth('login'); }; }
   }
 }
 
