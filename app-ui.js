@@ -405,6 +405,16 @@ function closeMarks() {
   syncOverlayState();
 }
 
+function closeProfile() {
+  document.getElementById('profile-modal').classList.remove('show');
+  syncOverlayState();
+}
+
+function openMarksFromProfile() {
+  closeProfile();
+  showMarks();
+}
+
 function openShareModal() {
   document.getElementById('share-modal').classList.add('show');
   syncOverlayState();
@@ -419,6 +429,7 @@ function syncOverlayState() {
   var hasOpenOverlay =
     document.getElementById('auth-modal').classList.contains('show') ||
     document.getElementById('mmarks').classList.contains('show') ||
+    document.getElementById('profile-modal').classList.contains('show') ||
     document.getElementById('share-modal').classList.contains('show');
   document.body.style.overflow = hasOpenOverlay ? 'hidden' : '';
 }

@@ -229,6 +229,102 @@ async function deleteMark(pinId, buttonEl) {
   showToast('Mark deleted.', 'success');
 }
 
+function buildProfileBio(marks) {
+  if (AUTH.user && AUTH.user.meta && AUTH.user.meta.bio) {
+    return clampText(AUTH.user.meta.bio, 220);
+  }
+  if (!marks.length) {
+    return 'You have not placed a mark yet. Start with your first location and build your story on the globe.';
+  }
+  var countries = marks.map(function(mark) { return mark.cname; }).filter(function(value, index, arr) { return value && arr.indexOf(value) === index; });
+  if (countries.length > 1) {
+    return 'Tracking meaningful places across ' + countries.length + ' countries on I Was Here.';
+  }
+  return 'Building a personal map of memories on I Was Here.';
+}
+
+function renderProfileRecent(container, marks) {
+  clearChildren(container);
+
+  if (!marks.length) {
+    var empty = document.createElement('div');
+    empty.className = 'pempty';
+    empty.textContent = 'No personal activity yet. Your saved marks will appear here.';
+    container.appendChild(empty);
+    return;
+  }
+
+  marks.slice(0, 4).forEach(function(p) {
+    var item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'pritem';
+    item.style.background = 'transparent';
+    item.style.border = 'none';
+    item.style.width = '100%';
+    item.style.textAlign = 'left';
+    item.style.cursor = 'pointer';
+    item.onclick = function() {
+      closeProfile();
+      showGlobe();
+      flyTo(p.lat, p.lon, 500000);
+    };
+
+    item.appendChild(createAvatarNode(p.photo, p.name, 'pravatar'));
+
+    var info = document.createElement('div');
+    info.className = 'prinfo';
+
+    var name = document.createElement('div');
+    name.className = 'prname';
+    name.textContent = p.cname;
+    info.appendChild(name);
+
+    var meta = document.createElement('div');
+    meta.className = 'prmeta';
+    meta.textContent = new Date(p.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + (p.years ? ' - capsule active' : '');
+    info.appendChild(meta);
+
+    if (p.msg) {
+      var msg = document.createElement('div');
+      msg.className = 'prmsg';
+      msg.textContent = '"' + p.msg + '"';
+      info.appendChild(msg);
+    }
+
+    item.appendChild(info);
+    container.appendChild(item);
+  });
+}
+
+function openProfile() {
+  if (!AUTH.user) {
+    openAuth('login');
+    return;
+  }
+
+  var marks = ST.pins.filter(function(p) { return p.owner === AUTH.user.id; });
+  var countries = marks.map(function(p) { return p.code || p.cname; }).filter(function(value, index, arr) {
+    return value && arr.indexOf(value) === index;
+  });
+  var capsules = marks.filter(function(p) { return p.years > 0; }).length;
+  var avatarSource = marks.find(function(p) { return safeImageUrl(p.photo); });
+
+  var avatar = document.getElementById('profile-avatar');
+  clearChildren(avatar);
+  avatar.appendChild(createAvatarNode(avatarSource ? avatarSource.photo : '', AUTH.user.name, ''));
+
+  document.getElementById('profile-name').textContent = AUTH.user.name;
+  document.getElementById('profile-meta').textContent = AUTH.user.email;
+  document.getElementById('profile-bio').textContent = buildProfileBio(marks);
+  document.getElementById('profile-stat-marks').textContent = marks.length;
+  document.getElementById('profile-stat-countries').textContent = countries.length;
+  document.getElementById('profile-stat-capsules').textContent = capsules;
+  renderProfileRecent(document.getElementById('profile-recent'), marks);
+
+  document.getElementById('profile-modal').classList.add('show');
+  if (typeof syncOverlayState === 'function') syncOverlayState();
+}
+
 function showMarks() {
   if (!AUTH.user) {
     openAuth('login');

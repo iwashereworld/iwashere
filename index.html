@@ -249,6 +249,42 @@ select option{background:#0e1624;}
 .mdt{font-size:.7rem;color:var(--muted);margin-top:1px;}
 .mmsg{font-size:.76rem;color:rgba(240,237,232,.6);margin-top:5px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mcap{font-size:.68rem;margin-top:5px;display:inline-block;background:rgba(200,169,110,.1);border:1px solid rgba(200,169,110,.2);border-radius:4px;padding:2px 8px;color:var(--gold);}
+#profile-modal{display:none;position:fixed;inset:0;z-index:450;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);align-items:center;justify-content:center;pointer-events:auto;}
+#profile-modal.show{display:flex;}
+.pbox{width:min(92vw,720px);max-height:min(86vh,760px);overflow:auto;background:rgba(8,14,24,.97);border:1px solid rgba(200,169,110,.16);border-radius:26px;box-shadow:0 30px 100px rgba(0,0,0,.55);}
+.phead{padding:1.2rem 1.4rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.ptitle{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;}
+.pbody{padding:1.5rem;}
+.phero{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-bottom:1.5rem;}
+.pavatar{width:74px;height:74px;border-radius:50%;background:rgba(200,169,110,.12);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:1.8rem;overflow:hidden;flex-shrink:0;}
+.pavatar img{width:100%;height:100%;object-fit:cover;}
+.pname{font-family:'Cormorant Garamond',serif;font-size:2rem;line-height:1;}
+.pmeta{font-size:.82rem;color:var(--muted);margin-top:6px;}
+.pbio{margin-top:12px;font-size:.88rem;line-height:1.7;color:rgba(240,237,232,.76);}
+.pstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:1.25rem 0 1.4rem;}
+.pstat{border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1rem;background:rgba(255,255,255,.015);}
+.pstat strong{display:block;font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--gold);}
+.pstat span{display:block;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+.pactions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.5rem;}
+.pbtn{border-radius:999px;padding:10px 18px;border:1px solid rgba(200,169,110,.32);background:transparent;color:var(--gold);cursor:pointer;font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;}
+.pbtn.p{background:var(--gold);color:#020408;border-color:var(--gold);}
+.psec-title{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.9rem;}
+.precent{display:grid;gap:10px;}
+.pempty{padding:1rem 0;color:rgba(240,237,232,.42);font-size:.84rem;line-height:1.7;}
+.pritem{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid rgba(255,255,255,.05);}
+.pritem:first-child{border-top:none;padding-top:0;}
+.pravatar{width:34px;height:34px;border-radius:50%;background:rgba(200,169,110,.12);border:1px solid rgba(200,169,110,.3);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:.82rem;overflow:hidden;flex-shrink:0;}
+.pravatar img{width:100%;height:100%;object-fit:cover;}
+.prinfo{flex:1;min-width:0;}
+.prname{font-size:.86rem;color:var(--text);}
+.prmeta{font-size:.72rem;color:var(--muted);margin-top:3px;}
+.prmsg{font-size:.76rem;color:rgba(240,237,232,.65);margin-top:5px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+@media (max-width:640px){
+  .phero{grid-template-columns:1fr;justify-items:start;}
+  .pstats{grid-template-columns:1fr;}
+  .pactions{flex-direction:column;}
+  .pbtn{width:100%;}
+}
 #share-modal{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;flex-direction:column;gap:12px;pointer-events:auto;}
 #share-modal.show{display:flex;}
 input[type=date]{color-scheme:dark;}
@@ -333,7 +369,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <nav>
   <div class="logo">I Was <em>Here</em></div>
   <div class="nav-actions">
-    <button class="nbtn" id="signin-btn" onclick="AUTH.user?showMarks():openAuth('login')">Sign in</button>
+    <button class="nbtn" id="signin-btn" onclick="AUTH.user?openProfile():openAuth('login')">Sign in</button>
     <button class="nbtn" id="signout-btn" onclick="signOut()" style="display:none">Sign out</button>
     <button class="nbtn p" onclick="showGlobe()">Open Globe</button>
   </div>
@@ -421,7 +457,7 @@ window.addEventListener('load', initCookieBanner);
   <button type="button" class="logo logo-btn" onclick="goLanding()" aria-label="Return to landing page">I Was <em>Here</em></button>
   <div class="ghs"><div><strong id="sp">0</strong>marks</div><div><strong id="sc2">0</strong>countries</div><div><strong id="sk2">0</strong>capsules</div></div>
   <div class="header-actions">
-    <button class="nbtn" id="signin-btn2" onclick="AUTH.user?showMarks():openAuth('login')">Sign in</button>
+    <button class="nbtn" id="signin-btn2" onclick="AUTH.user?openProfile():openAuth('login')">Sign in</button>
   </div>
 </header>
 <div id="globe-container"><div id="cesiumContainer"></div></div>
@@ -610,6 +646,37 @@ window.addEventListener('load', initCookieBanner);
   </div>
 </div>
 
+<!-- PROFILE MODAL -->
+<div id="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+  <div class="pbox">
+    <div class="phead">
+      <h2 class="ptitle" id="profile-title">Profile</h2>
+      <button onclick="closeProfile()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">&times;</button>
+    </div>
+    <div class="pbody">
+      <div class="phero">
+        <div class="pavatar" id="profile-avatar"></div>
+        <div>
+          <div class="pname" id="profile-name"></div>
+          <div class="pmeta" id="profile-meta"></div>
+          <div class="pbio" id="profile-bio"></div>
+        </div>
+      </div>
+      <div class="pstats">
+        <div class="pstat"><strong id="profile-stat-marks">0</strong><span>Marks</span></div>
+        <div class="pstat"><strong id="profile-stat-countries">0</strong><span>Countries</span></div>
+        <div class="pstat"><strong id="profile-stat-capsules">0</strong><span>Capsules</span></div>
+      </div>
+      <div class="pactions">
+        <button type="button" class="pbtn p" onclick="openMarksFromProfile()">View My Marks</button>
+        <button type="button" class="pbtn" onclick="closeProfile();showGlobe();">Place New Mark</button>
+      </div>
+      <div class="psec-title">Recent activity</div>
+      <div class="precent" id="profile-recent"></div>
+    </div>
+  </div>
+</div>
+
 <!-- SHARE MODAL -->
 <div id="share-modal" onclick="closeShareModal()" role="dialog" aria-modal="true" aria-labelledby="share-name">
   <div style="background:linear-gradient(135deg,#0a1628 0%,#0d1f3c 50%,#0a1628 100%);border:1px solid rgba(200,169,110,.3);border-radius:20px;padding:2rem;width:320px;text-align:center;position:relative;" onclick="event.stopPropagation()">
@@ -642,14 +709,14 @@ var _supabase = supabase.createClient(
 _supabase.auth.getSession().then(function(r) {
   if (r.data && r.data.session) {
     var u = r.data.session.user;
-    AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id };
+    AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id, meta: u.user_metadata || {} };
     updateUserUI();
   }
 });
 _supabase.auth.onAuthStateChange(function(event, session) {
   if (session) {
     var u = session.user;
-    AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id };
+    AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id, meta: u.user_metadata || {} };
     updateUserUI();
     if (viewer) loadMarks();
   } else {
@@ -1671,6 +1738,10 @@ document.addEventListener('keydown', function(e) {
       closeMarks();
       return;
     }
+    if (document.getElementById('profile-modal').classList.contains('show')) {
+      closeProfile();
+      return;
+    }
   }
 
   if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.classList && e.target.classList.contains('oc')) {
@@ -1700,6 +1771,10 @@ document.getElementById('auth-modal').addEventListener('click', function(e) {
 
 document.getElementById('mmarks').addEventListener('click', function(e) {
   if (e.target === this) closeMarks();
+});
+
+document.getElementById('profile-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeProfile();
 });
 </script>
 <script>
