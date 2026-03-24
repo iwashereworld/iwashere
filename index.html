@@ -474,7 +474,8 @@ window.addEventListener('load', initCookieBanner);
 </div>
 <div class="ctrls">
   <button class="cb on" id="brot" onclick="tglRot()">Auto-rotate</button>
-  
+  <button class="cb on" id="bbrd" onclick="tglBorders()">Borders</button>
+  <button class="cb on" id="blbl" onclick="tglLabels()">Labels</button>
 </div>
 <button id="fab" onclick="openSb()">+</button>
 <div id="start-hint" class="hidden" aria-live="polite">
@@ -801,10 +802,13 @@ var pinEntities = [];
 var _autoRot = true;
 var _rotationSpeed = 0.5;
 var _useSatellite = true;
-var _showBorders = false;
+var _showBorders = true;
+var _showLabels = true;
 var bingImagery = null;
 var osmImagery = null;
 var borderDataSource = null;
+var countryLabelEntities = [];
+var cityLabelEntities = [];
 var _searchResults = [];
 var _searchActiveIndex = -1;
 
@@ -934,6 +938,8 @@ async function initCesium() {
     }, { passive: true });
 
     // Load existing marks
+    syncBorderLayer();
+    syncLabelLayer();
     loadMarks();
     updateOpensPreview();
   } catch (err) {
@@ -1073,26 +1079,105 @@ async function tglImagery() {
   }
 }
 
-function tglBorders() {
-  _showBorders = !_showBorders;
-  document.getElementById('bbrd').classList.toggle('on', _showBorders);
-  
-  if (_showBorders) {
-    // Add country borders using GeoJSON
-    Cesium.GeoJsonDataSource.load('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson', {
-      stroke: Cesium.Color.fromCssColorString('#c8a96e').withAlpha(0.6),
-      fill: Cesium.Color.TRANSPARENT,
-      strokeWidth: 1
-    }).then(function(dataSource) {
-      borderDataSource = dataSource;
-      viewer.dataSources.add(dataSource);
+function ensureCountryLabels() {
+  if (!viewer || countryLabelEntities.length) return;
+  COUNTRIES.forEach(function(country) {
+    var entity = viewer.entities.add({
+      position: Cesium.Cartesian3.fromDegrees(country.lon, country.lat, 8000),
+      label: {
+        text: country.name,
+        font: '15px DM Sans',
+        fillColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.92),
+        outlineColor: Cesium.Color.fromCssColorString('#020408'),
+        outlineWidth: 4,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+        verticalOrigin: Cesium.VerticalOrigin.CENTER,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        showBackground: true,
+        backgroundColor: Cesium.Color.fromCssColorString('#020408').withAlpha(0.28),
+        backgroundPadding: new Cesium.Cartesian2(10, 5),
+        scaleByDistance: new Cesium.NearFarScalar(2000000, 1.1, 22000000, 0.45),
+        translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 26000000, 0.25)
+      }
     });
-  } else {
+    entity.iwhOverlayType = 'country-label';
+    countryLabelEntities.push(entity);
+  });
+}
+
+function ensureCityLabels() {
+  if (!viewer || cityLabelEntities.length) return;
+  CITIES.forEach(function(city) {
+    var entity = viewer.entities.add({
+      position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat, 5000),
+      label: {
+        text: city.name,
+        font: '13px DM Sans',
+        fillColor: Cesium.Color.fromCssColorString('#c8a96e'),
+        outlineColor: Cesium.Color.fromCssColorString('#020408'),
+        outlineWidth: 3,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+        pixelOffset: new Cesium.Cartesian2(0, -6),
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        showBackground: true,
+        backgroundColor: Cesium.Color.fromCssColorString('#020408').withAlpha(0.18),
+        backgroundPadding: new Cesium.Cartesian2(8, 4),
+        scaleByDistance: new Cesium.NearFarScalar(250000, 1.0, 9000000, 0.0),
+        translucencyByDistance: new Cesium.NearFarScalar(250000, 1.0, 7000000, 0.0),
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 7000000)
+      }
+    });
+    entity.iwhOverlayType = 'city-label';
+    cityLabelEntities.push(entity);
+  });
+}
+
+function syncLabelLayer() {
+  if (!viewer) return;
+  ensureCountryLabels();
+  ensureCityLabels();
+  countryLabelEntities.forEach(function(entity) { entity.show = _showLabels; });
+  cityLabelEntities.forEach(function(entity) { entity.show = _showLabels; });
+  var btn = document.getElementById('blbl');
+  if (btn) btn.classList.toggle('on', _showLabels);
+}
+
+function tglLabels() {
+  _showLabels = !_showLabels;
+  syncLabelLayer();
+}
+
+function syncBorderLayer() {
+  var btn = document.getElementById('bbrd');
+  if (btn) btn.classList.toggle('on', _showBorders);
+  if (!_showBorders) {
     if (borderDataSource) {
       viewer.dataSources.remove(borderDataSource);
       borderDataSource = null;
     }
+    return;
   }
+  if (borderDataSource || !viewer) return;
+  Cesium.GeoJsonDataSource.load('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson', {
+    stroke: Cesium.Color.fromCssColorString('#c8a96e').withAlpha(0.62),
+    fill: Cesium.Color.TRANSPARENT,
+    strokeWidth: 1
+  }).then(function(dataSource) {
+    borderDataSource = dataSource;
+    viewer.dataSources.add(dataSource);
+  }).catch(function(err) {
+    console.error('[IWH] border layer load failed:', err);
+    _showBorders = false;
+    if (btn) btn.classList.remove('on');
+  });
+}
+
+function tglBorders() {
+  _showBorders = !_showBorders;
+  syncBorderLayer();
 }
 
 // Fly to location
