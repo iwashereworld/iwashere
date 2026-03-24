@@ -41,6 +41,14 @@
 - invoke the `capsule-dispatch` function
 - confirm the row becomes `sent` or `failed` with an error recorded
 
+## Voice Validation
+
+- apply `voice-storage.sql`
+- create an authenticated request to `voice-upload`
+- confirm a `voice_messages` row is created
+- upload a file to the returned storage path
+- confirm another user cannot read the file or metadata row
+
 ## After Release
 
 - monitor Supabase logs for policy denials

@@ -12,6 +12,9 @@ $supabasePoliciesPath = Join-Path $root 'supabase\policies.sql'
 $capsuleDeliveryPath = Join-Path $root 'supabase\capsule-delivery.sql'
 $capsuleDispatchReadmePath = Join-Path $root 'supabase\functions\capsule-dispatch\README.md'
 $capsuleDispatchIndexPath = Join-Path $root 'supabase\functions\capsule-dispatch\index.ts'
+$voiceStoragePath = Join-Path $root 'supabase\voice-storage.sql'
+$voiceUploadReadmePath = Join-Path $root 'supabase\functions\voice-upload\README.md'
+$voiceUploadIndexPath = Join-Path $root 'supabase\functions\voice-upload\index.ts'
 
 function Assert-Contains {
   param(
@@ -48,6 +51,9 @@ $supabasePolicies = Get-Content -Raw $supabasePoliciesPath
 $capsuleDelivery = Get-Content -Raw $capsuleDeliveryPath
 $capsuleDispatchReadme = Get-Content -Raw $capsuleDispatchReadmePath
 $capsuleDispatchIndex = Get-Content -Raw $capsuleDispatchIndexPath
+$voiceStorage = Get-Content -Raw $voiceStoragePath
+$voiceUploadReadme = Get-Content -Raw $voiceUploadReadmePath
+$voiceUploadIndex = Get-Content -Raw $voiceUploadIndexPath
 
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
 Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
@@ -69,5 +75,8 @@ Assert-Contains $supabasePolicies 'enable row level security' 'supabase/policies
 Assert-Contains $capsuleDelivery 'create table if not exists public.capsule_deliveries' 'supabase/capsule-delivery.sql must define capsule_deliveries.'
 Assert-Contains $capsuleDispatchReadme 'Capsule Dispatch Function' 'capsule-dispatch README must exist.'
 Assert-Contains $capsuleDispatchIndex 'Deno.serve' 'capsule-dispatch function must define a handler.'
+Assert-Contains $voiceStorage 'create table if not exists public.voice_messages' 'supabase/voice-storage.sql must define voice_messages.'
+Assert-Contains $voiceUploadReadme 'Voice Upload Function' 'voice-upload README must exist.'
+Assert-Contains $voiceUploadIndex 'Deno.serve' 'voice-upload function must define a handler.'
 
 Write-Output 'Smoke check passed.'
