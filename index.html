@@ -816,6 +816,10 @@ var _lastPinLodMode = '';
 var _searchResults = [];
 var _searchActiveIndex = -1;
 var PIN_MARKER_IMAGE = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="26" height="34" viewBox="0 0 26 34"><path d="M13 1.5C7.2 1.5 2.5 6.2 2.5 12c0 7.8 10.5 20.5 10.5 20.5S23.5 19.8 23.5 12C23.5 6.2 18.8 1.5 13 1.5Z" fill="#c8a96e" stroke="#020408" stroke-width="2"/><circle cx="13" cy="12" r="4.5" fill="#f7edd6" fill-opacity="0.92"/></svg>');
+var PIN_ALTITUDE = 18000;
+var CITY_LABEL_ALTITUDE = 32000;
+var COUNTRY_LABEL_ALTITUDE = 48000;
+var AGGREGATE_ALTITUDE = 26000;
 
 // Initialize CesiumJS
 async function initCesium() {
@@ -1047,13 +1051,12 @@ function addTemporaryMarker(lat, lon) {
   }
   
   tempMarker = viewer.entities.add({
-    position: Cesium.Cartesian3.fromDegrees(lon, lat, 0),
+    position: Cesium.Cartesian3.fromDegrees(lon, lat, PIN_ALTITUDE),
     point: {
       pixelSize: 14,
       color: Cesium.Color.fromCssColorString('#c8a96e'),
       outlineColor: Cesium.Color.WHITE,
-      outlineWidth: 2,
-      heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+      outlineWidth: 2
     }
   });
 }
@@ -1125,13 +1128,12 @@ function buildPinAggregates() {
     var lat = country ? country.lat : group.lat / group.count;
     var lon = country ? country.lon : group.lon / group.count;
     aggregateDataSource.entities.add({
-      position: Cesium.Cartesian3.fromDegrees(lon, lat, 0),
+      position: Cesium.Cartesian3.fromDegrees(lon, lat, AGGREGATE_ALTITUDE),
       point: {
         pixelSize: Math.min(30, 14 + Math.round(group.count / 3)),
         color: Cesium.Color.fromCssColorString('#c8a96e').withAlpha(0.9),
         outlineColor: Cesium.Color.fromCssColorString('#020408'),
-        outlineWidth: 2,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+        outlineWidth: 2
       },
       label: {
         text: group.cname + '\n' + group.count + ' marks',
@@ -1145,7 +1147,6 @@ function buildPinAggregates() {
         backgroundPadding: new Cesium.Cartesian2(10, 6),
         horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: Cesium.VerticalOrigin.CENTER,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
         scaleByDistance: new Cesium.NearFarScalar(3000000, 1.0, 26000000, 0.75)
       }
     });
@@ -1165,7 +1166,7 @@ function syncPinLOD() {
     pinDataSource.show = false;
     pinDataSource.clustering.enabled = false;
     aggregateDataSource.entities.values.forEach(function(entity) {
-      entity.show = isEntityOnVisibleHemisphere(entity, 0.14);
+      entity.show = isEntityOnVisibleHemisphere(entity, 0.3);
     });
     return;
   }
@@ -1174,7 +1175,7 @@ function syncPinLOD() {
   pinDataSource.show = true;
   pinDataSource.clustering.enabled = mode === 'cluster';
   pinDataSource.entities.values.forEach(function(entity) {
-    entity.show = isEntityOnVisibleHemisphere(entity, 0.1);
+    entity.show = isEntityOnVisibleHemisphere(entity, 0.22);
   });
 }
 
@@ -1213,7 +1214,7 @@ function ensureCountryLabels() {
   if (!viewer || countryLabelEntities.length) return;
   COUNTRIES.forEach(function(country) {
     var entity = viewer.entities.add({
-      position: Cesium.Cartesian3.fromDegrees(country.lon, country.lat, 0),
+      position: Cesium.Cartesian3.fromDegrees(country.lon, country.lat, COUNTRY_LABEL_ALTITUDE),
       label: {
         text: country.name,
         font: '18px DM Sans',
@@ -1223,7 +1224,6 @@ function ensureCountryLabels() {
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
         horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: Cesium.VerticalOrigin.CENTER,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
         showBackground: true,
         backgroundColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.26),
         backgroundPadding: new Cesium.Cartesian2(12, 6),
@@ -1239,7 +1239,7 @@ function ensureCityLabels() {
   if (!viewer || cityLabelEntities.length) return;
   CITIES.forEach(function(city) {
     var entity = viewer.entities.add({
-      position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat, 0),
+      position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat, CITY_LABEL_ALTITUDE),
       label: {
         text: city.name,
         font: '15px DM Sans',
@@ -1249,7 +1249,6 @@ function ensureCityLabels() {
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
         horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: Cesium.VerticalOrigin.CENTER,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
         showBackground: true,
         backgroundColor: Cesium.Color.fromCssColorString('#020408').withAlpha(0.36),
         backgroundPadding: new Cesium.Cartesian2(10, 5),
@@ -1268,8 +1267,8 @@ function syncLabelLayer() {
   var height = viewer.camera.positionCartographic ? viewer.camera.positionCartographic.height : 20000000;
   var showCountries = _showLabels && height <= 28000000;
   var showCities = _showLabels && height <= 7000000;
-  countryLabelEntities.forEach(function(entity) { entity.show = showCountries && isEntityOnVisibleHemisphere(entity, 0.24); });
-  cityLabelEntities.forEach(function(entity) { entity.show = showCities && isEntityOnVisibleHemisphere(entity, 0.28); });
+  countryLabelEntities.forEach(function(entity) { entity.show = showCountries && isEntityOnVisibleHemisphere(entity, 0.5); });
+  cityLabelEntities.forEach(function(entity) { entity.show = showCities && isEntityOnVisibleHemisphere(entity, 0.58); });
   var btn = document.getElementById('blbl');
   if (btn) btn.classList.toggle('on', _showLabels);
 }
@@ -1348,15 +1347,14 @@ function flyTo(lat, lon, height) {
 function addPinToGlobe(pin) {
   if (!pinDataSource) return null;
   var entity = pinDataSource.entities.add({
-    position: Cesium.Cartesian3.fromDegrees(pin.lon, pin.lat, 0),
+    position: Cesium.Cartesian3.fromDegrees(pin.lon, pin.lat, PIN_ALTITUDE),
     billboard: {
       image: PIN_MARKER_IMAGE,
       width: 18,
       height: 24,
       verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
       horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-      heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-      pixelOffset: new Cesium.Cartesian2(0, -10)
+      pixelOffset: new Cesium.Cartesian2(0, 0)
     },
     properties: pin
   });
