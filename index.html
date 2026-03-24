@@ -876,6 +876,7 @@ async function initCesium() {
     viewer.scene.globe.enableLighting = false;
     viewer.scene.globe.showGroundAtmosphere = true;
     viewer.scene.backgroundColor = Cesium.Color.fromCssColorString('#020408');
+    viewer.scene.globe.depthTestAgainstTerrain = true;
 
     // Handle click events for pin placement
     var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
@@ -1016,8 +1017,7 @@ function addTemporaryMarker(lat, lon) {
       pixelSize: 14,
       color: Cesium.Color.fromCssColorString('#c8a96e'),
       outlineColor: Cesium.Color.WHITE,
-      outlineWidth: 2,
-      disableDepthTestDistance: Number.POSITIVE_INFINITY
+      outlineWidth: 2
     }
   });
 }
@@ -1087,15 +1087,14 @@ function ensureCountryLabels() {
       label: {
         text: country.name,
         font: '15px DM Sans',
-        fillColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.92),
-        outlineColor: Cesium.Color.fromCssColorString('#020408'),
-        outlineWidth: 4,
+        fillColor: Cesium.Color.fromCssColorString('#05070c').withAlpha(0.96),
+        outlineColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.28),
+        outlineWidth: 2,
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
         horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: Cesium.VerticalOrigin.CENTER,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
         showBackground: true,
-        backgroundColor: Cesium.Color.fromCssColorString('#020408').withAlpha(0.28),
+        backgroundColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.16),
         backgroundPadding: new Cesium.Cartesian2(10, 5),
         scaleByDistance: new Cesium.NearFarScalar(2000000, 1.1, 22000000, 0.45),
         translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 26000000, 0.25)
@@ -1121,7 +1120,6 @@ function ensureCityLabels() {
         horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
         pixelOffset: new Cesium.Cartesian2(0, -6),
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
         showBackground: true,
         backgroundColor: Cesium.Color.fromCssColorString('#020408').withAlpha(0.18),
         backgroundPadding: new Cesium.Cartesian2(8, 4),
@@ -1157,7 +1155,7 @@ function addBorderHierarchyLines(entity, hierarchy) {
   entity.polyline = new Cesium.PolylineGraphics({
     positions: positions,
     width: 1.1,
-    material: Cesium.Color.fromCssColorString('#c8a96e').withAlpha(0.62),
+    material: Cesium.Color.fromCssColorString('#05070c').withAlpha(0.95),
     clampToGround: false
   });
 }
@@ -1223,8 +1221,7 @@ function addPinToGlobe(pin) {
       pixelSize: 10,
       color: Cesium.Color.fromCssColorString('#c8a96e'),
       outlineColor: Cesium.Color.fromCssColorString('#020408'),
-      outlineWidth: 2,
-      disableDepthTestDistance: Number.POSITIVE_INFINITY
+      outlineWidth: 2
     },
     properties: pin
   });
