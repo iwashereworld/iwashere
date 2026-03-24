@@ -229,9 +229,9 @@ input[type=file]{display:none;}
 <nav>
   <div class="logo">I Was <em>Here</em></div>
   <div style="display:flex;gap:10px;align-items:center">
-    <button class="nbtn" id="signin-btn" onclick="AUTH.user?showMarks():openAuth('login')">Sign in</button>
-    <button class="nbtn" id="signout-btn" onclick="signOut()" style="display:none">Sign out</button>
-    <button class="nbtn p" onclick="showGlobe()">Enter Globe</button>
+    <button class="nbtn" id="signin-btn" onclick="if(typeof AUTH!=='undefined'&&AUTH.user){showMarks();}else{openAuth('login');}">Sign in</button>
+    <button class="nbtn" id="signout-btn" onclick="if(typeof signOut!=='undefined')signOut();" style="display:none">Sign out</button>
+    <button class="nbtn p" onclick="if(typeof showGlobe!=='undefined')showGlobe();">Enter Globe</button>
   </div>
 </nav>
 <section id="hero">
@@ -291,23 +291,6 @@ input[type=file]{display:none;}
     <button onclick="declineCookies()" style="background:transparent;color:rgba(240,237,232,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Decline</button>
   </div>
 </div>
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-function initCookieBanner(){
-  if(!localStorage.getItem('iwh_cookie_consent')){
-    var b=document.getElementById('cookie-banner');
-    b.style.display='flex';
-  }
-}
-function acceptCookies(){
-  localStorage.setItem('iwh_cookie_consent','accepted');
-  document.getElementById('cookie-banner').style.display='none';
-}
-function declineCookies(){
-  localStorage.setItem('iwh_cookie_consent','declined');
-  document.getElementById('cookie-banner').style.display='none';
-}
-window.addEventListener('load', initCookieBanner);
-</script>
 </div>
 
 <!-- GLOBE APP -->
@@ -1681,4 +1664,28 @@ document.addEventListener('keydown', function(e) {
   
   if (e.key === '+' || e.key === '=') {
     viewer.camera.zoomIn(viewer.camera.positionCartographic.height * 0.3);
-  } 
+  }   } else if (e.key === '-' || e.key === '_') {
+    viewer.camera.zoomOut(viewer.camera.positionCartographic.height * 0.3);
+  }
+});
+</script>
+
+<script>
+function initCookieBanner(){
+  if(!localStorage.getItem('iwh_cookie_consent')){
+    var b=document.getElementById('cookie-banner');
+    if(b) b.style.display='flex';
+  }
+}
+function acceptCookies(){
+  localStorage.setItem('iwh_cookie_consent','accepted');
+  document.getElementById('cookie-banner').style.display='none';
+}
+function declineCookies(){
+  localStorage.setItem('iwh_cookie_consent','declined');
+  document.getElementById('cookie-banner').style.display='none';
+}
+window.addEventListener('load', initCookieBanner);
+</script>
+</body>
+</html>
