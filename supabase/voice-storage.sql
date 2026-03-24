@@ -49,6 +49,14 @@ for delete
 to authenticated
 using (auth.uid() = user_id);
 
+drop policy if exists "voice_messages_owner_update" on public.voice_messages;
+create policy "voice_messages_owner_update"
+on public.voice_messages
+for update
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
 drop policy if exists "voice_bucket_owner_read" on storage.objects;
 create policy "voice_bucket_owner_read"
 on storage.objects
