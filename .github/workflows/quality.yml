@@ -1,0 +1,23 @@
+name: Quality
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Smoke Check
+        shell: powershell
+        run: .\scripts\smoke-check.ps1
+
+      - name: Run Release Check
+        shell: powershell
+        run: .\scripts\release-check.ps1

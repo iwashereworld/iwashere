@@ -51,6 +51,14 @@ Run the lightweight repository check with:
 powershell -ExecutionPolicy Bypass -File .\scripts\smoke-check.ps1
 ```
 
+For a stricter release-oriented pass, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\release-check.ps1
+```
+
+GitHub Actions now runs both checks on pushes to `main` and on pull requests.
+
 ## Important Notes
 
 - Frontend depends on Supabase configuration and policies outside this repo.
