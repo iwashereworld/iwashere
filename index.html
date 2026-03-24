@@ -390,7 +390,7 @@ window.addEventListener('load', initCookieBanner);
         <div style="margin-top:10px;text-align:center;font-size:.72rem;color:var(--muted);">or <label style="color:var(--gold);cursor:pointer;text-decoration:underline;">upload audio file for preview<input type="file" accept="audio/*" onchange="hVoice(this)" style="display:none"></label></div>
         <div id="voice-file-name" style="display:none;text-align:center;font-size:.72rem;color:var(--gold);margin-top:6px;"></div>
       </div>
-      <button class="btn bp" onclick="goS(4)" style="margin-top:1rem;">Continue</button>
+      <button class="btn bp" id="btn3" onclick="proceedFromMessageStep()" style="margin-top:1rem;">Continue</button>
       <button class="btn bs" onclick="goS(2)">Back</button>
     </div>
     <!-- Step 4 -->
@@ -428,7 +428,7 @@ window.addEventListener('load', initCookieBanner);
       </div>
       <div style="text-align:center;margin-bottom:.5rem;"><span style="font-size:.72rem;color:var(--muted);">or</span></div>
       <div class="oc" id="tq0" onclick="setQuick(0,'tq0')" style="margin-bottom:1rem;">No Capsule (mark only)</div>
-      <button class="btn bp" onclick="bSmry();goS(5)">Review</button>
+      <button class="btn bp" id="btn4" onclick="proceedToReview()">Review</button>
       <button class="btn bs" onclick="goS(3)">Back</button>
     </div>
     <!-- Step 5 -->
@@ -436,7 +436,7 @@ window.addEventListener('load', initCookieBanner);
       <h3>Review & Place</h3>
       <p class="sub3">Review your mark before saving it.</p>
       <div class="pb" id="smry"></div>
-      <button class="btn bp" onclick="submit()">Place My Mark</button>
+      <button class="btn bp" id="btn-submit-mark" onclick="submit()">Place My Mark</button>
       <button class="btn bs" onclick="goS(4)">Back</button>
     </div>
     <!-- Step 6 (success) -->
@@ -960,6 +960,11 @@ function resetForm() {
   document.getElementById('loc-display').value = '';
   document.getElementById('csel').value = '';
   document.getElementById('imsg').value = '';
+  var submitBtn = document.getElementById('btn-submit-mark');
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Place My Mark';
+  }
   document.getElementById('btn1').disabled = true;
   document.getElementById('btn2').disabled = true;
   var preciseCoords = document.getElementById('precise-coords');
@@ -1114,11 +1119,47 @@ function sMT(t) {
   document.getElementById('voice-area').style.display = t === 'v' ? 'block' : 'none';
 }
 
+function proceedFromMessageStep() {
+  var message = document.getElementById('imsg').value.trim();
+
+  if (ST.msgType === 'w' && !message) {
+    showToast('Please add a message before continuing.');
+    return;
+  }
+
+  if (ST.msgType === 'v' && !message) {
+    showToast('Voice preview is not saved yet. Add a written message to continue.');
+    return;
+  }
+
+  goS(4);
+}
+
 function sRC(r) {
   ST.rc = r;
   document.getElementById('os').classList.toggle('on', r === 's');
   document.getElementById('oo').classList.toggle('on', r === 'o');
   document.getElementById('re').style.display = r === 'o' ? 'block' : 'none';
+}
+
+function proceedToReview() {
+  var recipientInput = document.getElementById('iem');
+  var recipientEmail = recipientInput ? recipientInput.value.trim() : '';
+
+  if (ST.rc === 'o') {
+    if (!recipientEmail) {
+      showToast('Please enter a recipient email before continuing.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+      showToast('Please enter a valid recipient email.');
+      return;
+    }
+  }
+
+  bSmry();
+  goS(5);
 }
 
 function setQuick(days, id) {
@@ -1218,11 +1259,17 @@ function sV(v) {
   document.getElementById('vprv').classList.toggle('on', v === 'prv');
 }
 
-function submit() {
+async function submit() {
   if (!AUTH.user || !AUTH.user.id) {
     showToast('Please sign in before placing a mark.');
     openAuth('login');
     return;
+  }
+
+  var submitBtn = document.getElementById('btn-submit-mark');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
   }
 
   var lat = ST.selLat || 0;
@@ -1242,9 +1289,18 @@ function submit() {
     owner: AUTH.user ? AUTH.user.email : null
   };
   
+  var saveResult = await saveMarkToDB(newPin);
+  if (!saveResult || saveResult.error) {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Place My Mark';
+    }
+    showToast('Could not save your mark. Please try again.');
+    return;
+  }
+
   ST.pins.unshift(newPin);
   window._lastPin = newPin;
-  saveMarkToDB(newPin);
   
   // Add pin to Cesium globe
   addPinToGlobe(newPin);
@@ -1280,6 +1336,10 @@ function submit() {
   }
   
   document.getElementById('btn-share-card').style.display = 'block';
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Place My Mark';
+  }
   
   // Hide click coords
   var clickCoords = document.getElementById('click-coords');
@@ -1292,7 +1352,7 @@ function saveMarkToDB(pin) {
   if (AUTH.user && AUTH.user.id) {
     var recipientInput = document.getElementById('iem');
     var recipientEmail = ST.rc === 'o' && recipientInput ? recipientInput.value.trim() : null;
-    _supabase.from('marks').insert({
+    return _supabase.from('marks').insert({
       user_id: AUTH.user.id,
       name: pin.name,
       country_code: pin.code,
@@ -1306,10 +1366,18 @@ function saveMarkToDB(pin) {
       capsule_for: ST.rc || 'myself',
       recipient_email: recipientEmail || null
     }).then(function(r) {
-      if (r.error) console.error('Save error:', r.error);
-      else { pin.owner = AUTH.user.id; }
+      if (r.error) {
+        console.error('Save error:', r.error);
+        return r;
+      }
+      pin.owner = AUTH.user.id;
+      return r;
+    }).catch(function(err) {
+      console.error('Save error:', err);
+      return { error: err };
     });
   }
+  return Promise.resolve({ error: new Error('Missing auth user') });
 }
 
 function loadMarks() {
