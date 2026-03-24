@@ -94,6 +94,118 @@ function getPinById(pinId) {
   return ST.pins.find(function(pin) { return pin && pin.id === pinId; }) || null;
 }
 
+function normalizeSearchText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+function parseCoordinateQuery(query) {
+  var match = String(query || '').trim().match(/^\s*(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)\s*$/);
+  if (!match) return null;
+  var lat = parseFloat(match[1]);
+  var lon = parseFloat(match[2]);
+  if (!isFinite(lat) || !isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+  return {
+    type: 'coords',
+    key: 'coords:' + lat.toFixed(4) + ',' + lon.toFixed(4),
+    name: 'Coordinates',
+    sub: lat.toFixed(4) + ', ' + lon.toFixed(4),
+    lat: lat,
+    lon: lon,
+    score: 1000
+  };
+}
+
+function scoreSearchTarget(query, primary, secondary) {
+  var q = normalizeSearchText(query);
+  var p = normalizeSearchText(primary);
+  var s = normalizeSearchText(secondary);
+  if (!q || !p) return -1;
+  if (p === q) return 120;
+  if (p.indexOf(q) === 0) return 90;
+  if (p.indexOf(q) > 0) return 70;
+  if (s && s.indexOf(q) === 0) return 56;
+  if (s && s.indexOf(q) > 0) return 42;
+  return -1;
+}
+
+function buildSearchResults(query) {
+  var q = String(query || '').trim();
+  if (q.length < 2) return [];
+
+  var results = [];
+  var seen = {};
+  var coordMatch = parseCoordinateQuery(q);
+  if (coordMatch) {
+    seen[coordMatch.key] = true;
+    results.push(coordMatch);
+  }
+
+  CITIES.forEach(function(city) {
+    var score = scoreSearchTarget(q, city.name, city.country);
+    if (score < 0) return;
+    var key = 'city:' + city.name + ':' + city.country;
+    if (seen[key]) return;
+    seen[key] = true;
+    results.push({
+      type: 'city',
+      key: key,
+      name: city.name,
+      sub: city.country,
+      lat: city.lat,
+      lon: city.lon,
+      score: score
+    });
+  });
+
+  COUNTRIES.forEach(function(country) {
+    var score = scoreSearchTarget(q, country.name, country.code);
+    if (score < 0) return;
+    var key = 'country:' + country.code;
+    if (seen[key]) return;
+    seen[key] = true;
+    results.push({
+      type: 'country',
+      key: key,
+      name: country.name,
+      sub: 'Country',
+      lat: country.lat,
+      lon: country.lon,
+      code: country.code,
+      score: score
+    });
+  });
+
+  ST.pins.forEach(function(pin) {
+    var score = Math.max(
+      scoreSearchTarget(q, pin.cname, pin.name),
+      scoreSearchTarget(q, pin.name, pin.cname)
+    );
+    if (score < 0) return;
+    var key = 'pin:' + pin.id;
+    if (seen[key]) return;
+    seen[key] = true;
+    results.push({
+      type: 'pin',
+      key: key,
+      name: pin.cname,
+      sub: 'Mark by ' + pin.name,
+      lat: pin.lat,
+      lon: pin.lon,
+      pinId: pin.id,
+      score: score + 4
+    });
+  });
+
+  return results.sort(function(a, b) {
+    if (b.score !== a.score) return b.score - a.score;
+    return a.name.localeCompare(b.name);
+  }).slice(0, 8);
+}
+
 function positionTooltip(el, x, y) {
   if (!el) return;
   var width = el.offsetWidth || 240;

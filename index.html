@@ -463,7 +463,7 @@ window.addEventListener('load', initCookieBanner);
 <div id="globe-container"><div id="cesiumContainer"></div></div>
 <div id="srch">
   <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:rgba(240,237,232,.35);fill:none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
-  <input type="text" id="si" placeholder="Search country or city..." autocomplete="off">
+  <input type="text" id="si" placeholder="Search city, country, mark, or coordinates..." autocomplete="off">
   <div id="sres"></div>
 </div>
 <div id="zoom-level">Zoom: <span id="zoom-val">--</span> | Altitude: <span id="alt-val">--</span></div>
@@ -805,6 +805,8 @@ var _showBorders = false;
 var bingImagery = null;
 var osmImagery = null;
 var borderDataSource = null;
+var _searchResults = [];
+var _searchActiveIndex = -1;
 
 // Initialize CesiumJS
 async function initCesium() {
@@ -1191,59 +1193,45 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Search functionality
-  var searchInput = document.getElementById('si');
-  var searchResults = document.getElementById('sres');
-  
-  if (searchInput) {
-    searchInput.addEventListener('input', function() {
-      var q = this.value.toLowerCase().trim();
-      if (q.length < 2) {
-        searchResults.style.display = 'none';
-        return;
-      }
-      
-      var results = [];
-      
-      // Search cities
-      CITIES.forEach(function(c) {
-        if (c.name.toLowerCase().includes(q) || c.country.toLowerCase().includes(q)) {
-          results.push({ type: 'city', name: c.name, sub: c.country, lat: c.lat, lon: c.lon });
-        }
-      });
-      
-      // Search countries
-      COUNTRIES.forEach(function(c) {
-        if (c.name.toLowerCase().includes(q)) {
-          results.push({ type: 'country', name: c.name, sub: '', lat: c.lat, lon: c.lon, code: c.code });
-        }
-      });
-      
-      if (results.length === 0) {
-        searchResults.style.display = 'none';
-        return;
-      }
-      
-      clearChildren(searchResults);
-      results.slice(0, 8).forEach(function(r) {
-        var item = document.createElement('div');
-        item.className = 'sri';
-        item.onclick = function() { searchSelect(r.lat, r.lon, r.code || '', r.name); };
-        item.appendChild(document.createTextNode(r.name));
-        if (r.sub) {
-          var sub = document.createElement('span');
-          sub.textContent = r.sub;
-          item.appendChild(sub);
-        }
-        searchResults.appendChild(item);
-      });
-      searchResults.style.display = 'block';
-    });
+    // Search functionality
+    var searchInput = document.getElementById('si');
+    var searchResults = document.getElementById('sres');
     
-    searchInput.addEventListener('blur', function() {
-      setTimeout(function() { searchResults.style.display = 'none'; }, 200);
-    });
-  }
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        _searchResults = buildSearchResults(this.value);
+        _searchActiveIndex = _searchResults.length ? 0 : -1;
+        renderSearchResults();
+      });
+      
+      searchInput.addEventListener('keydown', function(e) {
+        if (!searchResults || searchResults.style.display !== 'block') return;
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (_searchResults.length) {
+            _searchActiveIndex = (_searchActiveIndex + 1 + _searchResults.length) % _searchResults.length;
+            renderSearchResults();
+          }
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (_searchResults.length) {
+            _searchActiveIndex = (_searchActiveIndex - 1 + _searchResults.length) % _searchResults.length;
+            renderSearchResults();
+          }
+        } else if (e.key === 'Enter') {
+          if (_searchActiveIndex >= 0 && _searchResults[_searchActiveIndex]) {
+            e.preventDefault();
+            searchSelect(_searchResults[_searchActiveIndex]);
+          }
+        } else if (e.key === 'Escape') {
+          searchResults.style.display = 'none';
+        }
+      });
+
+      searchInput.addEventListener('blur', function() {
+        setTimeout(function() { searchResults.style.display = 'none'; }, 200);
+      });
+    }
   
   // Init landing globe
   initBgGlobe();
@@ -1252,17 +1240,60 @@ document.addEventListener('DOMContentLoaded', function() {
   loadStats();
 });
 
-function searchSelect(lat, lon, code, name) {
-  document.getElementById('si').value = name;
+function renderSearchResults() {
+  var searchResults = document.getElementById('sres');
+  if (!searchResults) return;
+
+  clearChildren(searchResults);
+  if (!_searchResults.length) {
+    searchResults.style.display = 'none';
+    return;
+  }
+
+  _searchResults.forEach(function(r, index) {
+    var item = document.createElement('div');
+    item.className = 'sri';
+    if (index === _searchActiveIndex) {
+      item.style.background = 'rgba(200,169,110,.1)';
+      item.style.color = '#c8a96e';
+    }
+    item.onmouseenter = function() {
+      _searchActiveIndex = index;
+      renderSearchResults();
+    };
+    item.onclick = function() { searchSelect(r); };
+    item.appendChild(document.createTextNode(r.name));
+    if (r.sub) {
+      var sub = document.createElement('span');
+      sub.textContent = r.sub;
+      item.appendChild(sub);
+    }
+    searchResults.appendChild(item);
+  });
+  searchResults.style.display = 'block';
+}
+
+function searchSelect(resultOrLat, lon, code, name) {
+  var result = typeof resultOrLat === 'object'
+    ? resultOrLat
+    : { lat: resultOrLat, lon: lon, code: code || '', name: name || '' };
+  document.getElementById('si').value = result.name || '';
   document.getElementById('sres').style.display = 'none';
+  _searchResults = [];
+  _searchActiveIndex = -1;
   
   // Fly to location with appropriate zoom
-  var height = code ? 2000000 : 500000; // Country vs city
-  flyTo(lat, lon, height);
+  var height = result.code ? 2000000 : (result.type === 'coords' ? 250000 : 500000);
+  flyTo(result.lat, result.lon, height);
   
   // If sidebar is open, also set the location
   if (!document.getElementById('sb').classList.contains('hidden')) {
-    handleGlobeClick(lat, lon);
+    handleGlobeClick(result.lat, result.lon);
+  }
+
+  if (result.pinId) {
+    var pin = getPinById(result.pinId);
+    if (pin) showPinTooltip(pin, window.innerWidth / 2, 130);
   }
 }
 
