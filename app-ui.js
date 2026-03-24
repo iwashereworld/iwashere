@@ -319,14 +319,23 @@ function closeAuth() {
 }
 
 function switchTab(tab) {
-  var isL = tab === 'login';
-  document.getElementById('tab-l').classList.toggle('on', isL);
-  document.getElementById('tab-r').classList.toggle('on', !isL);
-  document.getElementById('atitle').textContent = isL ? 'Welcome back' : 'Create account';
-  document.getElementById('asub').textContent = isL ? 'Sign in to manage your marks.' : 'Join thousands leaving their mark.';
-  document.getElementById('auth-btn').textContent = isL ? 'Sign in' : 'Create account';
-  document.getElementById('name-f').style.display = isL ? 'none' : 'block';
-  document.getElementById('terms-check').style.display = isL ? 'none' : 'block';
+  var isLogin = tab === 'login';
+  var isRegister = tab === 'register';
+  var isForgot = tab === 'forgot';
+  document.getElementById('tab-l').classList.toggle('on', isLogin);
+  document.getElementById('tab-r').classList.toggle('on', isRegister);
+  document.getElementById('atitle').textContent = isLogin ? 'Welcome back' : (isRegister ? 'Create account' : 'Reset password');
+  document.getElementById('asub').textContent = isLogin
+    ? 'Sign in to manage your marks.'
+    : (isRegister ? 'Join thousands leaving their mark.' : 'Enter your email and we will send a reset link.');
+  document.getElementById('auth-btn').textContent = isLogin ? 'Sign in' : (isRegister ? 'Create account' : 'Send reset link');
+  document.getElementById('name-f').style.display = isRegister ? 'block' : 'none';
+  document.getElementById('terms-check').style.display = isRegister ? 'block' : 'none';
+  document.getElementById('password-field').style.display = isForgot ? 'none' : 'block';
+  document.getElementById('forgot-link-row').style.display = isLogin ? 'flex' : 'none';
+  document.getElementById('back-to-login-row').style.display = isForgot ? 'flex' : 'none';
+  document.getElementById('tab-l').style.display = isForgot ? 'none' : 'block';
+  document.getElementById('tab-r').style.display = isForgot ? 'none' : 'block';
   document.getElementById('auth-modal').dataset.tab = tab;
 }
 
@@ -342,32 +351,42 @@ function submitAuth() {
     showToast('Please accept the Terms of Service and Privacy Policy.');
     return;
   }
-  if (!email || !pw) {
+  if (!email || (tab !== 'forgot' && !pw)) {
     btn.style.animation = 'shake .4s';
     setTimeout(function() { btn.style.animation = ''; }, 400);
     return;
   }
   btn.textContent = '...';
   btn.disabled = true;
-  var promise = tab === 'register'
-    ? _supabase.auth.signUp({ email: email, password: pw, options: { data: { name: name } } })
-    : _supabase.auth.signInWithPassword({ email: email, password: pw });
+  var promise;
+  if (tab === 'register') {
+    promise = _supabase.auth.signUp({ email: email, password: pw, options: { data: { name: name } } });
+  } else if (tab === 'forgot') {
+    promise = _supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+  } else {
+    promise = _supabase.auth.signInWithPassword({ email: email, password: pw });
+  }
   promise.then(function(result) {
-    btn.textContent = tab === 'login' ? 'Sign in' : 'Create account';
+    btn.textContent = tab === 'login' ? 'Sign in' : (tab === 'register' ? 'Create account' : 'Send reset link');
     btn.disabled = false;
     if (result.error) {
       showToast(result.error.message || 'Error. Please try again.', 'error');
       var pwEl = document.getElementById('apw');
-      if (pwEl) {
+      if (pwEl && tab !== 'forgot') {
         pwEl.style.borderColor = 'rgba(220,60,60,.6)';
         setTimeout(function() { pwEl.style.borderColor = ''; }, 1500);
       }
       return;
     }
+    if (tab === 'forgot') {
+      showToast('Password reset link sent. Check your email.', 'success');
+      switchTab('login');
+      return;
+    }
     showToast(tab === 'register' ? 'Account created! You can now sign in.' : 'Welcome back!', 'success');
     closeAuth();
   }).catch(function(err) {
-    btn.textContent = tab === 'login' ? 'Sign in' : 'Create account';
+    btn.textContent = tab === 'login' ? 'Sign in' : (tab === 'register' ? 'Create account' : 'Send reset link');
     btn.disabled = false;
     showToast(err.message || 'Error. Please try again.', 'error');
   });

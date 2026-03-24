@@ -33,10 +33,11 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;o
 .cesium-widget-credits{display:none !important;}
 .cesium-viewer .cesium-widget-credits{display:none !important;}
 
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:.85rem 2.5rem;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(2,4,8,.85) 0%,transparent 100%);}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:.85rem 2.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:linear-gradient(to bottom,rgba(2,4,8,.85) 0%,transparent 100%);}
 .logo{font-family:'Cormorant Garamond',serif;font-size:1.35rem;letter-spacing:.06em;color:var(--gold);}
 .logo em{font-style:italic;color:var(--text);}
 .logo-btn{background:transparent;border:none;padding:0;cursor:pointer;text-align:left;}
+.nav-actions,.header-actions{display:flex;gap:10px;align-items:center;}
 .nbtn{background:transparent;border:1px solid rgba(200,169,110,.4);border-radius:24px;padding:8px 20px;font-size:.78rem;color:var(--gold);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
 .nbtn:hover{background:rgba(200,169,110,.12);}
 .nbtn.p{background:var(--gold);color:#020408;border-color:var(--gold);}
@@ -185,6 +186,10 @@ select option{background:#0e1624;}
 .afield{margin-bottom:1rem;}
 .afield label{font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);display:block;margin-bottom:.35rem;}
 .afield input{margin-bottom:0;}
+.auth-link-row{display:flex;justify-content:flex-end;margin:-.25rem 0 1rem;}
+.auth-link-row.center{justify-content:center;margin-top:1rem;margin-bottom:0;}
+.auth-link{background:none;border:none;color:var(--gold);font-size:.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;}
+.auth-link:hover{text-decoration:underline;}
 .abtn{width:100%;padding:12px;background:var(--gold);color:#020408;border:none;border-radius:10px;font-size:.88rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:.5rem;}
 .abtn:hover{background:var(--gold2);}
 .aclose{position:absolute;top:1rem;right:1rem;background:transparent;border:none;color:rgba(240,237,232,.4);font-size:1.2rem;cursor:pointer;}
@@ -238,6 +243,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 }
 @media (max-width: 900px){
   nav,footer{padding:1rem 1.25rem;}
+  nav{align-items:flex-start;}
   #globe-app header{padding:.85rem 1rem;gap:.75rem;flex-wrap:wrap;align-items:flex-start;}
   .ghs{gap:1rem;order:3;width:100%;justify-content:flex-start;}
   #srch{top:118px;width:min(92vw,420px);}
@@ -251,9 +257,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   .mbox,.abox{margin:.75rem;}
 }
 @media (max-width: 640px){
-  nav{padding:.85rem 1rem;gap:.75rem;flex-wrap:wrap;}
-  nav > div:last-child{width:100%;display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:.5rem;}
-  .nbtn{padding:9px 12px;}
+  nav{padding:.85rem 1rem 1rem;gap:.85rem;flex-wrap:wrap;align-items:stretch;background:rgba(2,4,8,.92);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.05);}
+  .logo{font-size:1.2rem;}
+  .nav-actions,.header-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem;}
+  .nav-actions .nbtn.p,.header-actions .nbtn.p{grid-column:1 / -1;}
+  .nbtn{padding:10px 12px;min-height:42px;}
+  #globe-app header{padding:.9rem 1rem 1rem;background:rgba(2,4,8,.94);}
+  .ghs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.55rem;width:100%;}
+  .ghs > div{padding:.55rem .4rem;border:1px solid rgba(255,255,255,.06);border-radius:10px;background:rgba(255,255,255,.02);}
   .h1{font-size:clamp(2.8rem,14vw,4.8rem);}
   .hs2{max-width:unset;}
   .hst{gap:1.25rem;bottom:1.5rem;width:100%;padding:0 1rem;justify-content:space-between;}
@@ -283,7 +294,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <div id="overlay"></div>
 <nav>
   <div class="logo">I Was <em>Here</em></div>
-  <div style="display:flex;gap:10px;align-items:center">
+  <div class="nav-actions">
     <button class="nbtn" id="signin-btn" onclick="AUTH.user?showMarks():openAuth('login')">Sign in</button>
     <button class="nbtn" id="signout-btn" onclick="signOut()" style="display:none">Sign out</button>
     <button class="nbtn p" onclick="showGlobe()">Open Globe</button>
@@ -371,7 +382,7 @@ window.addEventListener('load', initCookieBanner);
 <header>
   <button type="button" class="logo logo-btn" onclick="goLanding()" aria-label="Return to landing page">I Was <em>Here</em></button>
   <div class="ghs"><div><strong id="sp">0</strong>marks</div><div><strong id="sc2">0</strong>countries</div><div><strong id="sk2">0</strong>capsules</div></div>
-  <div style="display:flex;gap:10px;align-items:center">
+  <div class="header-actions">
     <button class="nbtn" id="signin-btn2" onclick="AUTH.user?showMarks():openAuth('login')">Sign in</button>
   </div>
 </header>
@@ -545,9 +556,11 @@ window.addEventListener('load', initCookieBanner);
 
     <div class="afield" id="name-f" style="display:none"><label>Full Name</label><input type="text" id="aname" placeholder="Your name"></div>
     <div class="afield"><label>Email</label><input type="email" id="aemail" placeholder="your@email.com"></div>
-    <div class="afield"><label>Password</label><input type="password" id="apw" placeholder="********"></div>
+    <div class="afield" id="password-field"><label>Password</label><input type="password" id="apw" placeholder="********"></div>
+    <div class="auth-link-row" id="forgot-link-row"><button class="auth-link" type="button" onclick="switchTab('forgot')">Forgot password?</button></div>
     <div id="terms-check" style="display:none;margin-bottom:1rem;"><label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:.76rem;color:rgba(240,237,232,.6);line-height:1.5;"><input type="checkbox" id="terms-agree" style="margin-top:2px;accent-color:#c8a96e;cursor:pointer;flex-shrink:0;"> I agree to the <a href="/terms.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Terms of Service</a> and <a href="/privacy-policy.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Privacy Policy</a></label></div>
     <button class="abtn" id="auth-btn" onclick="submitAuth()">Sign in</button>
+    <div class="auth-link-row center" id="back-to-login-row" style="display:none;"><button class="auth-link" type="button" onclick="switchTab('login')">Back to sign in</button></div>
   </div>
 </div>
 
