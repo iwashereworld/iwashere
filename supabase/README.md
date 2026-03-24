@@ -7,7 +7,9 @@ the current frontend toward a production-ready Supabase setup.
 
 - `schema.sql`: recommended `marks` table shape and constraints
 - `policies.sql`: row-level security policies for read/write boundaries
+- `capsule-delivery.sql`: queue table and trigger for future capsule delivery jobs
 - `rollout-checklist.md`: safe rollout order for production
+- `functions/capsule-dispatch/`: Edge Function scaffold for due capsule sends
 
 ## Intent
 

@@ -33,6 +33,14 @@
 - `No Capsule` does not send `recipient_email`
 - `My Marks` still shows only the current user's marks
 
+## Delivery Validation
+
+- create a capsule mark for `other`
+- confirm a `capsule_deliveries` row is created
+- move `scheduled_for` to the current time in staging
+- invoke the `capsule-dispatch` function
+- confirm the row becomes `sent` or `failed` with an error recorded
+
 ## After Release
 
 - monitor Supabase logs for policy denials

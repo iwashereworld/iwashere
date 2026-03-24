@@ -5,6 +5,7 @@ $indexPath = Join-Path $root 'index.html'
 $readmePath = Join-Path $root 'README.md'
 $smokePath = Join-Path $PSScriptRoot 'smoke-check.ps1'
 $rolloutChecklistPath = Join-Path $root 'supabase\rollout-checklist.md'
+$capsuleDispatchReadmePath = Join-Path $root 'supabase\functions\capsule-dispatch\README.md'
 
 function Assert-Contains {
   param(
@@ -35,6 +36,7 @@ function Assert-NotContains {
 $index = Get-Content -Raw $indexPath
 $readme = Get-Content -Raw $readmePath
 $rolloutChecklist = Get-Content -Raw $rolloutChecklistPath
+$capsuleDispatchReadme = Get-Content -Raw $capsuleDispatchReadmePath
 
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
 Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
@@ -44,5 +46,6 @@ Assert-NotContains $index 'function openAuth(tab)' 'Auth helpers should not rema
 Assert-NotContains $index 'function showToast(msg, tone)' 'Toast helper should not remain inline in index.html.'
 Assert-Contains $readme 'Production rollout artifacts for Supabase now live in `supabase/`.' 'README.md must mention Supabase rollout artifacts.'
 Assert-Contains $rolloutChecklist 'RLS Validation' 'Supabase rollout checklist must contain RLS validation.'
+Assert-Contains $capsuleDispatchReadme 'Required Secrets' 'capsule-dispatch README must document required secrets.'
 
 Write-Output 'Release check passed.'
