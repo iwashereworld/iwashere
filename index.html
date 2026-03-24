@@ -613,12 +613,16 @@ async function initCesium() {
   try {
     var cesiumEl = document.getElementById('cesiumContainer');
     var globeEl = document.getElementById('globe-container');
-    console.log('[IWH] initCesium start', {
-      hasCesiumEl: !!cesiumEl,
-      hasGlobeEl: !!globeEl,
-      cesiumSize: cesiumEl ? { width: cesiumEl.clientWidth, height: cesiumEl.clientHeight } : null,
-      globeDisplay: globeEl ? globeEl.style.display : null
-    });
+    console.log(
+      '[IWH] initCesium start',
+      'hasCesiumEl=' + !!cesiumEl,
+      'hasGlobeEl=' + !!globeEl,
+      'cesiumWidth=' + (cesiumEl ? cesiumEl.clientWidth : 'null'),
+      'cesiumHeight=' + (cesiumEl ? cesiumEl.clientHeight : 'null'),
+      'globeWidth=' + (globeEl ? globeEl.clientWidth : 'null'),
+      'globeHeight=' + (globeEl ? globeEl.clientHeight : 'null'),
+      'globeDisplay=' + (globeEl ? globeEl.style.display : 'null')
+    );
 
     // Use Cesium Ion default token (free tier - 5000 sessions/month)
     // For production, get your own token at https://cesium.com/ion/tokens
@@ -934,17 +938,21 @@ async function showGlobe() {
   document.getElementById('landing').style.display = 'none';
   document.getElementById('globe-app').style.display = 'block';
   document.getElementById('globe-container').style.display = 'block';
-  console.log('[IWH] showGlobe visibility', {
-    landing: document.getElementById('landing').style.display,
-    globeApp: document.getElementById('globe-app').style.display,
-    globeContainer: document.getElementById('globe-container').style.display,
-    containerSize: {
-      width: document.getElementById('cesiumContainer').clientWidth,
-      height: document.getElementById('cesiumContainer').clientHeight
-    }
-  });
+  console.log(
+    '[IWH] showGlobe visibility',
+    'landing=' + document.getElementById('landing').style.display,
+    'globeApp=' + document.getElementById('globe-app').style.display,
+    'globeContainer=' + document.getElementById('globe-container').style.display,
+    'containerWidth=' + document.getElementById('cesiumContainer').clientWidth,
+    'containerHeight=' + document.getElementById('cesiumContainer').clientHeight
+  );
   
   if (!viewer) {
+    await new Promise(function(resolve) {
+      requestAnimationFrame(function() {
+        requestAnimationFrame(resolve);
+      });
+    });
     await initCesium();
   }
 
