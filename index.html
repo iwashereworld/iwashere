@@ -679,11 +679,13 @@ window.addEventListener('load', initCookieBanner);
 
 <!-- SHARE MODAL -->
 <div id="share-modal" onclick="closeShareModal()" role="dialog" aria-modal="true" aria-labelledby="share-name">
-  <div style="background:linear-gradient(135deg,#0a1628 0%,#0d1f3c 50%,#0a1628 100%);border:1px solid rgba(200,169,110,.3);border-radius:20px;padding:2rem;width:320px;text-align:center;position:relative;" onclick="event.stopPropagation()">
+  <div style="background:linear-gradient(135deg,#0a1628 0%,#0d1f3c 50%,#0a1628 100%);border:1px solid rgba(200,169,110,.3);border-radius:20px;padding:2rem;width:360px;max-width:calc(100vw - 24px);text-align:center;position:relative;" onclick="event.stopPropagation()">
     <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.8rem;">I WAS HERE</div>
     <div id="share-avatar" style="width:64px;height:64px;border-radius:50%;background:rgba(200,169,110,.1);border:2px solid var(--gold);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;overflow:hidden;"></div>
+    <div id="share-headline" style="font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,232,.56);margin-bottom:.35rem;"></div>
     <div id="share-name" style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;margin-bottom:.3rem;"></div>
     <div id="share-country" style="font-size:.8rem;color:var(--muted);"></div>
+    <div id="share-coords" style="font-size:.72rem;color:rgba(240,237,232,.48);margin-top:.4rem;"></div>
     <div id="share-msg" style="font-size:.82rem;font-style:italic;color:rgba(240,237,232,.7);margin:1rem 0;line-height:1.6;"></div>
     <div id="share-date" style="font-size:.7rem;color:var(--gold);"></div>
     <div style="margin-top:1.2rem;display:flex;gap:8px;justify-content:center;">
@@ -985,17 +987,6 @@ function addTemporaryMarker(lat, lon) {
       color: Cesium.Color.fromCssColorString('#c8a96e'),
       outlineColor: Cesium.Color.WHITE,
       outlineWidth: 2,
-      disableDepthTestDistance: Number.POSITIVE_INFINITY
-    },
-    label: {
-      text: 'Your Mark',
-      font: '12px DM Sans',
-      fillColor: Cesium.Color.WHITE,
-      outlineColor: Cesium.Color.BLACK,
-      outlineWidth: 2,
-      style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-      verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-      pixelOffset: new Cesium.Cartesian2(0, -15),
       disableDepthTestDistance: Number.POSITIVE_INFINITY
     }
   });
@@ -1479,10 +1470,27 @@ function populateDrop() {
 }
 
 function doShr() {
+  var pin = window._sharePin || window._lastPin;
+  if (!pin) {
+    showToast('Choose a mark to share first.', 'error');
+    return;
+  }
+
+  var title = 'I Was Here in ' + pin.cname;
+  var text = pin.name + ' left a mark in ' + pin.cname + ' on I Was Here.';
+  if (pin.msg) text += ' "' + pin.msg + '"';
+  var url = 'https://iwashere-seven.vercel.app/';
+
   if (navigator.share) {
-    navigator.share({ title: 'I Was Here', text: ST.name + ' left a mark.', url: 'https://iwashereworld.com' });
+    navigator.share({ title: title, text: text, url: url }).catch(function() {});
+  } else if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(title + '\n' + text + '\n' + url).then(function() {
+      showToast('Share text copied to clipboard.', 'success');
+    }).catch(function() {
+      showToast(url);
+    });
   } else {
-    showToast('Share: iwashereworld.com');
+    showToast(url);
   }
 }
 

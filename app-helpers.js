@@ -410,6 +410,7 @@ function showMarks() {
 
 function showShareCard(pin) {
   if (!pin) return;
+  window._sharePin = pin;
   var avatar = document.getElementById('share-avatar');
   clearChildren(avatar);
   if (safeImageUrl(pin.photo)) {
@@ -422,11 +423,13 @@ function showShareCard(pin) {
     var initial = document.createElement('span');
     initial.style.cssText = 'font-size:24px;color:#c8a96e';
     initial.textContent = String(pin.name || '').trim().charAt(0).toUpperCase() || '?';
-    avatar.appendChild(initial);
-  }
+      avatar.appendChild(initial);
+    }
+  document.getElementById('share-headline').textContent = 'Share this mark';
   document.getElementById('share-name').textContent = pin.name;
-  document.getElementById('share-country').textContent = pin.cname;
-  document.getElementById('share-msg').textContent = pin.msg ? '"' + pin.msg + '"' : '';
+  document.getElementById('share-country').textContent = 'I Was Here in ' + pin.cname;
+  document.getElementById('share-coords').textContent = pin.lat.toFixed(2) + ', ' + pin.lon.toFixed(2);
+  document.getElementById('share-msg').textContent = pin.msg ? '"' + pin.msg + '"' : 'A new mark on the globe.';
   document.getElementById('share-date').textContent = new Date(pin.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   if (typeof openShareModal === 'function') {
     openShareModal();
