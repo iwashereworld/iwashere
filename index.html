@@ -130,6 +130,10 @@ footer a{color:var(--muted);text-decoration:none;}
 .ghs strong{display:block;font-size:.95rem;font-weight:400;color:var(--gold);font-family:'Cormorant Garamond',serif;}
 #tt{position:fixed;background:var(--surface);border:1px solid rgba(200,169,110,.28);border-radius:12px;padding:12px 16px;pointer-events:none;display:none;z-index:200;min-width:220px;max-width:260px;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,.4);}
 #tt.show{display:block;}
+.map-label-layer{position:fixed;inset:0;pointer-events:none;z-index:85;overflow:hidden;}
+.map-label{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;border-radius:6px;padding:2px 8px;font-family:'DM Sans',sans-serif;font-weight:500;line-height:1;letter-spacing:.01em;backdrop-filter:blur(6px);}
+.map-label.country{font-size:14px;color:#05070c;background:rgba(240,237,232,.58);border:1px solid rgba(255,255,255,.28);}
+.map-label.city{font-size:12px;color:#c8a96e;background:rgba(2,4,8,.58);border:1px solid rgba(200,169,110,.22);}
 .tav{width:36px;height:36px;border-radius:50%;background:rgba(200,169,110,.1);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--gold);margin-bottom:8px;overflow:hidden;}
 .tav img{width:100%;height:100%;object-fit:cover;}
 .tn2{font-size:.86rem;font-weight:500;}.tc2{font-size:.7rem;color:var(--muted);margin-top:1px;}
@@ -461,6 +465,7 @@ window.addEventListener('load', initCookieBanner);
   </div>
 </header>
 <div id="globe-container"><div id="cesiumContainer"></div></div>
+<div id="map-label-layer" class="map-label-layer"></div>
 <div id="srch">
   <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:rgba(240,237,232,.35);fill:none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
   <input type="text" id="si" placeholder="Search city, country, mark, or coordinates..." autocomplete="off">
@@ -811,6 +816,8 @@ var osmImagery = null;
 var borderDataSource = null;
 var countryLabelEntities = [];
 var cityLabelEntities = [];
+var countryLabelNodes = [];
+var cityLabelNodes = [];
 var pinAggregateDirty = true;
 var _lastPinLodMode = '';
 var _searchResults = [];
@@ -1107,6 +1114,98 @@ function isEntityOnVisibleHemisphere(entity, threshold) {
   return Cesium.Cartesian3.dot(normal, toCamera) > (threshold == null ? 0.08 : threshold);
 }
 
+function isPositionOnVisibleHemisphere(position, threshold) {
+  if (!viewer || !position) return false;
+  var normal = viewer.scene.globe.ellipsoid.geodeticSurfaceNormal(position, new Cesium.Cartesian3());
+  var toCamera = Cesium.Cartesian3.normalize(
+    Cesium.Cartesian3.subtract(viewer.camera.positionWC, position, new Cesium.Cartesian3()),
+    new Cesium.Cartesian3()
+  );
+  return Cesium.Cartesian3.dot(normal, toCamera) > (threshold == null ? 0.08 : threshold);
+}
+
+function getMapLabelLayer() {
+  return document.getElementById('map-label-layer');
+}
+
+function clearLabelNodes(list) {
+  list.forEach(function(item) {
+    if (item && item.el && item.el.parentNode) item.el.parentNode.removeChild(item.el);
+  });
+  list.length = 0;
+}
+
+function createMapLabelNode(text, className, position) {
+  var layer = getMapLabelLayer();
+  if (!layer || !position || !text) return null;
+  var el = document.createElement('div');
+  el.className = 'map-label ' + className;
+  el.textContent = text;
+  layer.appendChild(el);
+  return { el: el, position: position };
+}
+
+function projectMapLabelNodes(list, visible, threshold) {
+  list.forEach(function(item) {
+    if (!item || !item.el) return;
+    if (!visible || !isPositionOnVisibleHemisphere(item.position, threshold)) {
+      item.el.style.display = 'none';
+      return;
+    }
+    var windowPos = Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, item.position);
+    if (!windowPos || windowPos.x < -80 || windowPos.y < -40 || windowPos.x > window.innerWidth + 80 || windowPos.y > window.innerHeight + 40) {
+      item.el.style.display = 'none';
+      return;
+    }
+    item.el.style.display = 'block';
+    item.el.style.left = windowPos.x + 'px';
+    item.el.style.top = windowPos.y + 'px';
+  });
+}
+
+function getCountryFeatureName(entity) {
+  if (!entity || !entity.properties) return '';
+  var keys = ['ADMIN', 'name', 'NAME', 'COUNTRY', 'formal_en'];
+  for (var i = 0; i < keys.length; i++) {
+    var prop = entity.properties[keys[i]];
+    if (prop && typeof prop.getValue === 'function') {
+      var value = prop.getValue(Cesium.JulianDate.now());
+      if (value) return String(value);
+    }
+  }
+  return '';
+}
+
+function rebuildCountryLabelNodes() {
+  clearLabelNodes(countryLabelNodes);
+  if (!viewer || !borderDataSource || !borderDataSource.entities) return;
+  var seen = {};
+  borderDataSource.entities.values.forEach(function(entity) {
+    var name = getCountryFeatureName(entity);
+    if (!name || seen[name]) return;
+    var polyline = entity.polyline && entity.polyline.positions && entity.polyline.positions.getValue ? entity.polyline.positions.getValue(Cesium.JulianDate.now()) : null;
+    if (!polyline || !polyline.length) return;
+    var sphere = Cesium.BoundingSphere.fromPoints(polyline);
+    var cartographic = Cesium.Cartographic.fromCartesian(sphere.center);
+    if (!cartographic) return;
+    var position = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, COUNTRY_LABEL_ALTITUDE);
+    var node = createMapLabelNode(name, 'country', position);
+    if (node) {
+      countryLabelNodes.push(node);
+      seen[name] = true;
+    }
+  });
+}
+
+function rebuildCityLabelNodes() {
+  clearLabelNodes(cityLabelNodes);
+  CITIES.forEach(function(city) {
+    var position = Cesium.Cartesian3.fromDegrees(city.lon, city.lat, CITY_LABEL_ALTITUDE);
+    var node = createMapLabelNode(city.name, 'city', position);
+    if (node) cityLabelNodes.push(node);
+  });
+}
+
 function buildPinAggregates() {
   if (!aggregateDataSource) return;
   aggregateDataSource.entities.removeAll();
@@ -1211,53 +1310,13 @@ async function tglImagery() {
 }
 
 function ensureCountryLabels() {
-  if (!viewer || countryLabelEntities.length) return;
-  COUNTRIES.forEach(function(country) {
-    var entity = viewer.entities.add({
-      position: Cesium.Cartesian3.fromDegrees(country.lon, country.lat, COUNTRY_LABEL_ALTITUDE),
-      label: {
-        text: country.name,
-        font: '18px DM Sans',
-        fillColor: Cesium.Color.fromCssColorString('#05070c').withAlpha(0.96),
-        outlineColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.7),
-        outlineWidth: 3,
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-        verticalOrigin: Cesium.VerticalOrigin.CENTER,
-        showBackground: true,
-        backgroundColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.26),
-        backgroundPadding: new Cesium.Cartesian2(12, 6),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 22000000)
-      }
-    });
-    entity.iwhOverlayType = 'country-label';
-    countryLabelEntities.push(entity);
-  });
+  if (!viewer) return;
+  if (!countryLabelNodes.length && borderDataSource) rebuildCountryLabelNodes();
 }
 
 function ensureCityLabels() {
-  if (!viewer || cityLabelEntities.length) return;
-  CITIES.forEach(function(city) {
-    var entity = viewer.entities.add({
-      position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat, CITY_LABEL_ALTITUDE),
-      label: {
-        text: city.name,
-        font: '15px DM Sans',
-        fillColor: Cesium.Color.fromCssColorString('#c8a96e'),
-        outlineColor: Cesium.Color.fromCssColorString('#020408').withAlpha(0.95),
-        outlineWidth: 4,
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-        verticalOrigin: Cesium.VerticalOrigin.CENTER,
-        showBackground: true,
-        backgroundColor: Cesium.Color.fromCssColorString('#020408').withAlpha(0.36),
-        backgroundPadding: new Cesium.Cartesian2(10, 5),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 14000000)
-      }
-    });
-    entity.iwhOverlayType = 'city-label';
-    cityLabelEntities.push(entity);
-  });
+  if (!viewer) return;
+  if (!cityLabelNodes.length) rebuildCityLabelNodes();
 }
 
 function syncLabelLayer() {
@@ -1267,8 +1326,8 @@ function syncLabelLayer() {
   var height = viewer.camera.positionCartographic ? viewer.camera.positionCartographic.height : 20000000;
   var showCountries = _showLabels && height <= 28000000;
   var showCities = _showLabels && height <= 7000000;
-  countryLabelEntities.forEach(function(entity) { entity.show = showCountries && isEntityOnVisibleHemisphere(entity, 0.5); });
-  cityLabelEntities.forEach(function(entity) { entity.show = showCities && isEntityOnVisibleHemisphere(entity, 0.58); });
+  projectMapLabelNodes(countryLabelNodes, showCountries, 0.5);
+  projectMapLabelNodes(cityLabelNodes, showCities, 0.58);
   var btn = document.getElementById('blbl');
   if (btn) btn.classList.toggle('on', _showLabels);
 }
@@ -1322,6 +1381,8 @@ function syncBorderLayer() {
     convertBordersToPolylines(dataSource);
     borderDataSource = dataSource;
     viewer.dataSources.add(dataSource);
+    rebuildCountryLabelNodes();
+    syncLabelLayer();
   }).catch(function(err) {
     console.error('[IWH] border layer load failed:', err);
     _showBorders = false;
