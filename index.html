@@ -125,6 +125,9 @@ footer a{color:var(--muted);text-decoration:none;}
 .step{display:none;}.step.active{display:block;animation:fu .3s ease;}
 h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;margin-bottom:.3rem;}
 .sub3{font-size:.75rem;color:var(--muted);margin-bottom:1.3rem;line-height:1.65;}
+.soft-note{font-size:.72rem;color:var(--muted);line-height:1.6;margin:-.45rem 0 .9rem;}
+.note-box{background:rgba(18,26,42,.75);border:1px solid rgba(200,169,110,.16);border-radius:10px;padding:.7rem .8rem;font-size:.72rem;line-height:1.6;color:var(--muted);margin:.8rem 0;}
+.section-hidden{display:none !important;}
 .fl{font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.3rem;display:block;}
 input[type=text],input[type=email],input[type=password],textarea,select{width:100%;background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;transition:border-color .2s;margin-bottom:.9rem;}
 input:focus,textarea:focus,select:focus{border-color:rgba(200,169,110,.45);}
@@ -407,10 +410,11 @@ window.addEventListener('load', initCookieBanner);
       <label class="fl">Display Name</label>
       <input type="text" id="iname" placeholder="Your name">
       <label class="fl">Photo (optional)</label>
+      <div class="soft-note">You can skip this. Photos are only used on your mark card after you save.</div>
       <div class="pu" onclick="document.getElementById('iph').click()" role="button" tabindex="0" aria-label="Add photo"><span>+ Add photo</span></div>
       <img class="pp" id="prev">
       <input type="file" id="iph" accept="image/*" onchange="hPh(this)">
-      <button class="btn bp" onclick="goS(2)" id="btn1" disabled>Continue</button>
+      <button class="btn bp" onclick="goS(2)" id="btn1" disabled>Continue to Location</button>
     </div>
     <!-- Step 2 -->
     <div class="step" id="step2">
@@ -424,22 +428,23 @@ window.addEventListener('load', initCookieBanner);
         <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px;">Exact Coordinates</div>
         <div style="font-size:.9rem;color:var(--gold);font-family:'Cormorant Garamond',serif;" id="exact-coords-display">--</div>
       </div>
-      <button class="btn bp" onclick="goS(3)" id="btn2" disabled>Continue</button>
+      <button class="btn bp" onclick="goS(3)" id="btn2" disabled>Continue to Message</button>
       <button class="btn bs" onclick="goS(1)">Back</button>
     </div>
     <!-- Step 3 -->
     <div class="step" id="step3">
       <h3>Your Message</h3>
-      <p class="sub3">What do you want to say? Voice is currently preview-only on this device.</p>
+      <p class="sub3">Write the message that will be saved with your mark. Voice stays preview-only for now.</p>
       <div class="g2">
         <div class="oc on" id="ow" onclick="sMT('w')" role="button" tabindex="0" aria-pressed="true"><span class="ic"></span>Write</div>
         <div class="oc" id="ov" onclick="sMT('v')" role="button" tabindex="0" aria-pressed="false"><span class="ic"></span>Voice</div>
       </div>
       <div id="written-area">
         <label class="fl">Message</label>
-        <textarea id="imsg" placeholder="I was here..."></textarea>
+        <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..."></textarea>
       </div>
       <div id="voice-area" style="display:none;">
+        <div class="note-box">Voice recordings are kept for local preview on this device only. Add a written message if you want to save this mark today.</div>
         <div style="background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
           <button type="button" id="rec-btn" onclick="toggleRecord()" aria-label="Start or stop voice preview recording" style="width:48px;height:48px;border-radius:50%;background:rgba(200,169,110,.15);border:2px solid #c8a96e;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;cursor:pointer;font-size:18px;color:#c8a96e;transition:all .2s;">&#9679;</button>
           <div id="rec-status" style="font-size:.78rem;color:var(--muted);">Ready to record locally</div>
@@ -450,19 +455,22 @@ window.addEventListener('load', initCookieBanner);
         <div style="margin-top:10px;text-align:center;font-size:.72rem;color:var(--muted);">or <label style="color:var(--gold);cursor:pointer;text-decoration:underline;">upload audio file for preview<input type="file" accept="audio/*" onchange="hVoice(this)" style="display:none"></label></div>
         <div id="voice-file-name" style="display:none;text-align:center;font-size:.72rem;color:var(--gold);margin-top:6px;"></div>
       </div>
-      <button class="btn bp" id="btn3" onclick="proceedFromMessageStep()" style="margin-top:1rem;">Continue</button>
+      <button class="btn bp" id="btn3" onclick="proceedFromMessageStep()" style="margin-top:1rem;">Continue to Capsule</button>
       <button class="btn bs" onclick="goS(2)">Back</button>
     </div>
     <!-- Step 4 -->
     <div class="step" id="step4">
-      <h3>Time Capsule</h3>
-      <p class="sub3">When should your message be revealed?</p>
+      <h3>Capsule Options</h3>
+      <p class="sub3">Skip this if you only want a public mark right now.</p>
+      <div class="note-box" id="capsule-note">Recipient email is only needed when you send a future capsule to someone else.</div>
+      <div id="recipient-block">
       <label class="fl">Recipient</label>
       <div class="g2">
         <div class="oc on" id="os" onclick="sRC('s')" role="button" tabindex="0" aria-pressed="true">Myself</div>
         <div class="oc a2" id="oo" onclick="sRC('o')" role="button" tabindex="0" aria-pressed="false">Someone Else</div>
       </div>
       <div id="re" style="display:none;"><label class="fl">Recipient Email</label><input type="email" id="iem" placeholder="their@email.com"></div>
+      </div>
       <label class="fl">Opens in</label>
       <div class="g3">
         <div class="oc" id="tq7" onclick="setQuick(7,'tq7')" role="button" tabindex="0" aria-pressed="false">1 Week</div>
@@ -487,16 +495,16 @@ window.addEventListener('load', initCookieBanner);
         <div id="opens-date-text" style="font-size:.9rem;color:var(--gold);margin-top:2px;font-family:'Cormorant Garamond',serif;">In 1 year - ...</div>
       </div>
       <div style="text-align:center;margin-bottom:.5rem;"><span style="font-size:.72rem;color:var(--muted);">or</span></div>
-      <div class="oc" id="tq0" onclick="setQuick(0,'tq0')" role="button" tabindex="0" aria-pressed="false" style="margin-bottom:1rem;">No Capsule (mark only)</div>
-      <button class="btn bp" id="btn4" onclick="proceedToReview()">Review</button>
+      <div class="oc" id="tq0" onclick="setQuick(0,'tq0')" role="button" tabindex="0" aria-pressed="false" style="margin-bottom:1rem;">No Capsule (public mark only)</div>
+      <button class="btn bp" id="btn4" onclick="proceedToReview()">Continue to Review</button>
       <button class="btn bs" onclick="goS(3)">Back</button>
     </div>
     <!-- Step 5 -->
     <div class="step" id="step5">
       <h3>Review & Place</h3>
-      <p class="sub3">Review your mark before saving it.</p>
+      <p class="sub3">Review your mark before saving it to the globe.</p>
       <div class="pb" id="smry"></div>
-      <button class="btn bp" id="btn-submit-mark" onclick="submit()">Place My Mark</button>
+      <button class="btn bp" id="btn-submit-mark" onclick="submit()">Save My Mark</button>
       <button class="btn bs" onclick="goS(4)">Back</button>
     </div>
     <!-- Step 6 (success) -->
@@ -1045,7 +1053,7 @@ function resetForm() {
   var submitBtn = document.getElementById('btn-submit-mark');
   if (submitBtn) {
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Place My Mark';
+    submitBtn.textContent = 'Save My Mark';
   }
   document.getElementById('btn1').disabled = true;
   document.getElementById('btn2').disabled = true;
@@ -1057,6 +1065,7 @@ function resetForm() {
     viewer.entities.remove(tempMarker);
     tempMarker = null;
   }
+  updateCapsuleUI();
   goS(1);
   revealStartHint();
 }
@@ -1119,6 +1128,7 @@ function hPh(inp) {
 document.addEventListener('DOMContentLoaded', function() {
   updateStepMeta(1);
   revealStartHint();
+  updateCapsuleUI();
   var nameInput = document.getElementById('iname');
   if (nameInput) {
     nameInput.addEventListener('input', function() {
@@ -1258,7 +1268,7 @@ function proceedToReview() {
   var recipientInput = document.getElementById('iem');
   var recipientEmail = recipientInput ? recipientInput.value.trim() : '';
 
-  if (ST.rc === 'o') {
+  if (ST.capsuleDays > 0 && ST.rc === 'o') {
     if (!recipientEmail) {
       showToast('Please enter a recipient email before continuing.');
       return;
@@ -1272,6 +1282,18 @@ function proceedToReview() {
 
   bSmry();
   goS(5);
+}
+
+function updateCapsuleUI() {
+  var hasCapsule = ST.capsuleDays > 0;
+  var recipientBlock = document.getElementById('recipient-block');
+  var note = document.getElementById('capsule-note');
+  var preview = document.getElementById('opens-preview');
+  if (recipientBlock) recipientBlock.classList.toggle('section-hidden', !hasCapsule);
+  if (note) note.textContent = hasCapsule
+    ? 'Recipient email is only needed when you send a future capsule to someone else.'
+    : 'No capsule selected. This will be saved as a public mark right away.';
+  if (preview) preview.classList.toggle('section-hidden', !hasCapsule);
 }
 
 function setQuick(days, id) {
@@ -1296,6 +1318,7 @@ function setQuick(days, id) {
   if (cda) cda.style.display = 'none';
   
   updateOpensPreview();
+  updateCapsuleUI();
 }
 
 function toggleCustomDate() {
@@ -1314,6 +1337,7 @@ function toggleCustomDate() {
   
   var cda = document.getElementById('custom-date-area');
   if (cda) cda.style.display = 'block';
+  updateCapsuleUI();
   
   var cd = document.getElementById('capsule-date');
   if (cd) {
@@ -1417,7 +1441,7 @@ async function submit() {
   if (!saveResult || saveResult.error) {
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Place My Mark';
+      submitBtn.textContent = 'Save My Mark';
     }
     showToast('Could not save your mark. Please try again.', 'error');
     return;
@@ -1462,7 +1486,7 @@ async function submit() {
   document.getElementById('btn-share-card').style.display = 'block';
   if (submitBtn) {
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Place My Mark';
+    submitBtn.textContent = 'Save My Mark';
   }
   
   // Hide click coords
@@ -1486,9 +1510,9 @@ function saveMarkToDB(pin) {
       message: pin.msg,
       photo: pin.photo,
       capsule_days: ST.capsuleDays || 0,
-      capsule_date: ST.capsuleDate || null,
-      capsule_for: ST.rc || 'myself',
-      recipient_email: recipientEmail || null
+      capsule_date: ST.capsuleDays > 0 ? (ST.capsuleDate || null) : null,
+      capsule_for: ST.capsuleDays > 0 ? (ST.rc || 'myself') : 'myself',
+      recipient_email: ST.capsuleDays > 0 ? (recipientEmail || null) : null
     }).then(function(r) {
       if (r.error) {
         console.error('Save error:', r.error);
