@@ -45,7 +45,9 @@ supabase functions deploy voice-upload
 - confirm a row exists for the recipient-targeted capsule
 - set `scheduled_for` to the current time in staging
 - invoke the `capsule-dispatch` function
-- confirm the row becomes `sent` or `failed`
+- if email secrets are configured, confirm the row becomes `sent` or `failed`
+- if email secrets are not configured yet, confirm the function returns `503`
+  without mutating queued jobs
 
 ## 6. Verify Voice Upload Prep
 

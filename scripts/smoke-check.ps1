@@ -22,6 +22,7 @@ $capsuleDispatchIndexPath = Join-Path $root 'supabase\functions\capsule-dispatch
 $voiceStoragePath = Join-Path $root 'supabase\voice-storage.sql'
 $voiceUploadReadmePath = Join-Path $root 'supabase\functions\voice-upload\README.md'
 $voiceUploadIndexPath = Join-Path $root 'supabase\functions\voice-upload\index.ts'
+$capsuleReadinessPath = Join-Path $root 'scripts\capsule-readiness.ps1'
 
 function Assert-Contains {
   param(
@@ -68,6 +69,7 @@ $capsuleDispatchIndex = Get-Content -Raw $capsuleDispatchIndexPath
 $voiceStorage = Get-Content -Raw $voiceStoragePath
 $voiceUploadReadme = Get-Content -Raw $voiceUploadReadmePath
 $voiceUploadIndex = Get-Content -Raw $voiceUploadIndexPath
+$capsuleReadiness = Get-Content -Raw $capsuleReadinessPath
 
 Assert-Contains $index '<script src="/api/runtime-config.js"></script>' 'index.html must load the runtime config endpoint.'
 Assert-Contains $index '<script src="app-config.js"></script>' 'index.html must load app-config.js.'
@@ -105,9 +107,11 @@ Assert-Contains $supabaseVercelEnvMap 'Vercel / Supabase Env Map' 'supabase/verc
 Assert-Contains $capsuleDelivery 'create table if not exists public.capsule_deliveries' 'supabase/capsule-delivery.sql must define capsule_deliveries.'
 Assert-Contains $capsuleDispatchReadme 'Capsule Dispatch Function' 'capsule-dispatch README must exist.'
 Assert-Contains $capsuleDispatchIndex 'Deno.serve' 'capsule-dispatch function must define a handler.'
+Assert-Contains $capsuleDispatchIndex 'Email delivery configuration is incomplete.' 'capsule-dispatch must guard against missing email configuration.'
 Assert-Contains $voiceStorage 'create table if not exists public.voice_messages' 'supabase/voice-storage.sql must define voice_messages.'
 Assert-Contains $voiceStorage 'create policy "voice_messages_owner_update"' 'supabase/voice-storage.sql must allow owner update.'
 Assert-Contains $voiceUploadReadme 'Voice Upload Function' 'voice-upload README must exist.'
 Assert-Contains $voiceUploadIndex 'Deno.serve' 'voice-upload function must define a handler.'
+Assert-Contains $capsuleReadiness 'Capsule readiness incomplete.' 'scripts/capsule-readiness.ps1 must validate delivery secrets.'
 
 Write-Output 'Smoke check passed.'

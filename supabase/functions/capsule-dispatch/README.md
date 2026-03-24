@@ -34,3 +34,6 @@ Recommended options:
 
 Use service role credentials only inside the function runtime. Never expose them
 to the frontend.
+
+If email delivery secrets are missing, the function should return `503` without
+mutating queued jobs.

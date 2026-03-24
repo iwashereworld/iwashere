@@ -13,6 +13,7 @@ $stagingRunbookPath = Join-Path $root 'supabase\staging-runbook.md'
 $vercelEnvMapPath = Join-Path $root 'supabase\vercel-env-map.md'
 $capsuleDispatchReadmePath = Join-Path $root 'supabase\functions\capsule-dispatch\README.md'
 $voiceUploadReadmePath = Join-Path $root 'supabase\functions\voice-upload\README.md'
+$capsuleReadinessPath = Join-Path $root 'scripts\capsule-readiness.ps1'
 
 function Assert-Contains {
   param(
@@ -51,6 +52,7 @@ $stagingRunbook = Get-Content -Raw $stagingRunbookPath
 $vercelEnvMap = Get-Content -Raw $vercelEnvMapPath
 $capsuleDispatchReadme = Get-Content -Raw $capsuleDispatchReadmePath
 $voiceUploadReadme = Get-Content -Raw $voiceUploadReadmePath
+$capsuleReadiness = Get-Content -Raw $capsuleReadinessPath
 
 Assert-Contains $index '<script src="/api/runtime-config.js"></script>' 'index.html must load the runtime config endpoint.'
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
@@ -73,5 +75,6 @@ Assert-Contains $vercelEnvMap 'Safe Rollout Rule' 'vercel env map must define a 
 Assert-Contains $supabaseConfig 'verify_jwt = false' 'supabase/config.toml must keep voice-upload on internal auth verification.'
 Assert-Contains $capsuleDispatchReadme 'Required Secrets' 'capsule-dispatch README must document required secrets.'
 Assert-Contains $voiceUploadReadme 'Expected Request' 'voice-upload README must document expected request.'
+Assert-Contains $capsuleReadiness 'Missing secrets' 'capsule readiness script must report missing secrets clearly.'
 
 Write-Output 'Release check passed.'

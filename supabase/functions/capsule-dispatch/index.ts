@@ -15,10 +15,6 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 });
 
 async function sendEmail(job: Record<string, unknown>) {
-  if (!resendApiKey || !fromEmail || !publicAppUrl) {
-    throw new Error("Missing email delivery configuration.");
-  }
-
   const recipient = String(job.recipient_email ?? "");
   const payload = (job.payload ?? {}) as Record<string, unknown>;
   const countryName = String(payload.country_name ?? "Unknown location");
@@ -52,6 +48,20 @@ async function sendEmail(job: Record<string, unknown>) {
 }
 
 Deno.serve(async () => {
+  if (!resendApiKey || !fromEmail || !publicAppUrl) {
+    return new Response(JSON.stringify({
+      error: "Email delivery configuration is incomplete.",
+      missing: {
+        RESEND_API_KEY: !resendApiKey,
+        DELIVERY_FROM_EMAIL: !fromEmail,
+        PUBLIC_APP_URL: !publicAppUrl,
+      },
+    }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const now = new Date().toISOString();
 
   const { data: jobs, error } = await supabase
