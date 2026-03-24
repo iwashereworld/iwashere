@@ -1150,6 +1150,30 @@ function tglLabels() {
   syncLabelLayer();
 }
 
+function addBorderHierarchyLines(entity, hierarchy) {
+  if (!entity || !hierarchy || !hierarchy.positions || !hierarchy.positions.length) return;
+  var positions = hierarchy.positions.slice();
+  if (positions.length > 2) positions.push(positions[0]);
+  entity.polyline = new Cesium.PolylineGraphics({
+    positions: positions,
+    width: 1.1,
+    material: Cesium.Color.fromCssColorString('#c8a96e').withAlpha(0.62),
+    clampToGround: false
+  });
+}
+
+function convertBordersToPolylines(dataSource) {
+  if (!dataSource || !dataSource.entities || !dataSource.entities.values) return;
+  var entities = dataSource.entities.values;
+  var now = Cesium.JulianDate.now();
+  entities.forEach(function(entity) {
+    if (!entity || !entity.polygon || !entity.polygon.hierarchy) return;
+    var hierarchy = entity.polygon.hierarchy.getValue(now);
+    entity.polygon = undefined;
+    addBorderHierarchyLines(entity, hierarchy);
+  });
+}
+
 function syncBorderLayer() {
   var btn = document.getElementById('bbrd');
   if (btn) btn.classList.toggle('on', _showBorders);
@@ -1162,10 +1186,12 @@ function syncBorderLayer() {
   }
   if (borderDataSource || !viewer) return;
   Cesium.GeoJsonDataSource.load('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson', {
-    stroke: Cesium.Color.fromCssColorString('#c8a96e').withAlpha(0.62),
+    stroke: Cesium.Color.fromCssColorString('#c8a96e').withAlpha(0.0),
     fill: Cesium.Color.TRANSPARENT,
-    strokeWidth: 1
+    strokeWidth: 1,
+    clampToGround: false
   }).then(function(dataSource) {
+    convertBordersToPolylines(dataSource);
     borderDataSource = dataSource;
     viewer.dataSources.add(dataSource);
   }).catch(function(err) {
