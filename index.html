@@ -1237,6 +1237,35 @@ function rebuildCountryLabelNodes() {
       seen[name] = true;
     }
   });
+
+  if (!borderDataSource || !borderDataSource.entities) return;
+  borderDataSource.entities.values.forEach(function(entity) {
+    var featureName = getCountryFeatureName(entity);
+    if (!featureName) return;
+    var canonical = COUNTRY_NAME_ALIASES[featureName] || featureName;
+    if (seen[canonical] || seen[featureName]) return;
+
+    var polyline = entity.polyline && entity.polyline.positions && entity.polyline.positions.getValue
+      ? entity.polyline.positions.getValue(Cesium.JulianDate.now())
+      : null;
+    if (!polyline || !polyline.length) return;
+
+    var sphere = Cesium.BoundingSphere.fromPoints(polyline);
+    var cartographic = Cesium.Cartographic.fromCartesian(sphere.center);
+    if (!cartographic) return;
+
+    var fallbackPosition = Cesium.Cartesian3.fromRadians(
+      cartographic.longitude,
+      cartographic.latitude,
+      COUNTRY_LABEL_ALTITUDE
+    );
+    var fallbackNode = createMapLabelNode(featureName, 'country', fallbackPosition);
+    if (fallbackNode) {
+      countryLabelNodes.push(fallbackNode);
+      seen[canonical] = true;
+      seen[featureName] = true;
+    }
+  });
 }
 
 function rebuildCityLabelNodes() {
