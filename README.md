@@ -56,10 +56,11 @@ powershell -ExecutionPolicy Bypass -File .\scripts\smoke-check.ps1
 - Frontend depends on Supabase configuration and policies outside this repo.
 - Cesium token is fetched from a Supabase Edge Function.
 - Data access rules must be enforced in Supabase, not only in the frontend.
+- Production rollout artifacts for Supabase now live in `supabase/`.
 
 ## Priority Areas
 
-1. Tighten Supabase RLS and data model boundaries
+1. Apply and verify the Supabase schema/RLS package in staging, then production
 2. Reduce remaining frontend coupling in `index.html`
-3. Add basic test/check workflow
-4. Continue aligning product copy with implemented behavior
+3. Add stronger automated checks beyond the current smoke test
+4. Build real backend delivery flows for capsules, notifications, and media

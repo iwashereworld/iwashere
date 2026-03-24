@@ -1,4 +1,16 @@
 var MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id';
+var MAX_NAME_LENGTH = 80;
+var MAX_MESSAGE_LENGTH = 500;
+var MAX_RECIPIENT_EMAIL_LENGTH = 254;
+var MAX_PHOTO_BYTES = 3 * 1024 * 1024;
+
+function clampText(value, maxLength) {
+  return String(value == null ? '' : value).trim().slice(0, maxLength);
+}
+
+function normalizeEmail(value) {
+  return String(value == null ? '' : value).trim().toLowerCase().slice(0, MAX_RECIPIENT_EMAIL_LENGTH);
+}
 
 function normalizeMarkRecord(m) {
   if (!m) return null;
@@ -9,12 +21,12 @@ function normalizeMarkRecord(m) {
 
   return {
     id: m.id,
-    name: m.name || 'Unknown',
+    name: clampText(m.name || 'Unknown', MAX_NAME_LENGTH) || 'Unknown',
     code: m.country_code || '',
     cname: m.country_name || 'Unknown',
     lat: lat,
     lon: lon,
-    msg: m.message || '',
+    msg: clampText(m.message || '', MAX_MESSAGE_LENGTH),
     years: Math.round((m.capsule_days || 0) / 365),
     capsule_days: m.capsule_days || 0,
     photo: safeImageUrl(m.photo),

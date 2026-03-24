@@ -411,7 +411,7 @@ window.addEventListener('load', initCookieBanner);
       <h3>Your Details</h3>
       <p class="sub3">Choose a name that will stand for eternity.</p>
       <label class="fl">Display Name</label>
-      <input type="text" id="iname" placeholder="Your name">
+      <input type="text" id="iname" placeholder="Your name" maxlength="80">
       <label class="fl">Photo (optional)</label>
       <div class="soft-note">You can skip this. Photos are only used on your mark card after you save.</div>
       <div class="pu" onclick="document.getElementById('iph').click()" role="button" tabindex="0" aria-label="Add photo"><span>+ Add photo</span></div>
@@ -444,7 +444,7 @@ window.addEventListener('load', initCookieBanner);
       </div>
       <div id="written-area">
         <label class="fl">Message</label>
-        <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..."></textarea>
+        <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..." maxlength="500"></textarea>
       </div>
       <div id="voice-area" style="display:none;">
         <div class="note-box">Voice recordings are kept for local preview on this device only. Add a written message if you want to save this mark today.</div>
@@ -472,7 +472,7 @@ window.addEventListener('load', initCookieBanner);
         <div class="oc on" id="os" onclick="sRC('s')" role="button" tabindex="0" aria-pressed="true">Myself</div>
         <div class="oc a2" id="oo" onclick="sRC('o')" role="button" tabindex="0" aria-pressed="false">Someone Else</div>
       </div>
-      <div id="re" style="display:none;"><label class="fl">Recipient Email</label><input type="email" id="iem" placeholder="their@email.com"></div>
+      <div id="re" style="display:none;"><label class="fl">Recipient Email</label><input type="email" id="iem" placeholder="their@email.com" maxlength="254"></div>
       </div>
       <label class="fl">Opens in</label>
       <div class="g3">
@@ -1116,6 +1116,11 @@ function goS(n) {
 // Handle photo
 function hPh(inp) {
   var f = inp.files[0]; if (!f) return;
+  if (f.size > MAX_PHOTO_BYTES) {
+    inp.value = '';
+    showToast('Photo must be smaller than 3 MB.', 'error');
+    return;
+  }
   var reader = new FileReader();
   reader.onload = function(e) {
     ST.photo = e.target.result;
@@ -1135,7 +1140,8 @@ document.addEventListener('DOMContentLoaded', function() {
   var nameInput = document.getElementById('iname');
   if (nameInput) {
     nameInput.addEventListener('input', function() {
-      ST.name = this.value.trim();
+      ST.name = clampText(this.value, MAX_NAME_LENGTH);
+      this.value = ST.name;
       document.getElementById('btn1').disabled = ST.name.length < 2;
     });
   }
@@ -1243,7 +1249,9 @@ function sMT(t) {
 }
 
 function proceedFromMessageStep() {
-  var message = document.getElementById('imsg').value.trim();
+  var messageInput = document.getElementById('imsg');
+  var message = clampText(messageInput.value, MAX_MESSAGE_LENGTH);
+  messageInput.value = message;
 
   if (ST.msgType === 'w' && !message) {
     showToast('Please add a message before continuing.');
@@ -1269,7 +1277,8 @@ function sRC(r) {
 
 function proceedToReview() {
   var recipientInput = document.getElementById('iem');
-  var recipientEmail = recipientInput ? recipientInput.value.trim() : '';
+  var recipientEmail = recipientInput ? normalizeEmail(recipientInput.value) : '';
+  if (recipientInput) recipientInput.value = recipientEmail;
 
   if (ST.capsuleDays > 0 && ST.rc === 'o') {
     if (!recipientEmail) {
@@ -1428,12 +1437,12 @@ async function submit() {
   
   var newPin = {
     id: Date.now(),
-    name: ST.name,
+    name: clampText(ST.name, MAX_NAME_LENGTH),
     code: ST.selCode,
     cname: ST.selName,
     lat: lat,
     lon: lon,
-    msg: document.getElementById('imsg').value || 'I was here.',
+    msg: clampText(document.getElementById('imsg').value || 'I was here.', MAX_MESSAGE_LENGTH),
     years: ST.yr,
     photo: ST.photo,
     added: new Date().toISOString(),
@@ -1502,15 +1511,15 @@ async function submit() {
 function saveMarkToDB(pin) {
   if (AUTH.user && AUTH.user.id) {
     var recipientInput = document.getElementById('iem');
-    var recipientEmail = ST.rc === 'o' && recipientInput ? recipientInput.value.trim() : null;
+    var recipientEmail = ST.rc === 'o' && recipientInput ? normalizeEmail(recipientInput.value) : null;
     return _supabase.from('marks').insert({
       user_id: AUTH.user.id,
-      name: pin.name,
+      name: clampText(pin.name, MAX_NAME_LENGTH),
       country_code: pin.code,
       country_name: pin.cname,
       lat: pin.lat,
       lon: pin.lon,
-      message: pin.msg,
+      message: clampText(pin.msg, MAX_MESSAGE_LENGTH),
       photo: pin.photo,
       capsule_days: ST.capsuleDays || 0,
       capsule_date: ST.capsuleDays > 0 ? (ST.capsuleDate || null) : null,
