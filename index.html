@@ -706,6 +706,7 @@ window.addEventListener('load', initCookieBanner);
     <div id="share-coords" style="font-size:.72rem;color:rgba(240,237,232,.48);margin-top:.4rem;"></div>
     <div id="share-msg" style="font-size:.82rem;font-style:italic;color:rgba(240,237,232,.7);margin:1rem 0;line-height:1.6;"></div>
     <div id="share-date" style="font-size:.7rem;color:var(--gold);"></div>
+    <button id="share-delete-btn" onclick="deleteSharedMark(event)" style="display:none;margin:1rem auto 0;background:rgba(220,90,90,.08);border:1px solid rgba(220,90,90,.28);color:#ffb0b0;border-radius:20px;padding:8px 20px;font-size:.76rem;cursor:pointer;">Delete</button>
     <div style="margin-top:1.2rem;display:flex;gap:8px;justify-content:center;">
       <button onclick="doShr()" style="background:var(--gold);color:#020408;border:none;border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;">Share</button>
       <button onclick="closeShareModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;">Close</button>
@@ -836,9 +837,25 @@ var _searchResults = [];
 var _searchActiveIndex = -1;
 var PIN_MARKER_IMAGE = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="26" height="34" viewBox="0 0 26 34"><path d="M13 1.5C7.2 1.5 2.5 6.2 2.5 12c0 7.8 10.5 20.5 10.5 20.5S23.5 19.8 23.5 12C23.5 6.2 18.8 1.5 13 1.5Z" fill="#c8a96e" stroke="#020408" stroke-width="2"/><circle cx="13" cy="12" r="4.5" fill="#f7edd6" fill-opacity="0.92"/></svg>');
 var PIN_ALTITUDE = 18000;
-var CITY_LABEL_ALTITUDE = 32000;
-var COUNTRY_LABEL_ALTITUDE = 48000;
+var CITY_LABEL_ALTITUDE = 0;
+var COUNTRY_LABEL_ALTITUDE = 0;
 var AGGREGATE_ALTITUDE = 26000;
+var COUNTRY_NAME_ALIASES = {
+  'United States of America': 'USA',
+  'United States': 'USA',
+  'Russian Federation': 'Russia',
+  'Czech Republic': 'Czechia',
+  'Republic of Korea': 'South Korea',
+  'Korea, Republic of': 'South Korea',
+  'Iran (Islamic Republic of)': 'Iran',
+  'Syrian Arab Republic': 'Syria',
+  'Viet Nam': 'Vietnam',
+  'United Republic of Tanzania': 'Tanzania',
+  'Lao People\'s Democratic Republic': 'Laos',
+  'Moldova, Republic of': 'Moldova',
+  'Bolivia (Plurinational State of)': 'Bolivia',
+  'Venezuela (Bolivarian Republic of)': 'Venezuela'
+};
 
 // Initialize CesiumJS
 async function initCesium() {
@@ -1170,8 +1187,8 @@ function projectMapLabelNodes(list, visible, threshold) {
       return;
     }
     item.el.style.display = 'block';
-    item.el.style.left = windowPos.x + 'px';
-    item.el.style.top = windowPos.y + 'px';
+    item.el.style.left = Math.round(windowPos.x) + 'px';
+    item.el.style.top = Math.round(windowPos.y) + 'px';
   });
 }
 
@@ -1190,12 +1207,13 @@ function getCountryFeatureName(entity) {
 
 function findCountryCenter(name) {
   if (!name) return null;
+  var canonical = COUNTRY_NAME_ALIASES[name] || name;
   var exact = COUNTRIES.find(function(country) {
-    return country.name === name || country.code === name;
+    return country.name === canonical || country.code === canonical;
   });
   if (exact) return exact;
 
-  var lower = String(name).toLowerCase();
+  var lower = String(canonical).toLowerCase();
   return COUNTRIES.find(function(country) {
     return String(country.name || '').toLowerCase() === lower ||
       String(country.code || '').toLowerCase() === lower;

@@ -647,9 +647,27 @@ function showShareCard(pin) {
   document.getElementById('share-coords').textContent = pin.lat.toFixed(2) + ', ' + pin.lon.toFixed(2);
   document.getElementById('share-msg').textContent = pin.msg ? '"' + pin.msg + '"' : 'A new mark on the globe.';
   document.getElementById('share-date').textContent = new Date(pin.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  var deleteBtn = document.getElementById('share-delete-btn');
+  if (deleteBtn) {
+    var canDelete = !!(AUTH.user && pin.owner && AUTH.user.id === pin.owner);
+    deleteBtn.style.display = canDelete ? 'block' : 'none';
+    deleteBtn.disabled = false;
+    deleteBtn.textContent = 'Delete';
+  }
   if (typeof openShareModal === 'function') {
     openShareModal();
   } else {
     document.getElementById('share-modal').classList.add('show');
+  }
+}
+
+async function deleteSharedMark(event) {
+  if (event) event.stopPropagation();
+  var pin = window._sharePin || window._lastPin;
+  var button = document.getElementById('share-delete-btn');
+  if (!pin || !button) return;
+  await deleteMark(pin.id, button);
+  if (!getPinById(pin.id) && typeof closeShareModal === 'function') {
+    closeShareModal();
   }
 }
