@@ -840,6 +840,10 @@ var PIN_ALTITUDE = 18000;
 var CITY_LABEL_ALTITUDE = 0;
 var COUNTRY_LABEL_ALTITUDE = 0;
 var AGGREGATE_ALTITUDE = 26000;
+var MIN_CAMERA_HEIGHT = 1000;
+var MAX_CAMERA_HEIGHT = 36900000;
+var MIN_DISPLAY_ZOOM = 1;
+var MAX_DISPLAY_ZOOM = 15;
 var COUNTRY_NAME_ALIASES = {
   'United States of America': 'USA',
   'United States': 'USA',
@@ -889,6 +893,8 @@ async function initCesium() {
       requestRenderMode: false,
       maximumRenderTimeChange: Infinity
     });
+    viewer.scene.screenSpaceCameraController.minimumZoomDistance = MIN_CAMERA_HEIGHT;
+    viewer.scene.screenSpaceCameraController.maximumZoomDistance = MAX_CAMERA_HEIGHT;
 
     pinDataSource = new Cesium.CustomDataSource('pins');
     aggregateDataSource = new Cesium.CustomDataSource('pin-aggregates');
@@ -1107,17 +1113,21 @@ function updateZoomDisplay() {
   var altVal = document.getElementById('alt-val');
   
   if (zoomEl && zoomVal && altVal) {
-    // Approximate web-map zoom from camera height in meters.
-    var zoom = Math.round(Math.log2(50000000 / Math.max(height, 1)));
-    zoom = Math.max(0, Math.min(22, zoom));
+    var clampedHeight = Math.min(MAX_CAMERA_HEIGHT, Math.max(MIN_CAMERA_HEIGHT, height));
+    var zoomRange = MAX_DISPLAY_ZOOM - MIN_DISPLAY_ZOOM;
+    var minLog = Math.log(MIN_CAMERA_HEIGHT);
+    var maxLog = Math.log(MAX_CAMERA_HEIGHT);
+    var ratio = (maxLog - Math.log(clampedHeight)) / (maxLog - minLog);
+    var zoom = Math.round(MIN_DISPLAY_ZOOM + (ratio * zoomRange));
+    zoom = Math.max(MIN_DISPLAY_ZOOM, Math.min(MAX_DISPLAY_ZOOM, zoom));
     
     var altStr;
-    if (height >= 1000000) {
-      altStr = (height / 1000000).toFixed(1) + 'M m';
-    } else if (height >= 1000) {
-      altStr = Math.round(height / 1000).toLocaleString() + ' km';
+    if (clampedHeight >= 1000000) {
+      altStr = (clampedHeight / 1000000).toFixed(1) + 'M m';
+    } else if (clampedHeight >= 1000) {
+      altStr = Math.round(clampedHeight / 1000).toLocaleString() + ' km';
     } else {
-      altStr = Math.round(height) + ' m';
+      altStr = Math.round(clampedHeight) + ' m';
     }
     
     zoomVal.textContent = zoom;
@@ -1454,7 +1464,7 @@ function tglBorders() {
 
 // Fly to location
 function flyTo(lat, lon, height) {
-  height = height || 1000000;
+  height = Math.min(MAX_CAMERA_HEIGHT, Math.max(MIN_CAMERA_HEIGHT, height || 1000000));
   viewer.camera.flyTo({
     destination: Cesium.Cartesian3.fromDegrees(lon, lat, height),
     duration: 1.5
