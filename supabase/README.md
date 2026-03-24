@@ -10,6 +10,9 @@ the current frontend toward a production-ready Supabase setup.
 - `capsule-delivery.sql`: queue table and trigger for future capsule delivery jobs
 - `voice-storage.sql`: private bucket, metadata table, and storage policies for voice files
 - `rollout-checklist.md`: safe rollout order for production
+- `env.example.md`: required secret inventory for functions
+- `staging-runbook.md`: end-to-end staging rollout sequence
+- `production-runbook.md`: guarded production rollout sequence
 - `functions/capsule-dispatch/`: Edge Function scaffold for due capsule sends
 - `functions/voice-upload/`: Edge Function scaffold for controlled voice upload metadata
 
@@ -29,8 +32,10 @@ is not a security boundary. The database must enforce:
 2. Create a staging Supabase project or staging branch
 3. Apply `schema.sql`
 4. Apply `policies.sql`
-5. Verify with the checklist in `rollout-checklist.md`
-6. Update the frontend to target any new public/private split if needed
+5. Apply `capsule-delivery.sql`
+6. Apply `voice-storage.sql`
+7. Verify with `rollout-checklist.md` and `staging-runbook.md`
+8. Update the frontend to target any new public/private split if needed
 
 ## Important
 

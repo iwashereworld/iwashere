@@ -65,6 +65,7 @@ GitHub Actions now runs both checks on pushes to `main` and on pull requests.
 - Cesium token is fetched from a Supabase Edge Function.
 - Data access rules must be enforced in Supabase, not only in the frontend.
 - Production rollout artifacts for Supabase now live in `supabase/`.
+- Use `supabase/staging-runbook.md` before applying anything to production.
 
 ## Priority Areas
 
