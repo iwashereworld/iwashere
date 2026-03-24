@@ -8,6 +8,8 @@ online in a staging environment before touching production.
 - create or select a staging Supabase project
 - connect Supabase CLI to the staging project
 - set staging secrets from `env.example.md`
+- if Supabase branching is unavailable on the current plan, use a dedicated
+  staging project instead of a branch
 
 ## 2. Apply SQL
 
@@ -28,6 +30,7 @@ supabase functions deploy voice-upload
 ## 4. Verify Core Product
 
 - open the Vercel preview or staging site
+- confirm `/api/runtime-config.js` returns the staging values
 - sign in
 - create a public mark
 - create a capsule mark for yourself

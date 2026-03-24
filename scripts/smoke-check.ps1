@@ -5,6 +5,7 @@ $indexPath = Join-Path $root 'index.html'
 $privacyPath = Join-Path $root 'privacy-policy.html'
 $termsPath = Join-Path $root 'terms.html'
 $configPath = Join-Path $root 'app-config.js'
+$runtimeConfigPath = Join-Path $root 'api\runtime-config.js'
 $helpersPath = Join-Path $root 'app-helpers.js'
 $uiPath = Join-Path $root 'app-ui.js'
 $supabaseReadmePath = Join-Path $root 'supabase\README.md'
@@ -49,6 +50,7 @@ $index = Get-Content -Raw $indexPath
 $privacy = Get-Content -Raw $privacyPath
 $terms = Get-Content -Raw $termsPath
 $config = Get-Content -Raw $configPath
+$runtimeConfig = Get-Content -Raw $runtimeConfigPath
 $helpers = Get-Content -Raw $helpersPath
 $ui = Get-Content -Raw $uiPath
 $supabaseReadme = Get-Content -Raw $supabaseReadmePath
@@ -65,12 +67,15 @@ $voiceStorage = Get-Content -Raw $voiceStoragePath
 $voiceUploadReadme = Get-Content -Raw $voiceUploadReadmePath
 $voiceUploadIndex = Get-Content -Raw $voiceUploadIndexPath
 
+Assert-Contains $index '<script src="/api/runtime-config.js"></script>' 'index.html must load the runtime config endpoint.'
 Assert-Contains $index '<script src="app-config.js"></script>' 'index.html must load app-config.js.'
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
 Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
 Assert-Contains $index 'id="voice-upload-status"' 'index.html must include voice upload status UI.'
 Assert-Contains $index 'var ENABLE_VOICE_UPLOAD = !!IWH_CONFIG.ENABLE_VOICE_UPLOAD;' 'index.html must derive the voice upload feature flag from config.'
 Assert-Contains $config 'window.IWH_CONFIG' 'app-config.js must define IWH_CONFIG.'
+Assert-Contains $runtimeConfig 'process.env.SUPABASE_URL' 'api/runtime-config.js must read SUPABASE_URL from env.'
+Assert-Contains $runtimeConfig 'window.IWH_CONFIG = Object.assign' 'api/runtime-config.js must emit browser config.'
 Assert-Contains $helpers 'function renderLists()' 'app-helpers.js must contain renderLists().'
 Assert-Contains $helpers 'function showMarks()' 'app-helpers.js must contain showMarks().'
 Assert-Contains $helpers 'function showShareCard(pin)' 'app-helpers.js must contain showShareCard().'

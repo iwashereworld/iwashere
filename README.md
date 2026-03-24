@@ -73,6 +73,7 @@ GitHub Actions now runs both checks on pushes to `main` and on pull requests.
 - Production rollout artifacts for Supabase now live in `supabase/`.
 - Use `supabase/staging-runbook.md` before applying anything to production.
 - Runtime frontend config now lives in `app-config.js`.
+- Vercel overrides are served from `/api/runtime-config.js`.
 - Use `app-config.example.js` and `supabase/vercel-env-map.md` when wiring staging or production envs.
 
 ## Priority Areas

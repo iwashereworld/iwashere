@@ -28,6 +28,16 @@ create table if not exists public.marks (
   )
 );
 
+alter table public.marks add column if not exists is_public boolean not null default true;
+alter table public.marks add column if not exists updated_at timestamptz not null default timezone('utc', now());
+update public.marks
+set capsule_for = case
+  when capsule_for = 'o' then 'other'
+  when capsule_for = 's' then 'myself'
+  else capsule_for
+end
+where capsule_for in ('o', 's');
+
 create index if not exists marks_created_at_idx on public.marks (created_at desc);
 create index if not exists marks_user_id_idx on public.marks (user_id);
 create index if not exists marks_public_created_at_idx on public.marks (is_public, created_at desc);
@@ -50,13 +60,3 @@ execute function public.set_updated_at();
 
 comment on table public.marks is 'User-created globe marks and optional capsule metadata.';
 comment on column public.marks.recipient_email is 'Sensitive field. Never expose in public read policies.';
-
-alter table public.marks add column if not exists is_public boolean not null default true;
-alter table public.marks add column if not exists updated_at timestamptz not null default timezone('utc', now());
-update public.marks
-set capsule_for = case
-  when capsule_for = 'o' then 'other'
-  when capsule_for = 's' then 'myself'
-  else capsule_for
-end
-where capsule_for in ('o', 's');

@@ -18,9 +18,10 @@ Use this map when wiring the frontend deployment to the Supabase environments.
 
 ## Frontend Wiring
 
-This project currently reads runtime config from `app-config.js`. If you switch to
-a build step later, keep the same key names so the rest of the frontend does not
-need to change.
+This project currently reads runtime config from `/api/runtime-config.js`, with
+`app-config.js` acting as the local fallback. If you switch to a build step
+later, keep the same key names so the rest of the frontend does not need to
+change.
 
 ## Safe Rollout Rule
 
