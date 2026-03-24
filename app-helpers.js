@@ -262,6 +262,59 @@ function createRow(label, value, totalClass) {
   return row;
 }
 
+function getCountryMarkGroups() {
+  var groups = {};
+  ST.pins.forEach(function(pin) {
+    var key = pin.code || pin.cname || 'Unknown';
+    if (!groups[key]) {
+      groups[key] = {
+        key: key,
+        name: pin.cname || pin.code || 'Unknown',
+        count: 0
+      };
+    }
+    groups[key].count += 1;
+  });
+
+  return Object.keys(groups).map(function(key) {
+    return groups[key];
+  }).sort(function(a, b) {
+    if (b.count !== a.count) return b.count - a.count;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function renderCountrySummary() {
+  var body = document.getElementById('country-summary-body');
+  if (!body) return;
+
+  clearChildren(body);
+  var groups = getCountryMarkGroups();
+  if (!groups.length) {
+    body.className = 'cs-empty';
+    body.textContent = 'No marks yet.';
+    return;
+  }
+
+  body.className = 'cs-list';
+  groups.slice(0, 8).forEach(function(group) {
+    var item = document.createElement('div');
+    item.className = 'cs-item';
+
+    var name = document.createElement('div');
+    name.className = 'cs-name';
+    name.textContent = group.name;
+    item.appendChild(name);
+
+    var count = document.createElement('div');
+    count.className = 'cs-count';
+    count.textContent = group.count + ' mark' + (group.count === 1 ? '' : 's');
+    item.appendChild(count);
+
+    body.appendChild(item);
+  });
+}
+
 function bSmry() {
   var cap = ST.capsuleDays > 0;
   var tot = 1 + (cap ? 2 : 0);

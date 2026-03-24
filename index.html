@@ -141,6 +141,14 @@ footer a{color:var(--muted);text-decoration:none;}
 .ctrls{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:100;}
 .cb{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:.73rem;color:var(--muted);cursor:pointer;backdrop-filter:blur(10px);font-family:'DM Sans',sans-serif;transition:all .2s;}
 .cb:hover,.cb.on{border-color:var(--gold);color:var(--gold);}
+#country-summary{position:fixed;top:86px;left:16px;z-index:101;width:min(280px,calc(100vw - 32px));background:rgba(6,10,18,.9);border:1px solid rgba(200,169,110,.18);border-radius:16px;padding:14px 14px 10px;backdrop-filter:blur(18px);box-shadow:0 18px 40px rgba(0,0,0,.22);}
+.cs-title{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem;}
+.cs-empty{font-size:.76rem;line-height:1.6;color:var(--muted);padding:.1rem 0 .45rem;}
+.cs-list{display:flex;flex-direction:column;gap:7px;}
+.cs-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.cs-item:last-child{border-bottom:none;}
+.cs-name{font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cs-count{font-size:.76rem;color:var(--gold);flex-shrink:0;}
 #fab{position:fixed;bottom:1.5rem;right:1.5rem;width:50px;height:50px;border-radius:50%;background:var(--gold);color:#020408;font-size:1.4rem;border:none;cursor:pointer;z-index:160;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(200,169,110,.4);transition:all .2s;}
 #fab:hover{transform:scale(1.1);}
 #start-hint{position:fixed;right:1.5rem;bottom:5.6rem;z-index:161;max-width:250px;background:rgba(8,14,24,.96);border:1px solid rgba(200,169,110,.28);border-radius:16px;padding:.9rem 1rem;backdrop-filter:blur(18px);box-shadow:0 14px 36px rgba(0,0,0,.35);}
@@ -476,6 +484,10 @@ window.addEventListener('load', initCookieBanner);
   <div class="label">Selected Location</div>
   <div class="coords" id="coords-val">--</div>
   <div style="margin-top:6px;font-size:.7rem;color:var(--muted)" id="addr-val"></div>
+</div>
+<div id="country-summary">
+  <div class="cs-title">Marks by Country</div>
+  <div id="country-summary-body" class="cs-empty">No marks yet.</div>
 </div>
 <div class="ctrls">
   <button class="cb on" id="brot" onclick="tglRot()">Auto-rotate</button>
@@ -1176,6 +1188,20 @@ function getCountryFeatureName(entity) {
   return '';
 }
 
+function findCountryCenter(name) {
+  if (!name) return null;
+  var exact = COUNTRIES.find(function(country) {
+    return country.name === name || country.code === name;
+  });
+  if (exact) return exact;
+
+  var lower = String(name).toLowerCase();
+  return COUNTRIES.find(function(country) {
+    return String(country.name || '').toLowerCase() === lower ||
+      String(country.code || '').toLowerCase() === lower;
+  }) || null;
+}
+
 function rebuildCountryLabelNodes() {
   clearLabelNodes(countryLabelNodes);
   if (!viewer || !borderDataSource || !borderDataSource.entities) return;
@@ -1183,6 +1209,16 @@ function rebuildCountryLabelNodes() {
   borderDataSource.entities.values.forEach(function(entity) {
     var name = getCountryFeatureName(entity);
     if (!name || seen[name]) return;
+    var countryCenter = findCountryCenter(name);
+    if (countryCenter) {
+      var knownPosition = Cesium.Cartesian3.fromDegrees(countryCenter.lon, countryCenter.lat, COUNTRY_LABEL_ALTITUDE);
+      var knownNode = createMapLabelNode(name, 'country', knownPosition);
+      if (knownNode) {
+        countryLabelNodes.push(knownNode);
+        seen[name] = true;
+      }
+      return;
+    }
     var polyline = entity.polyline && entity.polyline.positions && entity.polyline.positions.getValue ? entity.polyline.positions.getValue(Cesium.JulianDate.now()) : null;
     if (!polyline || !polyline.length) return;
     var sphere = Cesium.BoundingSphere.fromPoints(polyline);
@@ -1233,20 +1269,6 @@ function buildPinAggregates() {
         color: Cesium.Color.fromCssColorString('#c8a96e').withAlpha(0.9),
         outlineColor: Cesium.Color.fromCssColorString('#020408'),
         outlineWidth: 2
-      },
-      label: {
-        text: group.cname + '\n' + group.count + ' marks',
-        font: '13px DM Sans',
-        fillColor: Cesium.Color.fromCssColorString('#020408'),
-        outlineColor: Cesium.Color.fromCssColorString('#f0ede8'),
-        outlineWidth: 2,
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-        showBackground: true,
-        backgroundColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.78),
-        backgroundPadding: new Cesium.Cartesian2(10, 6),
-        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-        verticalOrigin: Cesium.VerticalOrigin.CENTER,
-        scaleByDistance: new Cesium.NearFarScalar(3000000, 1.0, 26000000, 0.75)
       }
     });
   });
@@ -1816,6 +1838,7 @@ function updateStats() {
   
   var sk2 = document.getElementById('sk2');
   if (sk2) sk2.textContent = ST.pins.filter(function(p) { return p.years > 0; }).length.toLocaleString();
+  if (typeof renderCountrySummary === 'function') renderCountrySummary();
 }
 
 function populateDrop() {
