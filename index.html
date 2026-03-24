@@ -266,8 +266,8 @@ input[type=file]{display:none;}
   <h2 class="sect reveal">Simple, <em>timeless</em> pricing</h2>
   <div class="pcards reveal">
     <div class="pc"><span class="pi2"></span><div class="pnm">Map Mark</div><div class="pam">$1 <span>one-time</span></div><p class="pds">Your name pinned to the planet. Visible forever.</p><ul class="pft"><li>Permanent globe placement</li><li>Custom photo</li><li>Country attribution</li></ul></div>
-    <div class="pc ft"><div class="pbg">Most Chosen</div><span class="pi2"></span><div class="pnm">Mark + Capsule</div><div class="pam">$3 <span>one-time</span></div><p class="pds">Pin + a sealed message for your future self or the world.</p><ul class="pft"><li>Everything in Mark</li><li>Text or voice message</li><li>Opens on your chosen date</li></ul></div>
-    <div class="pc"><span class="pi2"></span><div class="pnm">Gift a Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds">Send a time capsule to someone you love.</p><ul class="pft"><li>Everything in Mark + Capsule</li><li>Recipient email notification</li><li>Beautiful reveal experience</li></ul></div>
+    <div class="pc ft"><div class="pbg">Most Chosen</div><span class="pi2"></span><div class="pnm">Mark + Capsule</div><div class="pam">$3 <span>one-time</span></div><p class="pds">Pin + a sealed message for your future self or the world.</p><ul class="pft"><li>Everything in Mark</li><li>Text message support</li><li>Opens on your chosen date</li></ul></div>
+    <div class="pc"><span class="pi2"></span><div class="pnm">Gift a Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds">Send a time capsule to someone you love.</p><ul class="pft"><li>Everything in Mark + Capsule</li><li>Recipient email field</li><li>Shareable reveal card</li></ul></div>
   </div>
 </section>
 <footer>
@@ -370,7 +370,7 @@ window.addEventListener('load', initCookieBanner);
     <!-- Step 3 -->
     <div class="step" id="step3">
       <h3>Your Message</h3>
-      <p class="sub3">What do you want to say?</p>
+      <p class="sub3">What do you want to say? Voice is currently preview-only on this device.</p>
       <div class="g2">
         <div class="oc on" id="ow" onclick="sMT('w')"><span class="ic"></span>Write</div>
         <div class="oc" id="ov" onclick="sMT('v')"><span class="ic"></span>Voice</div>
@@ -382,12 +382,12 @@ window.addEventListener('load', initCookieBanner);
       <div id="voice-area" style="display:none;">
         <div style="background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
           <div id="rec-btn" onclick="toggleRecord()" style="width:48px;height:48px;border-radius:50%;background:rgba(200,169,110,.15);border:2px solid #c8a96e;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;cursor:pointer;font-size:18px;color:#c8a96e;transition:all .2s;">&#9679;</div>
-          <div id="rec-status" style="font-size:.78rem;color:var(--muted);">Ready to record</div>
+          <div id="rec-status" style="font-size:.78rem;color:var(--muted);">Ready to record locally</div>
           <div id="rec-time" style="font-size:.68rem;color:rgba(200,169,110,.6);margin-top:2px;">Tap to start</div>
           <div id="rec-wave" style="display:none;margin-top:10px;height:28px;display:flex;align-items:center;justify-content:center;gap:2px;" ><div id="rec-wave-inner" style="display:flex;gap:2px;align-items:flex-end;height:24px;"></div></div>
           <div id="voice-preview" style="display:none;margin-top:12px;"><audio id="voice-audio" controls style="width:100%;height:32px;"></audio><button onclick="clearVoice()" style="margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 12px;font-size:.72rem;color:var(--muted);cursor:pointer;">Clear & re-record</button></div>
         </div>
-        <div style="margin-top:10px;text-align:center;font-size:.72rem;color:var(--muted);">or <label style="color:var(--gold);cursor:pointer;text-decoration:underline;">upload audio file<input type="file" accept="audio/*" onchange="hVoice(this)" style="display:none"></label></div>
+        <div style="margin-top:10px;text-align:center;font-size:.72rem;color:var(--muted);">or <label style="color:var(--gold);cursor:pointer;text-decoration:underline;">upload audio file for preview<input type="file" accept="audio/*" onchange="hVoice(this)" style="display:none"></label></div>
         <div id="voice-file-name" style="display:none;text-align:center;font-size:.72rem;color:var(--gold);margin-top:6px;"></div>
       </div>
       <button class="btn bp" onclick="goS(4)" style="margin-top:1rem;">Continue</button>
@@ -433,8 +433,8 @@ window.addEventListener('load', initCookieBanner);
     </div>
     <!-- Step 5 -->
     <div class="step" id="step5">
-      <h3>Confirm & Pay</h3>
-      <p class="sub3">Review your mark before placing it.</p>
+      <h3>Review & Place</h3>
+      <p class="sub3">Review your mark before saving it.</p>
       <div class="pb" id="smry"></div>
       <button class="btn bp" onclick="submit()">Place My Mark</button>
       <button class="btn bs" onclick="goS(4)">Back</button>
@@ -1635,7 +1635,7 @@ function startRecord() {
       if (audio) audio.src = url;
       document.getElementById('voice-preview').style.display = 'block';
       document.getElementById('rec-wave').style.display = 'none';
-      document.getElementById('rec-status').textContent = 'Recording saved';
+      document.getElementById('rec-status').textContent = 'Recording saved for local preview';
       document.getElementById('rec-time').textContent = _recSeconds + 's recorded';
       document.getElementById('rec-btn').innerHTML = '&#9679;';
       document.getElementById('rec-btn').style.background = 'rgba(200,169,110,.15)';
@@ -1681,7 +1681,7 @@ function clearVoice() {
   _voiceBlob = null;
   _audioChunks = [];
   document.getElementById('voice-preview').style.display = 'none';
-  document.getElementById('rec-status').textContent = 'Ready to record';
+  document.getElementById('rec-status').textContent = 'Ready to record locally';
   document.getElementById('rec-time').textContent = 'Tap to start';
   document.getElementById('rec-btn').innerHTML = '&#9679;';
   document.getElementById('rec-btn').style.background = 'rgba(200,169,110,.15)';
@@ -1702,7 +1702,7 @@ function hVoice(inp) {
     fn.textContent = f.name;
     fn.style.display = 'block';
   }
-  document.getElementById('rec-status').textContent = 'Audio file loaded';
+  document.getElementById('rec-status').textContent = 'Audio file loaded for preview';
 }
 
 // Toast
