@@ -1086,18 +1086,18 @@ function ensureCountryLabels() {
       position: Cesium.Cartesian3.fromDegrees(country.lon, country.lat, 8000),
       label: {
         text: country.name,
-        font: '15px DM Sans',
+        font: '18px DM Sans',
         fillColor: Cesium.Color.fromCssColorString('#05070c').withAlpha(0.96),
-        outlineColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.28),
-        outlineWidth: 2,
+        outlineColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.7),
+        outlineWidth: 3,
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
         horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: Cesium.VerticalOrigin.CENTER,
         showBackground: true,
-        backgroundColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.16),
-        backgroundPadding: new Cesium.Cartesian2(10, 5),
-        scaleByDistance: new Cesium.NearFarScalar(2000000, 1.1, 22000000, 0.45),
-        translucencyByDistance: new Cesium.NearFarScalar(1500000, 1.0, 26000000, 0.25)
+        backgroundColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.26),
+        backgroundPadding: new Cesium.Cartesian2(12, 6),
+        scaleByDistance: new Cesium.NearFarScalar(3000000, 1.2, 26000000, 0.75),
+        translucencyByDistance: new Cesium.NearFarScalar(2500000, 1.0, 32000000, 0.6)
       }
     });
     entity.iwhOverlayType = 'country-label';
@@ -1112,20 +1112,20 @@ function ensureCityLabels() {
       position: Cesium.Cartesian3.fromDegrees(city.lon, city.lat, 5000),
       label: {
         text: city.name,
-        font: '13px DM Sans',
+        font: '15px DM Sans',
         fillColor: Cesium.Color.fromCssColorString('#c8a96e'),
-        outlineColor: Cesium.Color.fromCssColorString('#020408'),
-        outlineWidth: 3,
+        outlineColor: Cesium.Color.fromCssColorString('#020408').withAlpha(0.95),
+        outlineWidth: 4,
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
         horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
         pixelOffset: new Cesium.Cartesian2(0, -6),
         showBackground: true,
-        backgroundColor: Cesium.Color.fromCssColorString('#020408').withAlpha(0.18),
-        backgroundPadding: new Cesium.Cartesian2(8, 4),
-        scaleByDistance: new Cesium.NearFarScalar(250000, 1.0, 9000000, 0.0),
-        translucencyByDistance: new Cesium.NearFarScalar(250000, 1.0, 7000000, 0.0),
-        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 7000000)
+        backgroundColor: Cesium.Color.fromCssColorString('#020408').withAlpha(0.36),
+        backgroundPadding: new Cesium.Cartesian2(10, 5),
+        scaleByDistance: new Cesium.NearFarScalar(500000, 1.1, 14000000, 0.5),
+        translucencyByDistance: new Cesium.NearFarScalar(500000, 1.0, 14000000, 0.45),
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 14000000)
       }
     });
     entity.iwhOverlayType = 'city-label';
