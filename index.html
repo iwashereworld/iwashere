@@ -1092,7 +1092,7 @@ function getPinLODMode() {
   return 'detail';
 }
 
-function isEntityOnVisibleHemisphere(entity) {
+function isEntityOnVisibleHemisphere(entity, threshold) {
   if (!viewer || !entity || !entity.position) return true;
   var position = entity.position.getValue(Cesium.JulianDate.now());
   if (!position) return false;
@@ -1101,7 +1101,7 @@ function isEntityOnVisibleHemisphere(entity) {
     Cesium.Cartesian3.subtract(viewer.camera.positionWC, position, new Cesium.Cartesian3()),
     new Cesium.Cartesian3()
   );
-  return Cesium.Cartesian3.dot(normal, toCamera) > 0.08;
+  return Cesium.Cartesian3.dot(normal, toCamera) > (threshold == null ? 0.08 : threshold);
 }
 
 function buildPinAggregates() {
@@ -1165,7 +1165,7 @@ function syncPinLOD() {
     pinDataSource.show = false;
     pinDataSource.clustering.enabled = false;
     aggregateDataSource.entities.values.forEach(function(entity) {
-      entity.show = isEntityOnVisibleHemisphere(entity);
+      entity.show = isEntityOnVisibleHemisphere(entity, 0.14);
     });
     return;
   }
@@ -1174,7 +1174,7 @@ function syncPinLOD() {
   pinDataSource.show = true;
   pinDataSource.clustering.enabled = mode === 'cluster';
   pinDataSource.entities.values.forEach(function(entity) {
-    entity.show = isEntityOnVisibleHemisphere(entity);
+    entity.show = isEntityOnVisibleHemisphere(entity, 0.1);
   });
 }
 
@@ -1227,8 +1227,7 @@ function ensureCountryLabels() {
         showBackground: true,
         backgroundColor: Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.26),
         backgroundPadding: new Cesium.Cartesian2(12, 6),
-        scaleByDistance: new Cesium.NearFarScalar(3000000, 1.2, 26000000, 0.75),
-        translucencyByDistance: new Cesium.NearFarScalar(2500000, 1.0, 32000000, 0.6)
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 22000000)
       }
     });
     entity.iwhOverlayType = 'country-label';
@@ -1254,8 +1253,6 @@ function ensureCityLabels() {
         showBackground: true,
         backgroundColor: Cesium.Color.fromCssColorString('#020408').withAlpha(0.36),
         backgroundPadding: new Cesium.Cartesian2(10, 5),
-        scaleByDistance: new Cesium.NearFarScalar(500000, 1.1, 14000000, 0.5),
-        translucencyByDistance: new Cesium.NearFarScalar(500000, 1.0, 14000000, 0.45),
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 14000000)
       }
     });
@@ -1271,8 +1268,8 @@ function syncLabelLayer() {
   var height = viewer.camera.positionCartographic ? viewer.camera.positionCartographic.height : 20000000;
   var showCountries = _showLabels && height <= 28000000;
   var showCities = _showLabels && height <= 7000000;
-  countryLabelEntities.forEach(function(entity) { entity.show = showCountries && isEntityOnVisibleHemisphere(entity); });
-  cityLabelEntities.forEach(function(entity) { entity.show = showCities && isEntityOnVisibleHemisphere(entity); });
+  countryLabelEntities.forEach(function(entity) { entity.show = showCountries && isEntityOnVisibleHemisphere(entity, 0.24); });
+  cityLabelEntities.forEach(function(entity) { entity.show = showCities && isEntityOnVisibleHemisphere(entity, 0.28); });
   var btn = document.getElementById('blbl');
   if (btn) btn.classList.toggle('on', _showLabels);
 }
@@ -1359,7 +1356,7 @@ function addPinToGlobe(pin) {
       verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
       horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
       heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-      scaleByDistance: new Cesium.NearFarScalar(200000, 1.0, 18000000, 0.9)
+      pixelOffset: new Cesium.Cartesian2(0, -10)
     },
     properties: pin
   });
