@@ -6,6 +6,7 @@ $readmePath = Join-Path $root 'README.md'
 $configPath = Join-Path $root 'app-config.js'
 $runtimeConfigPath = Join-Path $root 'api\runtime-config.js'
 $configExamplePath = Join-Path $root 'app-config.example.js'
+$supabaseConfigPath = Join-Path $root 'supabase\config.toml'
 $smokePath = Join-Path $PSScriptRoot 'smoke-check.ps1'
 $rolloutChecklistPath = Join-Path $root 'supabase\rollout-checklist.md'
 $stagingRunbookPath = Join-Path $root 'supabase\staging-runbook.md'
@@ -44,6 +45,7 @@ $readme = Get-Content -Raw $readmePath
 $config = Get-Content -Raw $configPath
 $runtimeConfig = Get-Content -Raw $runtimeConfigPath
 $configExample = Get-Content -Raw $configExamplePath
+$supabaseConfig = Get-Content -Raw $supabaseConfigPath
 $rolloutChecklist = Get-Content -Raw $rolloutChecklistPath
 $stagingRunbook = Get-Content -Raw $stagingRunbookPath
 $vercelEnvMap = Get-Content -Raw $vercelEnvMapPath
@@ -68,6 +70,7 @@ Assert-Contains $configExample 'window.IWH_CONFIG' 'app-config.example.js must d
 Assert-Contains $rolloutChecklist 'RLS Validation' 'Supabase rollout checklist must contain RLS validation.'
 Assert-Contains $stagingRunbook 'Exit Criteria' 'staging runbook must define exit criteria.'
 Assert-Contains $vercelEnvMap 'Safe Rollout Rule' 'vercel env map must define a safe rollout rule.'
+Assert-Contains $supabaseConfig 'verify_jwt = false' 'supabase/config.toml must keep voice-upload on internal auth verification.'
 Assert-Contains $capsuleDispatchReadme 'Required Secrets' 'capsule-dispatch README must document required secrets.'
 Assert-Contains $voiceUploadReadme 'Expected Request' 'voice-upload README must document expected request.'
 

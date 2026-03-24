@@ -36,23 +36,32 @@ function extensionForMimeType(mimeType: string) {
   }
 }
 
+async function resolveAuthenticatedUser(authHeader: string) {
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (!token) return null;
+
+  const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "apikey": serviceRoleKey,
+    },
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return await response.json();
+}
+
 Deno.serve(async (request) => {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader) {
     return new Response(JSON.stringify({ error: "Missing authorization header." }), { status: 401 });
   }
 
-  const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY") ?? "", {
-    global: { headers: { Authorization: authHeader } },
-    auth: { persistSession: false },
-  });
-
-  const {
-    data: { user },
-    error: userError,
-  } = await userClient.auth.getUser();
-
-  if (userError || !user) {
+  const user = await resolveAuthenticatedUser(authHeader);
+  if (!user?.id) {
     return new Response(JSON.stringify({ error: "Unauthorized." }), { status: 401 });
   }
 

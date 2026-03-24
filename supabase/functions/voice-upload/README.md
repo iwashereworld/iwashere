@@ -36,3 +36,8 @@ voice files stored in the `voice-messages` bucket.
 ```
 
 Use the returned `path` with the authenticated storage client upload call.
+
+## Auth Note
+
+The function performs user validation internally with `auth.getUser()`, so it
+should be deployed with JWT verification disabled at the gateway layer.

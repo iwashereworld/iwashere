@@ -27,6 +27,9 @@ supabase functions deploy capsule-dispatch
 supabase functions deploy voice-upload
 ```
 
+`voice-upload` should be deployed with JWT verification disabled, matching
+`supabase/config.toml`.
+
 ## 4. Verify Core Product
 
 - open the Vercel preview or staging site

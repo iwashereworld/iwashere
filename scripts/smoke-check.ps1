@@ -9,6 +9,7 @@ $runtimeConfigPath = Join-Path $root 'api\runtime-config.js'
 $helpersPath = Join-Path $root 'app-helpers.js'
 $uiPath = Join-Path $root 'app-ui.js'
 $supabaseReadmePath = Join-Path $root 'supabase\README.md'
+$supabaseConfigPath = Join-Path $root 'supabase\config.toml'
 $supabaseSchemaPath = Join-Path $root 'supabase\schema.sql'
 $supabasePoliciesPath = Join-Path $root 'supabase\policies.sql'
 $supabaseEnvExamplePath = Join-Path $root 'supabase\env.example.md'
@@ -54,6 +55,7 @@ $runtimeConfig = Get-Content -Raw $runtimeConfigPath
 $helpers = Get-Content -Raw $helpersPath
 $ui = Get-Content -Raw $uiPath
 $supabaseReadme = Get-Content -Raw $supabaseReadmePath
+$supabaseConfig = Get-Content -Raw $supabaseConfigPath
 $supabaseSchema = Get-Content -Raw $supabaseSchemaPath
 $supabasePolicies = Get-Content -Raw $supabasePoliciesPath
 $supabaseEnvExample = Get-Content -Raw $supabaseEnvExamplePath
@@ -92,6 +94,8 @@ Assert-NotContains $index 'Confirm & Pay' 'Legacy misleading review copy is stil
 Assert-NotContains $privacy 'Ã¢' 'privacy-policy.html still contains mojibake.'
 Assert-NotContains $terms 'Ã¢' 'terms.html still contains mojibake.'
 Assert-Contains $supabaseReadme 'Supabase Hardening' 'supabase/README.md must exist.'
+Assert-Contains $supabaseConfig '[functions.voice-upload]' 'supabase/config.toml must configure voice-upload.'
+Assert-Contains $supabaseConfig 'verify_jwt = false' 'supabase/config.toml must disable gateway JWT verification for voice-upload.'
 Assert-Contains $supabaseSchema 'create table if not exists public.marks' 'supabase/schema.sql must define marks table.'
 Assert-Contains $supabasePolicies 'enable row level security' 'supabase/policies.sql must enable RLS.'
 Assert-Contains $supabaseEnvExample 'SUPABASE_SERVICE_ROLE_KEY' 'supabase/env.example.md must mention service role key.'

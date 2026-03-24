@@ -1,0 +1,2 @@
+[functions.voice-upload]
+verify_jwt = false
