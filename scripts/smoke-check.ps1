@@ -4,6 +4,7 @@ $root = Split-Path -Parent $PSScriptRoot
 $indexPath = Join-Path $root 'index.html'
 $privacyPath = Join-Path $root 'privacy-policy.html'
 $termsPath = Join-Path $root 'terms.html'
+$configPath = Join-Path $root 'app-config.js'
 $helpersPath = Join-Path $root 'app-helpers.js'
 $uiPath = Join-Path $root 'app-ui.js'
 $supabaseReadmePath = Join-Path $root 'supabase\README.md'
@@ -46,6 +47,7 @@ function Assert-NotContains {
 $index = Get-Content -Raw $indexPath
 $privacy = Get-Content -Raw $privacyPath
 $terms = Get-Content -Raw $termsPath
+$config = Get-Content -Raw $configPath
 $helpers = Get-Content -Raw $helpersPath
 $ui = Get-Content -Raw $uiPath
 $supabaseReadme = Get-Content -Raw $supabaseReadmePath
@@ -61,10 +63,12 @@ $voiceStorage = Get-Content -Raw $voiceStoragePath
 $voiceUploadReadme = Get-Content -Raw $voiceUploadReadmePath
 $voiceUploadIndex = Get-Content -Raw $voiceUploadIndexPath
 
+Assert-Contains $index '<script src="app-config.js"></script>' 'index.html must load app-config.js.'
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
 Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
 Assert-Contains $index 'id="voice-upload-status"' 'index.html must include voice upload status UI.'
-Assert-Contains $index 'var ENABLE_VOICE_UPLOAD = false;' 'index.html must define the voice upload feature flag.'
+Assert-Contains $index 'var ENABLE_VOICE_UPLOAD = !!IWH_CONFIG.ENABLE_VOICE_UPLOAD;' 'index.html must derive the voice upload feature flag from config.'
+Assert-Contains $config 'window.IWH_CONFIG' 'app-config.js must define IWH_CONFIG.'
 Assert-Contains $helpers 'function renderLists()' 'app-helpers.js must contain renderLists().'
 Assert-Contains $helpers 'function showMarks()' 'app-helpers.js must contain showMarks().'
 Assert-Contains $helpers 'function showShareCard(pin)' 'app-helpers.js must contain showShareCard().'
