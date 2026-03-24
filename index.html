@@ -452,6 +452,7 @@ window.addEventListener('load', initCookieBanner);
           <button type="button" id="rec-btn" onclick="toggleRecord()" aria-label="Start or stop voice preview recording" style="width:48px;height:48px;border-radius:50%;background:rgba(200,169,110,.15);border:2px solid #c8a96e;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;cursor:pointer;font-size:18px;color:#c8a96e;transition:all .2s;">&#9679;</button>
           <div id="rec-status" style="font-size:.78rem;color:var(--muted);">Ready to record locally</div>
           <div id="rec-time" style="font-size:.68rem;color:rgba(200,169,110,.6);margin-top:2px;">Tap to start</div>
+          <div id="voice-upload-status" style="font-size:.68rem;color:rgba(240,237,232,.45);margin-top:6px;">Upload-ready metadata will appear here when backend upload is connected.</div>
           <div id="rec-wave" style="display:none;margin-top:10px;height:28px;display:flex;align-items:center;justify-content:center;gap:2px;" ><div id="rec-wave-inner" style="display:flex;gap:2px;align-items:flex-end;height:24px;"></div></div>
           <div id="voice-preview" style="display:none;margin-top:12px;"><audio id="voice-audio" controls style="width:100%;height:32px;"></audio><button onclick="clearVoice()" style="margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 12px;font-size:.72rem;color:var(--muted);cursor:pointer;">Clear & re-record</button></div>
         </div>
@@ -667,7 +668,8 @@ var CITIES = [
 var ST = {
   pins: [],
   name: '', photo: null, selCode: '', selName: '', selLat: null, selLon: null,
-  yr: 1, capsuleDays: 365, capsuleDate: null, rc: 's', vis: 'pub', msgType: 'w'
+  yr: 1, capsuleDays: 365, capsuleDate: null, rc: 's', vis: 'pub', msgType: 'w',
+  voice: null
 };
 var AUTH = { user: null, users: { 'admin': { name: 'Admin User', email: 'admin', password: 'admin' } } };
 
@@ -1348,6 +1350,36 @@ var _recTimer = null;
 var _recSeconds = 0;
 var _voiceBlob = null;
 
+function updateVoiceUploadStatus() {
+  var el = document.getElementById('voice-upload-status');
+  if (!el) return;
+
+  if (!ST.voice) {
+    el.textContent = 'Upload-ready metadata will appear here when backend upload is connected.';
+    return;
+  }
+
+  var parts = [];
+  if (ST.voice.fileName) parts.push(ST.voice.fileName);
+  if (ST.voice.mimeType) parts.push(ST.voice.mimeType);
+  if (ST.voice.bytes) parts.push(Math.round(ST.voice.bytes / 1024) + ' KB');
+  if (ST.voice.durationSeconds) parts.push(ST.voice.durationSeconds + 's');
+  el.textContent = 'Prepared for upload: ' + parts.join(' | ');
+}
+
+function setVoiceState(blob, options) {
+  options = options || {};
+  _voiceBlob = blob;
+  ST.voice = blob ? {
+    source: options.source || 'local',
+    fileName: options.fileName || ('voice.' + ((options.mimeType || blob.type || 'audio/webm').split('/')[1] || 'webm')),
+    mimeType: options.mimeType || blob.type || 'audio/webm',
+    bytes: blob.size || 0,
+    durationSeconds: options.durationSeconds || null
+  } : null;
+  updateVoiceUploadStatus();
+}
+
 function toggleRecord() {
   if (_mediaRecorder && _mediaRecorder.state === 'recording') {
     stopRecord();
@@ -1368,7 +1400,13 @@ function startRecord() {
       if (e.data.size > 0) _audioChunks.push(e.data);
     };
     _mediaRecorder.onstop = function() {
-      _voiceBlob = new Blob(_audioChunks, { type: 'audio/webm' });
+      var voiceBlob = new Blob(_audioChunks, { type: 'audio/webm' });
+      setVoiceState(voiceBlob, {
+        source: 'recording',
+        fileName: 'voice-recording.webm',
+        mimeType: 'audio/webm',
+        durationSeconds: _recSeconds
+      });
       var url = URL.createObjectURL(_voiceBlob);
       var audio = document.getElementById('voice-audio');
       if (audio) audio.src = url;
@@ -1417,7 +1455,7 @@ function stopRecord() {
 }
 
 function clearVoice() {
-  _voiceBlob = null;
+  setVoiceState(null);
   _audioChunks = [];
   document.getElementById('voice-preview').style.display = 'none';
   document.getElementById('rec-status').textContent = 'Ready to record locally';
@@ -1431,7 +1469,11 @@ function clearVoice() {
 function hVoice(inp) {
   var f = inp.files[0];
   if (!f) return;
-  _voiceBlob = f;
+  setVoiceState(f, {
+    source: 'file',
+    fileName: f.name,
+    mimeType: f.type || 'audio/mpeg'
+  });
   var url = URL.createObjectURL(f);
   var audio = document.getElementById('voice-audio');
   if (audio) audio.src = url;

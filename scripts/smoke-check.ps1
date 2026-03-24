@@ -57,6 +57,7 @@ $voiceUploadIndex = Get-Content -Raw $voiceUploadIndexPath
 
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
 Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
+Assert-Contains $index 'id="voice-upload-status"' 'index.html must include voice upload status UI.'
 Assert-Contains $helpers 'function renderLists()' 'app-helpers.js must contain renderLists().'
 Assert-Contains $helpers 'function showMarks()' 'app-helpers.js must contain showMarks().'
 Assert-Contains $helpers 'function showShareCard(pin)' 'app-helpers.js must contain showShareCard().'
@@ -65,6 +66,7 @@ Assert-Contains $helpers 'var MAX_MESSAGE_LENGTH = 500;' 'app-helpers.js must de
 Assert-Contains $ui 'function resetForm()' 'app-ui.js must contain resetForm().'
 Assert-Contains $ui 'function openAuth(tab)' 'app-ui.js must contain openAuth(tab).'
 Assert-Contains $ui 'function showToast(msg, tone)' 'app-ui.js must contain showToast(msg, tone).'
+Assert-Contains $index 'function setVoiceState(blob, options)' 'index.html must normalize voice state.'
 Assert-NotContains $index "select('*')" "index.html must not use select('*') for marks."
 Assert-NotContains $index 'Confirm & Pay' 'Legacy misleading review copy is still present.'
 Assert-NotContains $privacy 'Ã¢' 'privacy-policy.html still contains mojibake.'

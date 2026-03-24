@@ -44,11 +44,13 @@ function resetForm() {
   ST.capsuleDate = null;
   ST.rc = 's';
   ST.vis = 'pub';
+  ST.voice = null;
   document.getElementById('iname').value = '';
   document.getElementById('prev').style.display = 'none';
   document.getElementById('loc-display').value = '';
   document.getElementById('csel').value = '';
   document.getElementById('imsg').value = '';
+  if (typeof clearVoice === 'function') clearVoice();
   var submitBtn = document.getElementById('btn-submit-mark');
   if (submitBtn) {
     submitBtn.disabled = false;
