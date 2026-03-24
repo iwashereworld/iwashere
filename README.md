@@ -43,6 +43,14 @@ git push origin main
 
 Vercel should deploy automatically after push.
 
+## Smoke Check
+
+Run the lightweight repository check with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke-check.ps1
+```
+
 ## Important Notes
 
 - Frontend depends on Supabase configuration and policies outside this repo.

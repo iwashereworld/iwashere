@@ -503,6 +503,7 @@ window.addEventListener('load', initCookieBanner);
   </div>
 </div>
 
+<script src="app-helpers.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // SUPABASE
@@ -608,54 +609,16 @@ var _showBorders = false;
 var bingImagery = null;
 var osmImagery = null;
 var borderDataSource = null;
-var MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id';
-
-function normalizeMarkRecord(m) {
-  if (!m) return null;
-
-  var lat = parseFloat(m.lat);
-  var lon = parseFloat(m.lon);
-  if (!isFinite(lat) || !isFinite(lon)) return null;
-
-  return {
-    id: m.id,
-    name: m.name || 'Unknown',
-    code: m.country_code || '',
-    cname: m.country_name || 'Unknown',
-    lat: lat,
-    lon: lon,
-    msg: m.message || '',
-    years: Math.round((m.capsule_days || 0) / 365),
-    capsule_days: m.capsule_days || 0,
-    photo: safeImageUrl(m.photo),
-    added: m.created_at || new Date().toISOString(),
-    owner: m.user_id || null
-  };
-}
 
 // Initialize CesiumJS
 async function initCesium() {
   try {
-    var cesiumEl = document.getElementById('cesiumContainer');
-    var globeEl = document.getElementById('globe-container');
-    console.log(
-      '[IWH] initCesium start',
-      'hasCesiumEl=' + !!cesiumEl,
-      'hasGlobeEl=' + !!globeEl,
-      'cesiumWidth=' + (cesiumEl ? cesiumEl.clientWidth : 'null'),
-      'cesiumHeight=' + (cesiumEl ? cesiumEl.clientHeight : 'null'),
-      'globeWidth=' + (globeEl ? globeEl.clientWidth : 'null'),
-      'globeHeight=' + (globeEl ? globeEl.clientHeight : 'null'),
-      'globeDisplay=' + (globeEl ? globeEl.style.display : 'null')
-    );
-
     // Use Cesium Ion default token (free tier - 5000 sessions/month)
     // For production, get your own token at https://cesium.com/ion/tokens
     // Cesium token is now securely fetched from Supabase Edge Function
     const tokenRes = await fetch('https://ctjgxonismqdxprlohcz.supabase.co/functions/v1/cesium-token', {
       headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0amd4b25pc21xZHhwcmxvaGN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5ODg1NDcsImV4cCI6MjA4OTU2NDU0N30.y88CJt4uH9ueZShKVIYc8xRFCQ7borr9wZ5sr9nhpEs' }
     });
-    console.log('[IWH] Cesium token response status:', tokenRes.status);
     const tokenData = await tokenRes.json();
     if (!tokenData.token) { console.error('[IWH] Cesium token fetch failed:', tokenData); return; }
     Cesium.Ion.defaultAccessToken = tokenData.token;
@@ -679,10 +642,6 @@ async function initCesium() {
       requestRenderMode: false,
       maximumRenderTimeChange: Infinity
     });
-    console.log('[IWH] Cesium viewer created', {
-      canvasWidth: viewer && viewer.canvas ? viewer.canvas.clientWidth : null,
-      canvasHeight: viewer && viewer.canvas ? viewer.canvas.clientHeight : null
-    });
 
     // Remove default imagery and add high quality satellite imagery
     viewer.imageryLayers.removeAll();
@@ -693,7 +652,6 @@ async function initCesium() {
         'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
       );
       bingImagery = viewer.imageryLayers.addImageryProvider(esriImagery);
-      console.log('[IWH] ESRI imagery loaded');
     } catch (e) {
       console.log('[IWH] ESRI failed, using OpenStreetMap:', e);
       // Fallback to OpenStreetMap
@@ -701,7 +659,6 @@ async function initCesium() {
         url: 'https://tile.openstreetmap.org/'
       });
       bingImagery = viewer.imageryLayers.addImageryProvider(osmImageryProvider);
-      console.log('[IWH] OSM imagery loaded');
     }
 
     // Set initial camera position
@@ -759,7 +716,6 @@ async function initCesium() {
     // Load existing marks
     loadMarks();
     updateOpensPreview();
-    console.log('[IWH] initCesium complete');
   } catch (err) {
     console.error('[IWH] initCesium error:', err);
   }
@@ -959,18 +915,9 @@ function addPinToGlobe(pin) {
 
 // Show/hide landing page
 async function showGlobe() {
-  console.log('[IWH] showGlobe start');
   document.getElementById('landing').style.display = 'none';
   document.getElementById('globe-app').style.display = 'block';
   document.getElementById('globe-container').style.display = 'block';
-  console.log(
-    '[IWH] showGlobe visibility',
-    'landing=' + document.getElementById('landing').style.display,
-    'globeApp=' + document.getElementById('globe-app').style.display,
-    'globeContainer=' + document.getElementById('globe-container').style.display,
-    'containerWidth=' + document.getElementById('cesiumContainer').clientWidth,
-    'containerHeight=' + document.getElementById('cesiumContainer').clientHeight
-  );
   
   if (!viewer) {
     await new Promise(function(resolve) {
@@ -986,11 +933,6 @@ async function showGlobe() {
     setTimeout(function() {
       viewer.resize();
       viewer.scene.requestRender();
-      console.log('[IWH] post-show render', {
-        canvasWidth: viewer.canvas ? viewer.canvas.clientWidth : null,
-        canvasHeight: viewer.canvas ? viewer.canvas.clientHeight : null,
-        entities: viewer.entities ? viewer.entities.values.length : null
-      });
     }, 50);
   }
   
@@ -1276,28 +1218,6 @@ function sV(v) {
   document.getElementById('vprv').classList.toggle('on', v === 'prv');
 }
 
-function bSmry() {
-  var cap = ST.capsuleDays > 0;
-  var tot = 1 + (cap ? 2 : 0);
-  var opens;
-  if (ST.capsuleDate) {
-    opens = new Date(ST.capsuleDate);
-  } else {
-    opens = new Date();
-    opens.setDate(opens.getDate() + (ST.capsuleDays || 365));
-  }
-  var oy = opens.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-  var summary = document.getElementById('smry');
-  clearChildren(summary);
-  summary.appendChild(createRow('Globe mark - ' + (ST.selName || '-'), '$1.00'));
-  summary.appendChild(createRow('Name: ' + ST.name, '-'));
-  summary.appendChild(createRow('Coordinates', ST.selLat ? ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) : '-'));
-  summary.appendChild(createRow('Photo', ST.photo ? 'Yes' : 'None'));
-  if (cap) summary.appendChild(createRow('Capsule - opens ' + oy, '$2.00'));
-  summary.appendChild(createRow('Total', '$' + tot.toFixed(2), true));
-}
-
 function submit() {
   if (!AUTH.user || !AUTH.user.id) {
     showToast('Please sign in before placing a mark.');
@@ -1435,118 +1355,6 @@ function updateStats() {
   if (sk2) sk2.textContent = ST.pins.filter(function(p) { return p.years > 0; }).length.toLocaleString();
 }
 
-function countdown(added, years) {
-  if (!years || years <= 0) return '';
-  var open = new Date(added);
-  open.setFullYear(open.getFullYear() + years);
-  var diff = open - new Date();
-  if (diff <= 0) return 'Opened';
-  var days = Math.floor(diff / 86400000);
-  if (days > 365) return Math.round(days / 365) + 'y';
-  if (days > 30) return Math.round(days / 30) + 'mo';
-  return days + 'd';
-}
-
-function escapeHtml(value) {
-  return String(value == null ? '' : value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function safeImageUrl(value) {
-  if (!value) return '';
-  var url = String(value).trim();
-  if (/^data:image\/[a-z0-9.+-]+;base64,/i.test(url)) return url;
-  if (/^https?:\/\//i.test(url)) return url;
-  return '';
-}
-
-function safeInitial(value) {
-  var text = String(value || '').trim();
-  return escapeHtml(text ? text.charAt(0).toUpperCase() : '?');
-}
-
-function clearChildren(el) {
-  while (el && el.firstChild) el.removeChild(el.firstChild);
-}
-
-function createAvatarNode(photo, name, className) {
-  var wrap = document.createElement('div');
-  if (className) wrap.className = className;
-
-  var photoUrl = safeImageUrl(photo);
-  if (photoUrl) {
-    var img = document.createElement('img');
-    img.src = photoUrl;
-    img.alt = '';
-    wrap.appendChild(img);
-  } else {
-    wrap.textContent = String(name || '').trim().charAt(0).toUpperCase() || '?';
-  }
-
-  return wrap;
-}
-
-function createRow(label, value, totalClass) {
-  var row = document.createElement('div');
-  row.className = totalClass ? 'pr tot' : 'pr';
-
-  var left = document.createElement('span');
-  left.textContent = label;
-  row.appendChild(left);
-
-  var right = document.createElement('span');
-  right.textContent = value;
-  row.appendChild(right);
-
-  return row;
-}
-
-function renderLists() {
-  var pl = document.getElementById('plist');
-  if (!pl) return;
-
-  clearChildren(pl);
-  ST.pins.slice(0, 5).forEach(function(p) {
-    var cd = countdown(p.added, p.years);
-
-    var item = document.createElement('div');
-    item.className = 'pitem';
-    item.onclick = function() { flyTo(p.lat, p.lon, 800000); };
-
-    item.appendChild(createAvatarNode(p.photo, p.name, 'piav'));
-
-    var info = document.createElement('div');
-    info.style.cssText = 'flex:1;min-width:0';
-
-    var name = document.createElement('div');
-    name.className = 'pnm2';
-    name.textContent = p.name;
-    info.appendChild(name);
-
-    var meta = document.createElement('div');
-    meta.className = 'pct2';
-    meta.textContent = p.cname + (cd ? ' - ' + cd : '');
-    info.appendChild(meta);
-
-    item.appendChild(info);
-
-    var link = document.createElement('div');
-    link.className = 'plk';
-    link.textContent = '>';
-    link.onclick = function(event) {
-      event.stopPropagation();
-      showShareCard(ST.pins.find(function(x) { return x.id === p.id; }));
-    };
-    item.appendChild(link);
-
-    pl.appendChild(item);
-  });
-}
-
 function populateDrop() {
   var sel = document.getElementById('csel');
   if (!sel || sel.options.length > 1) return;
@@ -1643,97 +1451,7 @@ function submitAuth() {
 
 function signOut() { _supabase.auth.signOut().then(function(){ AUTH.user=null; updateUserUI(); showToast('Signed out.'); }); }
 
-function showMarks() {
-  if (!AUTH.user) {
-    openAuth('login');
-    return;
-  }
-  var body = document.getElementById('mbody');
-  var marks = ST.pins.filter(function(p) { return p.owner === AUTH.user.id; });
-
-  clearChildren(body);
-  if (!marks.length) {
-    var empty = document.createElement('div');
-    empty.style.cssText = 'text-align:center;padding:3rem 1rem;font-size:.85rem;color:rgba(240,237,232,.35)';
-    empty.appendChild(document.createTextNode('No marks yet.'));
-    empty.appendChild(document.createElement('br'));
-    empty.appendChild(document.createElement('br'));
-
-    var cta = document.createElement('button');
-    cta.textContent = 'Place my first mark';
-    cta.onclick = function() { closeMarks(); showGlobe(); };
-    cta.style.cssText = 'background:#c8a96e;color:#020408;border:none;border-radius:20px;padding:9px 22px;cursor:pointer;font-size:.82rem;font-family:sans-serif';
-    empty.appendChild(cta);
-    body.appendChild(empty);
-  } else {
-    marks.forEach(function(p) {
-      var cd = countdown(p.added, p.years);
-
-      var item = document.createElement('div');
-      item.className = 'mitem';
-      item.onclick = function() { closeMarks(); flyTo(p.lat, p.lon, 500000); };
-
-      item.appendChild(createAvatarNode(p.photo, p.name, 'mdot'));
-
-      var info = document.createElement('div');
-      info.className = 'minfo';
-
-      var country = document.createElement('div');
-      country.className = 'mcn';
-      country.textContent = '- ' + p.cname;
-      info.appendChild(country);
-
-      var date = document.createElement('div');
-      date.className = 'mdt';
-      date.textContent = new Date(p.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      info.appendChild(date);
-
-      if (p.msg) {
-        var msg = document.createElement('div');
-        msg.className = 'mmsg';
-        msg.textContent = '"' + p.msg + '"';
-        info.appendChild(msg);
-      }
-
-      if (p.years) {
-        var cap = document.createElement('div');
-        cap.className = 'mcap';
-        cap.textContent = 'Opens in ' + cd;
-        info.appendChild(cap);
-      }
-
-      item.appendChild(info);
-      body.appendChild(item);
-    });
-  }
-  document.getElementById('mmarks').classList.add('show');
-}
-
 function closeMarks() { document.getElementById('mmarks').classList.remove('show'); }
-
-// Share
-function showShareCard(pin) {
-  if (!pin) return;
-  var avatar = document.getElementById('share-avatar');
-  clearChildren(avatar);
-  if (safeImageUrl(pin.photo)) {
-    var img = document.createElement('img');
-    img.src = safeImageUrl(pin.photo);
-    img.alt = '';
-    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
-    avatar.appendChild(img);
-  } else {
-    var initial = document.createElement('span');
-    initial.style.cssText = 'font-size:24px;color:#c8a96e';
-    initial.textContent = String(pin.name || '').trim().charAt(0).toUpperCase() || '?';
-    avatar.appendChild(initial);
-  }
-  document.getElementById('share-name').textContent = pin.name;
-  document.getElementById('share-country').textContent = pin.cname;
-  document.getElementById('share-msg').textContent = pin.msg ? '"' + pin.msg + '"' : '';
-  document.getElementById('share-date').textContent = new Date(pin.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  document.getElementById('share-modal').classList.add('show');
-}
 
 function doShr() {
   if (navigator.share) {
