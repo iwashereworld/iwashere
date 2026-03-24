@@ -120,6 +120,14 @@ function renderLists() {
   if (!pl) return;
 
   clearChildren(pl);
+  if (!ST.pins.length) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
+    empty.textContent = 'No public marks yet. Your first saved mark will appear here.';
+    pl.appendChild(empty);
+    return;
+  }
+
   ST.pins.slice(0, 5).forEach(function(p) {
     var cd = countdown(p.added, p.years);
 
@@ -221,6 +229,7 @@ function showMarks() {
     });
   }
   document.getElementById('mmarks').classList.add('show');
+  if (typeof syncOverlayState === 'function') syncOverlayState();
 }
 
 function showShareCard(pin) {
@@ -243,5 +252,9 @@ function showShareCard(pin) {
   document.getElementById('share-country').textContent = pin.cname;
   document.getElementById('share-msg').textContent = pin.msg ? '"' + pin.msg + '"' : '';
   document.getElementById('share-date').textContent = new Date(pin.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  document.getElementById('share-modal').classList.add('show');
+  if (typeof openShareModal === 'function') {
+    openShareModal();
+  } else {
+    document.getElementById('share-modal').classList.add('show');
+  }
 }

@@ -495,7 +495,7 @@ window.addEventListener('load', initCookieBanner);
 </div>
 
 <!-- AUTH MODAL -->
-<div id="auth-modal">
+<div id="auth-modal" role="dialog" aria-modal="true" aria-labelledby="atitle">
   <div class="abox">
     <button class="aclose" onclick="closeAuth()">&times;</button>
     <div class="alogo">I Was Here</div>
@@ -518,15 +518,15 @@ window.addEventListener('load', initCookieBanner);
 </div>
 
 <!-- MY MARKS -->
-<div id="mmarks">
+<div id="mmarks" role="dialog" aria-modal="true" aria-labelledby="my-marks-title">
   <div class="mbox">
-    <div class="mhead"><h2 class="mtitle">My Marks</h2><button onclick="closeMarks()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">&times;</button></div>
+    <div class="mhead"><h2 class="mtitle" id="my-marks-title">My Marks</h2><button onclick="closeMarks()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">&times;</button></div>
     <div class="mbody" id="mbody"></div>
   </div>
 </div>
 
 <!-- SHARE MODAL -->
-<div id="share-modal" onclick="this.classList.remove('show')">
+<div id="share-modal" onclick="closeShareModal()" role="dialog" aria-modal="true" aria-labelledby="share-name">
   <div style="background:linear-gradient(135deg,#0a1628 0%,#0d1f3c 50%,#0a1628 100%);border:1px solid rgba(200,169,110,.3);border-radius:20px;padding:2rem;width:320px;text-align:center;position:relative;" onclick="event.stopPropagation()">
     <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.8rem;">I WAS HERE</div>
     <div id="share-avatar" style="width:64px;height:64px;border-radius:50%;background:rgba(200,169,110,.1);border:2px solid var(--gold);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;overflow:hidden;"></div>
@@ -536,7 +536,7 @@ window.addEventListener('load', initCookieBanner);
     <div id="share-date" style="font-size:.7rem;color:var(--gold);"></div>
     <div style="margin-top:1.2rem;display:flex;gap:8px;justify-content:center;">
       <button onclick="doShr()" style="background:var(--gold);color:#020408;border:none;border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;">Share</button>
-      <button onclick="document.getElementById('share-modal').classList.remove('show')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;">Close</button>
+      <button onclick="closeShareModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;">Close</button>
     </div>
   </div>
 </div>
@@ -1349,7 +1349,7 @@ async function submit() {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Place My Mark';
     }
-    showToast('Could not save your mark. Please try again.');
+    showToast('Could not save your mark. Please try again.', 'error');
     return;
   }
 
@@ -1438,7 +1438,11 @@ function loadMarks() {
   console.log('[IWH] Loading marks from Supabase...');
   _supabase.from('marks').select(MARK_SELECT_FIELDS).order('created_at', { ascending: false }).limit(500).then(function(res) {
     console.log('[IWH] Marks response:', res);
-    if (res.error) { console.error('[IWH] Load error:', res.error); return; }
+    if (res.error) {
+      console.error('[IWH] Load error:', res.error);
+      showToast('Could not load public marks right now.', 'error');
+      return;
+    }
     if (res.data) {
       ST.pins = [];
       res.data.forEach(function(m) {
@@ -1507,6 +1511,7 @@ function updateUserUI() {
 
 function openAuth(tab) {
   document.getElementById('auth-modal').classList.add('show');
+  syncOverlayState();
   switchTab(tab || 'login');
   setTimeout(function() {
     var e = document.getElementById('aemail');
@@ -1522,7 +1527,10 @@ function signInWithGoogle() {
   });
 }
 
-function closeAuth() { document.getElementById('auth-modal').classList.remove('show'); }
+function closeAuth() {
+  document.getElementById('auth-modal').classList.remove('show');
+  syncOverlayState();
+}
 
 function switchTab(tab) {
   var isL = tab === 'login';
@@ -1557,23 +1565,44 @@ function submitAuth() {
     btn.textContent = tab === 'login' ? 'Sign in' : 'Create account';
     btn.disabled = false;
     if (result.error) {
-      showToast(result.error.message || 'Error. Please try again.');
+      showToast(result.error.message || 'Error. Please try again.', 'error');
       var pwEl = document.getElementById('apw');
       if (pwEl) { pwEl.style.borderColor='rgba(220,60,60,.6)'; setTimeout(function(){pwEl.style.borderColor='';},1500); }
       return;
     }
-    showToast(tab === 'register' ? 'Account created! You can now sign in.' : 'Welcome back!');
+    showToast(tab === 'register' ? 'Account created! You can now sign in.' : 'Welcome back!', 'success');
     closeAuth();
   }).catch(function(err) {
     btn.textContent = tab === 'login' ? 'Sign in' : 'Create account';
     btn.disabled = false;
-    showToast(err.message || 'Error. Please try again.');
+    showToast(err.message || 'Error. Please try again.', 'error');
   });
 }
 
-function signOut() { _supabase.auth.signOut().then(function(){ AUTH.user=null; updateUserUI(); showToast('Signed out.'); }); }
+function signOut() { _supabase.auth.signOut().then(function(){ AUTH.user=null; updateUserUI(); showToast('Signed out.', 'success'); }); }
 
-function closeMarks() { document.getElementById('mmarks').classList.remove('show'); }
+function closeMarks() {
+  document.getElementById('mmarks').classList.remove('show');
+  syncOverlayState();
+}
+
+function openShareModal() {
+  document.getElementById('share-modal').classList.add('show');
+  syncOverlayState();
+}
+
+function closeShareModal() {
+  document.getElementById('share-modal').classList.remove('show');
+  syncOverlayState();
+}
+
+function syncOverlayState() {
+  var hasOpenOverlay =
+    document.getElementById('auth-modal').classList.contains('show') ||
+    document.getElementById('mmarks').classList.contains('show') ||
+    document.getElementById('share-modal').classList.contains('show');
+  document.body.style.overflow = hasOpenOverlay ? 'hidden' : '';
+}
 
 function doShr() {
   if (navigator.share) {
@@ -1600,7 +1629,7 @@ function toggleRecord() {
 
 function startRecord() {
   if (!navigator.mediaDevices) {
-    showToast('Microphone not supported.');
+    showToast('Microphone not supported.', 'error');
     return;
   }
   navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
@@ -1651,7 +1680,7 @@ function startRecord() {
       if (waveInner) Array.from(waveInner.children).forEach(function(b) { b.style.height = Math.random() * 24 + 4 + 'px'; });
       if (_recSeconds >= 120) stopRecord();
     }, 1000);
-  }).catch(function() { showToast('Could not access microphone.'); });
+  }).catch(function() { showToast('Could not access microphone.', 'error'); });
 }
 
 function stopRecord() {
@@ -1687,13 +1716,17 @@ function hVoice(inp) {
 }
 
 // Toast
-function showToast(msg) {
+function showToast(msg, tone) {
   var old = document.getElementById('iwh-toast');
   if (old) old.remove();
   var t = document.createElement('div');
   t.id = 'iwh-toast';
   t.textContent = msg;
-  t.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:rgba(8,14,24,.97);border:1px solid rgba(200,169,110,.35);border-radius:24px;padding:11px 24px;font-size:.82rem;color:#f0ede8;z-index:1000;white-space:nowrap;backdrop-filter:blur(16px);font-family:sans-serif;transition:opacity .3s';
+  t.setAttribute('role', tone === 'error' ? 'alert' : 'status');
+  t.setAttribute('aria-live', tone === 'error' ? 'assertive' : 'polite');
+  t.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:rgba(8,14,24,.97);border:1px solid rgba(200,169,110,.35);border-radius:24px;padding:11px 24px;font-size:.82rem;color:#f0ede8;z-index:1000;white-space:normal;text-align:center;max-width:min(92vw,420px);backdrop-filter:blur(16px);font-family:sans-serif;transition:opacity .3s';
+  if (tone === 'success') t.style.borderColor = 'rgba(70,190,120,.45)';
+  if (tone === 'error') t.style.borderColor = 'rgba(220,90,90,.45)';
   document.body.appendChild(t);
   setTimeout(function() {
     t.style.opacity = '0';
@@ -1736,6 +1769,21 @@ function animCount(el, target, dur) {
 
 // Keyboard zoom
 document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (document.getElementById('share-modal').classList.contains('show')) {
+      closeShareModal();
+      return;
+    }
+    if (document.getElementById('auth-modal').classList.contains('show')) {
+      closeAuth();
+      return;
+    }
+    if (document.getElementById('mmarks').classList.contains('show')) {
+      closeMarks();
+      return;
+    }
+  }
+
   if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.classList && e.target.classList.contains('oc')) {
     e.preventDefault();
     e.target.click();
@@ -1755,6 +1803,14 @@ document.addEventListener('keydown', function(e) {
   } else if (e.key === '-' || e.key === '_') {
     viewer.camera.zoomOut(viewer.camera.positionCartographic.height * 0.3);
   }
+});
+
+document.getElementById('auth-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeAuth();
+});
+
+document.getElementById('mmarks').addEventListener('click', function(e) {
+  if (e.target === this) closeMarks();
 });
 </script>
 <script>
