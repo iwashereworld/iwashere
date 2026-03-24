@@ -1256,8 +1256,8 @@ function bSmry() {
   var oy = opens.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   
   document.getElementById('smry').innerHTML =
-    '<div class="pr"><span>Globe mark - ' + (ST.selName || '-') + '</span><span>$1.00</span></div>' +
-    '<div class="pr"><span>Name: ' + ST.name + '</span><span>-</span></div>' +
+    '<div class="pr"><span>Globe mark - ' + escapeHtml(ST.selName || '-') + '</span><span>$1.00</span></div>' +
+    '<div class="pr"><span>Name: ' + escapeHtml(ST.name) + '</span><span>-</span></div>' +
     '<div class="pr"><span>Coordinates</span><span>' + (ST.selLat ? ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) : '-') + '</span></div>' +
     '<div class="pr"><span>Photo</span><span>' + (ST.photo ? 'Yes' : 'None') + '</span></div>' +
     (cap ? '<div class="pr"><span>Capsule - opens ' + oy + '</span><span>$2.00</span></div>' : '') +
@@ -1423,13 +1423,36 @@ function countdown(added, years) {
   return days + 'd';
 }
 
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function safeImageUrl(value) {
+  if (!value) return '';
+  var url = String(value).trim();
+  if (/^data:image\/[a-z0-9.+-]+;base64,/i.test(url)) return url;
+  if (/^https?:\/\//i.test(url)) return url;
+  return '';
+}
+
+function safeInitial(value) {
+  var text = String(value || '').trim();
+  return escapeHtml(text ? text.charAt(0).toUpperCase() : '?');
+}
+
 function renderLists() {
   var h = ST.pins.slice(0, 5).map(function(p) {
     var cd = countdown(p.added, p.years);
+    var photoUrl = safeImageUrl(p.photo);
     return '<div class="pitem" onclick="flyTo(' + p.lat + ',' + p.lon + ',800000)">' +
-      '<div class="piav">' + (p.photo ? '<img src="' + p.photo + '">' : p.name.charAt(0)) + '</div>' +
-      '<div style="flex:1;min-width:0"><div class="pnm2">' + p.name + '</div>' +
-      '<div class="pct2">' + p.cname + (cd ? ' - ' + cd : '') + '</div></div>' +
+      '<div class="piav">' + (photoUrl ? '<img src="' + photoUrl + '" alt="">' : safeInitial(p.name)) + '</div>' +
+      '<div style="flex:1;min-width:0"><div class="pnm2">' + escapeHtml(p.name) + '</div>' +
+      '<div class="pct2">' + escapeHtml(p.cname) + (cd ? ' - ' + escapeHtml(cd) : '') + '</div></div>' +
       '<div class="plk" onclick="event.stopPropagation();showShareCard(ST.pins.find(function(x){return x.id===' + p.id + '}))">&gt;</div></div>';
   }).join('');
   
@@ -1546,11 +1569,12 @@ function showMarks() {
   } else {
     body.innerHTML = marks.map(function(p) {
       var cd = countdown(p.added, p.years);
-      return '<div class="mitem" onclick="closeMarks();flyTo(' + p.lat + ',' + p.lon + ',500000)"><div class="mdot">' + (p.photo ? '<img src="' + p.photo + '">' : p.name.charAt(0)) + '</div>' +
-        '<div class="minfo"><div class="mcn">- ' + p.cname + '</div>' +
+      var photoUrl = safeImageUrl(p.photo);
+      return '<div class="mitem" onclick="closeMarks();flyTo(' + p.lat + ',' + p.lon + ',500000)"><div class="mdot">' + (photoUrl ? '<img src="' + photoUrl + '" alt="">' : safeInitial(p.name)) + '</div>' +
+        '<div class="minfo"><div class="mcn">- ' + escapeHtml(p.cname) + '</div>' +
         '<div class="mdt">' + new Date(p.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + '</div>' +
-        (p.msg ? '<div class="mmsg">"' + p.msg + '"</div>' : '') +
-        (p.years ? '<div class="mcap">Opens in ' + cd + '</div>' : '') + '</div></div>';
+        (p.msg ? '<div class="mmsg">"' + escapeHtml(p.msg) + '"</div>' : '') +
+        (p.years ? '<div class="mcap">Opens in ' + escapeHtml(cd) + '</div>' : '') + '</div></div>';
     }).join('');
   }
   document.getElementById('mmarks').classList.add('show');
@@ -1561,7 +1585,8 @@ function closeMarks() { document.getElementById('mmarks').classList.remove('show
 // Share
 function showShareCard(pin) {
   if (!pin) return;
-  document.getElementById('share-avatar').innerHTML = pin.photo ? '<img src="' + pin.photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : '<span style="font-size:24px;color:#c8a96e">' + pin.name.charAt(0) + '</span>';
+  var photoUrl = safeImageUrl(pin.photo);
+  document.getElementById('share-avatar').innerHTML = photoUrl ? '<img src="' + photoUrl + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : '<span style="font-size:24px;color:#c8a96e">' + safeInitial(pin.name) + '</span>';
   document.getElementById('share-name').textContent = pin.name;
   document.getElementById('share-country').textContent = pin.cname;
   document.getElementById('share-msg').textContent = pin.msg ? '"' + pin.msg + '"' : '';
