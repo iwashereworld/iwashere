@@ -1081,10 +1081,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      searchResults.innerHTML = results.slice(0, 8).map(function(r) {
-        return '<div class="sri" onclick="searchSelect(' + r.lat + ',' + r.lon + ',\'' + (r.code || '') + '\',\'' + r.name + '\')">' + 
-          r.name + (r.sub ? '<span>' + r.sub + '</span>' : '') + '</div>';
-      }).join('');
+      clearChildren(searchResults);
+      results.slice(0, 8).forEach(function(r) {
+        var item = document.createElement('div');
+        item.className = 'sri';
+        item.onclick = function() { searchSelect(r.lat, r.lon, r.code || '', r.name); };
+        item.appendChild(document.createTextNode(r.name));
+        if (r.sub) {
+          var sub = document.createElement('span');
+          sub.textContent = r.sub;
+          item.appendChild(sub);
+        }
+        searchResults.appendChild(item);
+      });
       searchResults.style.display = 'block';
     });
     
@@ -1254,14 +1263,15 @@ function bSmry() {
     opens.setDate(opens.getDate() + (ST.capsuleDays || 365));
   }
   var oy = opens.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  
-  document.getElementById('smry').innerHTML =
-    '<div class="pr"><span>Globe mark - ' + escapeHtml(ST.selName || '-') + '</span><span>$1.00</span></div>' +
-    '<div class="pr"><span>Name: ' + escapeHtml(ST.name) + '</span><span>-</span></div>' +
-    '<div class="pr"><span>Coordinates</span><span>' + (ST.selLat ? ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) : '-') + '</span></div>' +
-    '<div class="pr"><span>Photo</span><span>' + (ST.photo ? 'Yes' : 'None') + '</span></div>' +
-    (cap ? '<div class="pr"><span>Capsule - opens ' + oy + '</span><span>$2.00</span></div>' : '') +
-    '<div class="pr tot"><span>Total</span><span>$' + tot.toFixed(2) + '</span></div>';
+
+  var summary = document.getElementById('smry');
+  clearChildren(summary);
+  summary.appendChild(createRow('Globe mark - ' + (ST.selName || '-'), '$1.00'));
+  summary.appendChild(createRow('Name: ' + ST.name, '-'));
+  summary.appendChild(createRow('Coordinates', ST.selLat ? ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) : '-'));
+  summary.appendChild(createRow('Photo', ST.photo ? 'Yes' : 'None'));
+  if (cap) summary.appendChild(createRow('Capsule - opens ' + oy, '$2.00'));
+  summary.appendChild(createRow('Total', '$' + tot.toFixed(2), true));
 }
 
 function submit() {
@@ -1445,19 +1455,82 @@ function safeInitial(value) {
   return escapeHtml(text ? text.charAt(0).toUpperCase() : '?');
 }
 
+function clearChildren(el) {
+  while (el && el.firstChild) el.removeChild(el.firstChild);
+}
+
+function createAvatarNode(photo, name, className) {
+  var wrap = document.createElement('div');
+  if (className) wrap.className = className;
+
+  var photoUrl = safeImageUrl(photo);
+  if (photoUrl) {
+    var img = document.createElement('img');
+    img.src = photoUrl;
+    img.alt = '';
+    wrap.appendChild(img);
+  } else {
+    wrap.textContent = String(name || '').trim().charAt(0).toUpperCase() || '?';
+  }
+
+  return wrap;
+}
+
+function createRow(label, value, totalClass) {
+  var row = document.createElement('div');
+  row.className = totalClass ? 'pr tot' : 'pr';
+
+  var left = document.createElement('span');
+  left.textContent = label;
+  row.appendChild(left);
+
+  var right = document.createElement('span');
+  right.textContent = value;
+  row.appendChild(right);
+
+  return row;
+}
+
 function renderLists() {
-  var h = ST.pins.slice(0, 5).map(function(p) {
-    var cd = countdown(p.added, p.years);
-    var photoUrl = safeImageUrl(p.photo);
-    return '<div class="pitem" onclick="flyTo(' + p.lat + ',' + p.lon + ',800000)">' +
-      '<div class="piav">' + (photoUrl ? '<img src="' + photoUrl + '" alt="">' : safeInitial(p.name)) + '</div>' +
-      '<div style="flex:1;min-width:0"><div class="pnm2">' + escapeHtml(p.name) + '</div>' +
-      '<div class="pct2">' + escapeHtml(p.cname) + (cd ? ' - ' + escapeHtml(cd) : '') + '</div></div>' +
-      '<div class="plk" onclick="event.stopPropagation();showShareCard(ST.pins.find(function(x){return x.id===' + p.id + '}))">&gt;</div></div>';
-  }).join('');
-  
   var pl = document.getElementById('plist');
-  if (pl) pl.innerHTML = h;
+  if (!pl) return;
+
+  clearChildren(pl);
+  ST.pins.slice(0, 5).forEach(function(p) {
+    var cd = countdown(p.added, p.years);
+
+    var item = document.createElement('div');
+    item.className = 'pitem';
+    item.onclick = function() { flyTo(p.lat, p.lon, 800000); };
+
+    item.appendChild(createAvatarNode(p.photo, p.name, 'piav'));
+
+    var info = document.createElement('div');
+    info.style.cssText = 'flex:1;min-width:0';
+
+    var name = document.createElement('div');
+    name.className = 'pnm2';
+    name.textContent = p.name;
+    info.appendChild(name);
+
+    var meta = document.createElement('div');
+    meta.className = 'pct2';
+    meta.textContent = p.cname + (cd ? ' - ' + cd : '');
+    info.appendChild(meta);
+
+    item.appendChild(info);
+
+    var link = document.createElement('div');
+    link.className = 'plk';
+    link.textContent = '>';
+    link.onclick = function(event) {
+      event.stopPropagation();
+      showShareCard(ST.pins.find(function(x) { return x.id === p.id; }));
+    };
+    item.appendChild(link);
+
+    pl.appendChild(item);
+  });
 }
 
 function populateDrop() {
@@ -1563,19 +1636,61 @@ function showMarks() {
   }
   var body = document.getElementById('mbody');
   var marks = ST.pins.filter(function(p) { return p.owner === AUTH.user.id; });
-  
+
+  clearChildren(body);
   if (!marks.length) {
-    body.innerHTML = '<div style="text-align:center;padding:3rem 1rem;font-size:.85rem;color:rgba(240,237,232,.35)">No marks yet.<br><br><button onclick="closeMarks();showGlobe()" style="background:#c8a96e;color:#020408;border:none;border-radius:20px;padding:9px 22px;cursor:pointer;font-size:.82rem;font-family:sans-serif">Place my first mark</button></div>';
+    var empty = document.createElement('div');
+    empty.style.cssText = 'text-align:center;padding:3rem 1rem;font-size:.85rem;color:rgba(240,237,232,.35)';
+    empty.appendChild(document.createTextNode('No marks yet.'));
+    empty.appendChild(document.createElement('br'));
+    empty.appendChild(document.createElement('br'));
+
+    var cta = document.createElement('button');
+    cta.textContent = 'Place my first mark';
+    cta.onclick = function() { closeMarks(); showGlobe(); };
+    cta.style.cssText = 'background:#c8a96e;color:#020408;border:none;border-radius:20px;padding:9px 22px;cursor:pointer;font-size:.82rem;font-family:sans-serif';
+    empty.appendChild(cta);
+    body.appendChild(empty);
   } else {
-    body.innerHTML = marks.map(function(p) {
+    marks.forEach(function(p) {
       var cd = countdown(p.added, p.years);
-      var photoUrl = safeImageUrl(p.photo);
-      return '<div class="mitem" onclick="closeMarks();flyTo(' + p.lat + ',' + p.lon + ',500000)"><div class="mdot">' + (photoUrl ? '<img src="' + photoUrl + '" alt="">' : safeInitial(p.name)) + '</div>' +
-        '<div class="minfo"><div class="mcn">- ' + escapeHtml(p.cname) + '</div>' +
-        '<div class="mdt">' + new Date(p.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + '</div>' +
-        (p.msg ? '<div class="mmsg">"' + escapeHtml(p.msg) + '"</div>' : '') +
-        (p.years ? '<div class="mcap">Opens in ' + escapeHtml(cd) + '</div>' : '') + '</div></div>';
-    }).join('');
+
+      var item = document.createElement('div');
+      item.className = 'mitem';
+      item.onclick = function() { closeMarks(); flyTo(p.lat, p.lon, 500000); };
+
+      item.appendChild(createAvatarNode(p.photo, p.name, 'mdot'));
+
+      var info = document.createElement('div');
+      info.className = 'minfo';
+
+      var country = document.createElement('div');
+      country.className = 'mcn';
+      country.textContent = '- ' + p.cname;
+      info.appendChild(country);
+
+      var date = document.createElement('div');
+      date.className = 'mdt';
+      date.textContent = new Date(p.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      info.appendChild(date);
+
+      if (p.msg) {
+        var msg = document.createElement('div');
+        msg.className = 'mmsg';
+        msg.textContent = '"' + p.msg + '"';
+        info.appendChild(msg);
+      }
+
+      if (p.years) {
+        var cap = document.createElement('div');
+        cap.className = 'mcap';
+        cap.textContent = 'Opens in ' + cd;
+        info.appendChild(cap);
+      }
+
+      item.appendChild(info);
+      body.appendChild(item);
+    });
   }
   document.getElementById('mmarks').classList.add('show');
 }
@@ -1585,8 +1700,20 @@ function closeMarks() { document.getElementById('mmarks').classList.remove('show
 // Share
 function showShareCard(pin) {
   if (!pin) return;
-  var photoUrl = safeImageUrl(pin.photo);
-  document.getElementById('share-avatar').innerHTML = photoUrl ? '<img src="' + photoUrl + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : '<span style="font-size:24px;color:#c8a96e">' + safeInitial(pin.name) + '</span>';
+  var avatar = document.getElementById('share-avatar');
+  clearChildren(avatar);
+  if (safeImageUrl(pin.photo)) {
+    var img = document.createElement('img');
+    img.src = safeImageUrl(pin.photo);
+    img.alt = '';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
+    avatar.appendChild(img);
+  } else {
+    var initial = document.createElement('span');
+    initial.style.cssText = 'font-size:24px;color:#c8a96e';
+    initial.textContent = String(pin.name || '').trim().charAt(0).toUpperCase() || '?';
+    avatar.appendChild(initial);
+  }
   document.getElementById('share-name').textContent = pin.name;
   document.getElementById('share-country').textContent = pin.cname;
   document.getElementById('share-msg').textContent = pin.msg ? '"' + pin.msg + '"' : '';
