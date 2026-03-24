@@ -1212,6 +1212,12 @@ function bSmry() {
 }
 
 function submit() {
+  if (!AUTH.user || !AUTH.user.id) {
+    showToast('Please sign in before placing a mark.');
+    openAuth('login');
+    return;
+  }
+
   var lat = ST.selLat || 0;
   var lon = ST.selLon || 0;
   
