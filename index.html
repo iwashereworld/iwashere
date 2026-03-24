@@ -79,6 +79,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:.85rem 2.5rem;displa
 .pc:hover{border-color:rgba(200,169,110,.3);transform:translateY(-4px);}
 .pc.ft{border-color:rgba(200,169,110,.45);background:rgba(200,169,110,.06);}
 .pbg{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gold);color:#020408;font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 14px;border-radius:12px;white-space:nowrap;}
+.pbg.alt{background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.08);}
 .pi2{font-size:1.8rem;margin-bottom:1rem;display:block;}
 .pnm{font-family:'Cormorant Garamond',serif;font-size:1.3rem;margin-bottom:.5rem;}
 .pam{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:300;color:var(--gold);line-height:1;margin-bottom:.3rem;}
@@ -86,6 +87,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:.85rem 2.5rem;displa
 .pds{font-size:.78rem;color:var(--muted);line-height:1.65;border-top:1px solid var(--border);padding-top:1rem;margin:1rem 0 1.5rem;}
 .pft{list-style:none;font-size:.78rem;color:var(--muted);line-height:2;}
 .pft li::before{content:'* ';color:var(--gold);}
+.pricing-note{margin-top:1rem;font-size:.75rem;color:var(--muted);line-height:1.7;max-width:720px;}
 footer{position:relative;z-index:10;padding:2rem 2.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:.72rem;color:var(--muted);}
 footer a{color:var(--muted);text-decoration:none;}
 #globe-app header{position:fixed;top:0;left:0;right:0;z-index:50;padding:.85rem 2rem;display:flex;align-items:center;justify-content:space-between;background:rgba(2,4,8,.75);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
@@ -284,15 +286,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div style="display:flex;gap:10px;align-items:center">
     <button class="nbtn" id="signin-btn" onclick="AUTH.user?showMarks():openAuth('login')">Sign in</button>
     <button class="nbtn" id="signout-btn" onclick="signOut()" style="display:none">Sign out</button>
-    <button class="nbtn p" onclick="showGlobe()">Enter Globe</button>
+    <button class="nbtn p" onclick="showGlobe()">Open Globe</button>
   </div>
 </nav>
 <section id="hero">
   <div class="ey">A digital monument for humanity</div>
   <h1 class="h1">Leave your <em>mark</em><br>on the world</h1>
-  <p class="hs2">Pin your name to the globe. Write a message for the future. Create a legacy that outlasts time.</p>
+  <p class="hs2">Pin your name to the globe, save a written memory, and optionally set a future opening date for your capsule.</p>
   <div class="hbs">
-    <button class="hb g" onclick="showGlobe()">Place Your Mark</button>
+    <button class="hb g" onclick="showGlobe()">Open Globe</button>
     <a href="#how" class="hb gh">How It Works</a>
   </div>
   <div class="hst">
@@ -303,11 +305,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </section>
 <section class="sec" id="how">
   <div class="secl reveal">The Journey</div>
-  <h2 class="sect reveal">Three steps to <em>immortality</em></h2>
+  <h2 class="sect reveal">Three steps to leave a <em>memory</em></h2>
   <div class="steps reveal">
     <div class="sc"><div class="sn2">01</div><div class="stit">Choose Your Spot</div><p class="sdes">Click anywhere on the 3D globe to place your pin. Zoom to street level for precise placement with satellite imagery.</p></div>
-    <div class="sc"><div class="sn2">02</div><div class="stit">Leave Your Message</div><p class="sdes">Write a note, record your voice, or upload a photo. Tell the world, or just your future self, that you were here.</p></div>
-    <div class="sc"><div class="sn2">03</div><div class="stit">Seal the Capsule</div><p class="sdes">Lock your message in a time capsule. One week to twenty-five years. When it opens, your words will echo.</p></div>
+    <div class="sc"><div class="sn2">02</div><div class="stit">Write Your Message</div><p class="sdes">Add the text that will be saved with your mark. Photos are optional, and voice is currently on-device preview only.</p></div>
+    <div class="sc"><div class="sn2">03</div><div class="stit">Choose Visibility</div><p class="sdes">Save it as a public mark today, or set a future opening date for a capsule experience.</p></div>
   </div>
 </section>
 <section id="quote">
@@ -316,12 +318,13 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </section>
 <section class="sec">
   <div class="secl reveal">Investment in Memory</div>
-  <h2 class="sect reveal">Simple, <em>timeless</em> pricing</h2>
+  <h2 class="sect reveal">Simple pricing for what is <em>live now</em></h2>
   <div class="pcards reveal">
-    <div class="pc"><span class="pi2"></span><div class="pnm">Map Mark</div><div class="pam">$1 <span>one-time</span></div><p class="pds">Your name pinned to the planet. Visible forever.</p><ul class="pft"><li>Permanent globe placement</li><li>Custom photo</li><li>Country attribution</li></ul></div>
-    <div class="pc ft"><div class="pbg">Most Chosen</div><span class="pi2"></span><div class="pnm">Mark + Capsule</div><div class="pam">$3 <span>one-time</span></div><p class="pds">Pin + a sealed message for your future self or the world.</p><ul class="pft"><li>Everything in Mark</li><li>Text message support</li><li>Opens on your chosen date</li></ul></div>
-    <div class="pc"><span class="pi2"></span><div class="pnm">Gift a Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds">Send a time capsule to someone you love.</p><ul class="pft"><li>Everything in Mark + Capsule</li><li>Recipient email field</li><li>Shareable reveal card</li></ul></div>
+    <div class="pc"><div class="pbg alt">Available Now</div><span class="pi2"></span><div class="pnm">Public Mark</div><div class="pam">$1 <span>one-time</span></div><p class="pds">Save a public mark with your name, coordinates, and written message.</p><ul class="pft"><li>Permanent globe placement</li><li>Optional photo</li><li>Country attribution</li></ul></div>
+    <div class="pc ft"><div class="pbg">Available Now</div><span class="pi2"></span><div class="pnm">Mark + Capsule</div><div class="pam">$3 <span>one-time</span></div><p class="pds">Save your mark now and choose a future opening date for the capsule view.</p><ul class="pft"><li>Everything in Public Mark</li><li>Text message support</li><li>Future opening date</li></ul></div>
+    <div class="pc"><div class="pbg alt">Limited Today</div><span class="pi2"></span><div class="pnm">Gift Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds">Recipient flow is available in the UI while downstream delivery features continue to evolve.</p><ul class="pft"><li>Recipient email field</li><li>Capsule timing options</li><li>Share card after save</li></ul></div>
   </div>
+  <p class="pricing-note reveal">Voice recording is currently local preview only. Delivery, notification, and reveal flows may continue to evolve as the product backend expands.</p>
 </section>
 <footer>
   <span>© 2026 IWASHEREWORLD · I Was Here</span>
