@@ -13,6 +13,7 @@ $supabasePoliciesPath = Join-Path $root 'supabase\policies.sql'
 $supabaseEnvExamplePath = Join-Path $root 'supabase\env.example.md'
 $supabaseStagingRunbookPath = Join-Path $root 'supabase\staging-runbook.md'
 $supabaseProductionRunbookPath = Join-Path $root 'supabase\production-runbook.md'
+$supabaseVercelEnvMapPath = Join-Path $root 'supabase\vercel-env-map.md'
 $capsuleDeliveryPath = Join-Path $root 'supabase\capsule-delivery.sql'
 $capsuleDispatchReadmePath = Join-Path $root 'supabase\functions\capsule-dispatch\README.md'
 $capsuleDispatchIndexPath = Join-Path $root 'supabase\functions\capsule-dispatch\index.ts'
@@ -56,6 +57,7 @@ $supabasePolicies = Get-Content -Raw $supabasePoliciesPath
 $supabaseEnvExample = Get-Content -Raw $supabaseEnvExamplePath
 $supabaseStagingRunbook = Get-Content -Raw $supabaseStagingRunbookPath
 $supabaseProductionRunbook = Get-Content -Raw $supabaseProductionRunbookPath
+$supabaseVercelEnvMap = Get-Content -Raw $supabaseVercelEnvMapPath
 $capsuleDelivery = Get-Content -Raw $capsuleDeliveryPath
 $capsuleDispatchReadme = Get-Content -Raw $capsuleDispatchReadmePath
 $capsuleDispatchIndex = Get-Content -Raw $capsuleDispatchIndexPath
@@ -90,6 +92,7 @@ Assert-Contains $supabasePolicies 'enable row level security' 'supabase/policies
 Assert-Contains $supabaseEnvExample 'SUPABASE_SERVICE_ROLE_KEY' 'supabase/env.example.md must mention service role key.'
 Assert-Contains $supabaseStagingRunbook 'Staging Runbook' 'supabase/staging-runbook.md must exist.'
 Assert-Contains $supabaseProductionRunbook 'Production Runbook' 'supabase/production-runbook.md must exist.'
+Assert-Contains $supabaseVercelEnvMap 'Vercel / Supabase Env Map' 'supabase/vercel-env-map.md must exist.'
 Assert-Contains $capsuleDelivery 'create table if not exists public.capsule_deliveries' 'supabase/capsule-delivery.sql must define capsule_deliveries.'
 Assert-Contains $capsuleDispatchReadme 'Capsule Dispatch Function' 'capsule-dispatch README must exist.'
 Assert-Contains $capsuleDispatchIndex 'Deno.serve' 'capsule-dispatch function must define a handler.'

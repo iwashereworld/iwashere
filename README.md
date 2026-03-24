@@ -57,6 +57,12 @@ For a stricter release-oriented pass, run:
 powershell -ExecutionPolicy Bypass -File .\scripts\release-check.ps1
 ```
 
+For staging readiness, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\staging-readiness.ps1
+```
+
 GitHub Actions now runs both checks on pushes to `main` and on pull requests.
 
 ## Important Notes
@@ -67,6 +73,7 @@ GitHub Actions now runs both checks on pushes to `main` and on pull requests.
 - Production rollout artifacts for Supabase now live in `supabase/`.
 - Use `supabase/staging-runbook.md` before applying anything to production.
 - Runtime frontend config now lives in `app-config.js`.
+- Use `app-config.example.js` and `supabase/vercel-env-map.md` when wiring staging or production envs.
 
 ## Priority Areas
 
