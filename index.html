@@ -1259,7 +1259,6 @@ function renderSearchResults() {
     }
     item.onmouseenter = function() {
       _searchActiveIndex = index;
-      renderSearchResults();
     };
     item.onclick = function() { searchSelect(r); };
     item.appendChild(document.createTextNode(r.name));
