@@ -90,6 +90,51 @@ function createAvatarNode(photo, name, className) {
   return wrap;
 }
 
+function getPinById(pinId) {
+  return ST.pins.find(function(pin) { return pin && pin.id === pinId; }) || null;
+}
+
+function positionTooltip(el, x, y) {
+  if (!el) return;
+  var width = el.offsetWidth || 240;
+  var height = el.offsetHeight || 120;
+  var left = Math.min(window.innerWidth - width - 16, x + 16);
+  var top = Math.min(window.innerHeight - height - 16, y + 16);
+  el.style.left = Math.max(16, left) + 'px';
+  el.style.top = Math.max(16, top) + 'px';
+}
+
+function hidePinTooltip() {
+  var tt = document.getElementById('tt');
+  if (!tt) return;
+  tt.classList.remove('show');
+}
+
+function showPinTooltip(pin, x, y) {
+  if (!pin) {
+    hidePinTooltip();
+    return;
+  }
+
+  var tt = document.getElementById('tt');
+  var tav = document.getElementById('tav');
+  var tn = document.getElementById('tn');
+  var tc = document.getElementById('tc');
+  var tm = document.getElementById('tm');
+  if (!tt || !tav || !tn || !tc || !tm) return;
+
+  clearChildren(tav);
+  tav.appendChild(createAvatarNode(pin.photo, pin.name, ''));
+
+  var isOwner = AUTH.user && pin.owner && AUTH.user.id === pin.owner;
+  tn.textContent = pin.name + (isOwner ? ' • Your mark' : '');
+  tc.textContent = pin.cname + ' • ' + pin.lat.toFixed(3) + ', ' + pin.lon.toFixed(3);
+  tm.textContent = pin.msg || ('Saved ' + new Date(pin.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }));
+
+  tt.classList.add('show');
+  positionTooltip(tt, x, y);
+}
+
 function createRow(label, value, totalClass) {
   var row = document.createElement('div');
   row.className = totalClass ? 'pr tot' : 'pr';

@@ -877,6 +877,14 @@ async function initCesium() {
     handler.setInputAction(function(click) {
       _autoRot = false;
       document.getElementById('brot').classList.remove('on');
+      var picked = viewer.scene.pick(click.position);
+      if (picked && picked.id && picked.id.iwhPinId) {
+        var pickedPin = getPinById(picked.id.iwhPinId);
+        if (pickedPin) {
+          showShareCard(pickedPin);
+          return;
+        }
+      }
       var cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
       if (cartesian) {
         var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
@@ -885,6 +893,20 @@ async function initCesium() {
         handleGlobeClick(lat, lon);
       }
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+    handler.setInputAction(function(movement) {
+      var picked = viewer.scene.pick(movement.endPosition);
+      if (picked && picked.id && picked.id.iwhPinId) {
+        var hoveredPin = getPinById(picked.id.iwhPinId);
+        if (hoveredPin) {
+          showPinTooltip(hoveredPin, movement.endPosition.x, movement.endPosition.y);
+          viewer.scene.canvas.style.cursor = 'pointer';
+          return;
+        }
+      }
+      viewer.scene.canvas.style.cursor = '';
+      hidePinTooltip();
+    }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
     // Update zoom level display
     viewer.camera.changed.addEventListener(function() {
@@ -1132,6 +1154,7 @@ function goLanding() {
   document.getElementById('landing').style.display = 'block';
   document.getElementById('globe-app').style.display = 'none';
   document.getElementById('globe-container').style.display = 'none';
+  hidePinTooltip();
   closeSb();
 }
 
