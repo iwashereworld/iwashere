@@ -275,7 +275,7 @@ input[type=file]{display:none;}
   <div style="display:flex;gap:1.5rem;">
     <a href="/privacy-policy.html">Privacy Policy</a>
     <a href="/terms.html">Terms of Service</a>
-    <a href="/cdn-cgi/l/email-protection#fe8d9f939b8a9c9f8d97909297be99939f9792d09d9193">Contact</a>
+    <a href="mailto:sametbasinli@gmail.com">Contact</a>
   </div>
 </footer>
 
@@ -291,7 +291,7 @@ input[type=file]{display:none;}
     <button onclick="declineCookies()" style="background:transparent;color:rgba(240,237,232,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Decline</button>
   </div>
 </div>
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 function initCookieBanner(){
   if(!localStorage.getItem('iwh_cookie_consent')){
     var b=document.getElementById('cookie-banner');
@@ -308,7 +308,6 @@ function declineCookies(){
 }
 window.addEventListener('load', initCookieBanner);
 </script>
-</div>
 
 <!-- GLOBE APP -->
 <div id="globe-app">
@@ -1480,7 +1479,7 @@ function showMarks() {
     return;
   }
   var body = document.getElementById('mbody');
-  var marks = ST.pins.filter(function(p) { return p.owner === AUTH.user.email; });
+  var marks = ST.pins.filter(function(p) { return p.owner === AUTH.user.id; });
   
   if (!marks.length) {
     body.innerHTML = '<div style="text-align:center;padding:3rem 1rem;font-size:.85rem;color:rgba(240,237,232,.35)">No marks yet.<br><br><button onclick="closeMarks();showGlobe()" style="background:#c8a96e;color:#020408;border:none;border-radius:20px;padding:9px 22px;cursor:pointer;font-size:.82rem;font-family:sans-serif">Place my first mark</button></div>';
