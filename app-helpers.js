@@ -177,6 +177,58 @@ function renderLists() {
   });
 }
 
+function removePinEntity(pinId) {
+  if (!viewer || !pinId) return;
+  pinEntities = pinEntities.filter(function(entity) {
+    var matchesDirect = entity && entity.iwhPinId === pinId;
+    var matchesProperty = entity && entity.properties && entity.properties.id && typeof entity.properties.id.getValue === 'function' && entity.properties.id.getValue() === pinId;
+    if (matchesDirect || matchesProperty) {
+      viewer.entities.remove(entity);
+      return false;
+    }
+    return true;
+  });
+}
+
+async function deleteMark(pinId, buttonEl) {
+  if (!AUTH.user || !AUTH.user.id) {
+    openAuth('login');
+    return;
+  }
+
+  var pin = ST.pins.find(function(item) { return item.id === pinId; });
+  if (!pin || pin.owner !== AUTH.user.id) {
+    showToast('You can only delete your own marks.', 'error');
+    return;
+  }
+
+  if (!window.confirm('Delete this mark? This cannot be undone.')) return;
+
+  if (buttonEl) {
+    buttonEl.disabled = true;
+    buttonEl.textContent = 'Deleting...';
+  }
+
+  var result = await _supabase.from('marks').delete().eq('id', pinId);
+  if (result.error) {
+    console.error('Delete error:', result.error);
+    if (buttonEl) {
+      buttonEl.disabled = false;
+      buttonEl.textContent = 'Delete';
+    }
+    showToast(result.error.message || 'Could not delete your mark.', 'error');
+    return;
+  }
+
+  ST.pins = ST.pins.filter(function(item) { return item.id !== pinId; });
+  if (window._lastPin && window._lastPin.id === pinId) window._lastPin = null;
+  removePinEntity(pinId);
+  updateStats();
+  renderLists();
+  showMarks();
+  showToast('Mark deleted.', 'success');
+}
+
 function showMarks() {
   if (!AUTH.user) {
     openAuth('login');
@@ -229,17 +281,33 @@ function showMarks() {
         info.appendChild(msg);
       }
 
-      if (p.years) {
-        var cap = document.createElement('div');
-        cap.className = 'mcap';
-        cap.textContent = 'Opens in ' + cd;
-        info.appendChild(cap);
-      }
+        if (p.years) {
+          var cap = document.createElement('div');
+          cap.className = 'mcap';
+          cap.textContent = 'Opens in ' + cd;
+          info.appendChild(cap);
+        }
 
-      item.appendChild(info);
-      body.appendChild(item);
-    });
-  }
+        item.appendChild(info);
+
+        var actions = document.createElement('div');
+        actions.className = 'mact';
+
+        var del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'mdel';
+        del.textContent = 'Delete';
+        del.setAttribute('aria-label', 'Delete mark in ' + p.cname);
+        del.onclick = function(event) {
+          event.stopPropagation();
+          deleteMark(p.id, del);
+        };
+        actions.appendChild(del);
+
+        item.appendChild(actions);
+        body.appendChild(item);
+      });
+    }
   document.getElementById('mmarks').classList.add('show');
   if (typeof syncOverlayState === 'function') syncOverlayState();
 }
