@@ -229,9 +229,9 @@ input[type=file]{display:none;}
 <nav>
   <div class="logo">I Was <em>Here</em></div>
   <div style="display:flex;gap:10px;align-items:center">
-    <button class="nbtn" id="signin-btn" onclick="if(typeof AUTH!=='undefined'&&AUTH.user){showMarks();}else{openAuth('login');}">Sign in</button>
-    <button class="nbtn" id="signout-btn" onclick="if(typeof signOut!=='undefined')signOut();" style="display:none">Sign out</button>
-    <button class="nbtn p" onclick="if(typeof showGlobe!=='undefined')showGlobe();">Enter Globe</button>
+    <button class="nbtn" id="signin-btn" onclick="AUTH.user?showMarks():openAuth('login')">Sign in</button>
+    <button class="nbtn" id="signout-btn" onclick="signOut()" style="display:none">Sign out</button>
+    <button class="nbtn p" onclick="showGlobe()">Enter Globe</button>
   </div>
 </nav>
 <section id="hero">
@@ -275,7 +275,7 @@ input[type=file]{display:none;}
   <div style="display:flex;gap:1.5rem;">
     <a href="/privacy-policy.html">Privacy Policy</a>
     <a href="/terms.html">Terms of Service</a>
-    <a href="/cdn-cgi/l/email-protection#b3c0d2ded6c7d1d2c0dadddfdaf3d4ded2dadf9dd0dcde">Contact</a>
+    <a href="/cdn-cgi/l/email-protection#fe8d9f939b8a9c9f8d97909297be99939f9792d09d9193">Contact</a>
   </div>
 </footer>
 
@@ -291,6 +291,23 @@ input[type=file]{display:none;}
     <button onclick="declineCookies()" style="background:transparent;color:rgba(240,237,232,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Decline</button>
   </div>
 </div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function initCookieBanner(){
+  if(!localStorage.getItem('iwh_cookie_consent')){
+    var b=document.getElementById('cookie-banner');
+    b.style.display='flex';
+  }
+}
+function acceptCookies(){
+  localStorage.setItem('iwh_cookie_consent','accepted');
+  document.getElementById('cookie-banner').style.display='none';
+}
+function declineCookies(){
+  localStorage.setItem('iwh_cookie_consent','declined');
+  document.getElementById('cookie-banner').style.display='none';
+}
+window.addEventListener('load', initCookieBanner);
+</script>
 </div>
 
 <!-- GLOBE APP -->
@@ -457,12 +474,7 @@ input[type=file]{display:none;}
     <div class="afield" id="name-f" style="display:none"><label>Full Name</label><input type="text" id="aname" placeholder="Your name"></div>
     <div class="afield"><label>Email</label><input type="email" id="aemail" placeholder="your@email.com"></div>
     <div class="afield"><label>Password</label><input type="password" id="apw" placeholder="********"></div>
-    <div id="terms-check" style="display:none;margin-bottom:1rem;">
-      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:.76rem;color:rgba(240,237,232,.6);line-height:1.5;">
-        <input type="checkbox" id="terms-agree" style="margin-top:2px;accent-color:#c8a96e;cursor:pointer;flex-shrink:0;">
-        I agree to the <a href="/terms.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Terms of Service</a> and <a href="/privacy-policy.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Privacy Policy</a>
-      </label>
-    </div>
+    <div id="terms-check" style="display:none;margin-bottom:1rem;"><label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:.76rem;color:rgba(240,237,232,.6);line-height:1.5;"><input type="checkbox" id="terms-agree" style="margin-top:2px;accent-color:#c8a96e;cursor:pointer;flex-shrink:0;"> I agree to the <a href="/terms.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Terms of Service</a> and <a href="/privacy-policy.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Privacy Policy</a></label></div>
     <button class="abtn" id="auth-btn" onclick="submitAuth()">Sign in</button>
   </div>
 </div>
@@ -1422,7 +1434,6 @@ function switchTab(tab) {
   document.getElementById('auth-btn').textContent = isL ? 'Sign in' : 'Create account';
   document.getElementById('name-f').style.display = isL ? 'none' : 'block';
   document.getElementById('terms-check').style.display = isL ? 'none' : 'block';
-  if (!isL) { document.getElementById('terms-agree').checked = false; }
   document.getElementById('auth-modal').dataset.tab = tab;
 }
 
@@ -1434,9 +1445,9 @@ function submitAuth() {
   var nameEl = document.getElementById('aname');
   var name = nameEl ? nameEl.value.trim() : '';
   var btn = document.getElementById('auth-btn');
-  if (tab === 'register') {
-    var agreed = document.getElementById('terms-agree').checked;
-    if (!agreed) { showToast('Please accept the Terms of Service and Privacy Policy.'); return; }
+  if (tab === 'register' && !document.getElementById('terms-agree').checked) {
+    showToast('Please accept the Terms of Service and Privacy Policy.');
+    return;
   }
   if (!email || !pw) { btn.style.animation='shake .4s'; setTimeout(function(){btn.style.animation='';},400); return; }
   btn.textContent = '...'; btn.disabled = true;
@@ -1669,23 +1680,11 @@ document.addEventListener('keydown', function(e) {
   }
 });
 </script>
-
 <script>
-function initCookieBanner(){
-  if(!localStorage.getItem('iwh_cookie_consent')){
-    var b=document.getElementById('cookie-banner');
-    if(b) b.style.display='flex';
-  }
-}
-function acceptCookies(){
-  localStorage.setItem('iwh_cookie_consent','accepted');
-  document.getElementById('cookie-banner').style.display='none';
-}
-function declineCookies(){
-  localStorage.setItem('iwh_cookie_consent','declined');
-  document.getElementById('cookie-banner').style.display='none';
-}
-window.addEventListener('load', initCookieBanner);
+function initCookieBanner(){if(!localStorage.getItem('iwh_cookie_consent')){var b=document.getElementById('cookie-banner');if(b)b.style.display='flex';}}
+function acceptCookies(){localStorage.setItem('iwh_cookie_consent','accepted');document.getElementById('cookie-banner').style.display='none';}
+function declineCookies(){localStorage.setItem('iwh_cookie_consent','declined');document.getElementById('cookie-banner').style.display='none';}
+window.addEventListener('load',initCookieBanner);
 </script>
 </body>
 </html>
