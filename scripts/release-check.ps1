@@ -14,6 +14,10 @@ $vercelEnvMapPath = Join-Path $root 'supabase\vercel-env-map.md'
 $capsuleDispatchReadmePath = Join-Path $root 'supabase\functions\capsule-dispatch\README.md'
 $voiceUploadReadmePath = Join-Path $root 'supabase\functions\voice-upload\README.md'
 $capsuleReadinessPath = Join-Path $root 'scripts\capsule-readiness.ps1'
+$privacyPath = Join-Path $root 'privacy-policy.html'
+$termsPath = Join-Path $root 'terms.html'
+$robotsPath = Join-Path $root 'robots.txt'
+$sitemapPath = Join-Path $root 'sitemap.xml'
 
 function Assert-Contains {
   param(
@@ -53,8 +57,15 @@ $vercelEnvMap = Get-Content -Raw $vercelEnvMapPath
 $capsuleDispatchReadme = Get-Content -Raw $capsuleDispatchReadmePath
 $voiceUploadReadme = Get-Content -Raw $voiceUploadReadmePath
 $capsuleReadiness = Get-Content -Raw $capsuleReadinessPath
+$privacy = Get-Content -Raw $privacyPath
+$terms = Get-Content -Raw $termsPath
+$robots = Get-Content -Raw $robotsPath
+$sitemap = Get-Content -Raw $sitemapPath
 
 Assert-Contains $index '<script src="/api/runtime-config.js"></script>' 'index.html must load the runtime config endpoint.'
+Assert-Contains $index '<meta name="description"' 'index.html must include a description meta tag.'
+Assert-Contains $index '<link rel="canonical"' 'index.html must include a canonical URL.'
+Assert-Contains $index 'application/ld+json' 'index.html must include structured data.'
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
 Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
 Assert-Contains $index '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>' 'index.html must load Supabase SDK.'
@@ -76,5 +87,9 @@ Assert-Contains $supabaseConfig 'verify_jwt = false' 'supabase/config.toml must 
 Assert-Contains $capsuleDispatchReadme 'Required Secrets' 'capsule-dispatch README must document required secrets.'
 Assert-Contains $voiceUploadReadme 'Expected Request' 'voice-upload README must document expected request.'
 Assert-Contains $capsuleReadiness 'Missing secrets' 'capsule readiness script must report missing secrets clearly.'
+Assert-Contains $privacy '<meta name="description"' 'privacy-policy.html must include SEO description metadata.'
+Assert-Contains $terms '<meta name="description"' 'terms.html must include SEO description metadata.'
+Assert-Contains $robots 'Sitemap: https://iwashere-seven.vercel.app/sitemap.xml' 'robots.txt must reference the sitemap.'
+Assert-Contains $sitemap '<loc>https://iwashere-seven.vercel.app/</loc>' 'sitemap.xml must include the home page.'
 
 Write-Output 'Release check passed.'
