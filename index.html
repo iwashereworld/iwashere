@@ -992,6 +992,9 @@ async function initCesium() {
     viewer.camera.changed.addEventListener(function() {
       updateZoomDisplay();
       syncPinLOD();
+    });
+
+    viewer.scene.postRender.addEventListener(function() {
       syncLabelLayer();
     });
 
@@ -1222,27 +1225,12 @@ function findCountryCenter(name) {
 
 function rebuildCountryLabelNodes() {
   clearLabelNodes(countryLabelNodes);
-  if (!viewer || !borderDataSource || !borderDataSource.entities) return;
+  if (!viewer) return;
   var seen = {};
-  borderDataSource.entities.values.forEach(function(entity) {
-    var name = getCountryFeatureName(entity);
+  COUNTRIES.forEach(function(country) {
+    var name = country.name;
     if (!name || seen[name]) return;
-    var countryCenter = findCountryCenter(name);
-    if (countryCenter) {
-      var knownPosition = Cesium.Cartesian3.fromDegrees(countryCenter.lon, countryCenter.lat, COUNTRY_LABEL_ALTITUDE);
-      var knownNode = createMapLabelNode(name, 'country', knownPosition);
-      if (knownNode) {
-        countryLabelNodes.push(knownNode);
-        seen[name] = true;
-      }
-      return;
-    }
-    var polyline = entity.polyline && entity.polyline.positions && entity.polyline.positions.getValue ? entity.polyline.positions.getValue(Cesium.JulianDate.now()) : null;
-    if (!polyline || !polyline.length) return;
-    var sphere = Cesium.BoundingSphere.fromPoints(polyline);
-    var cartographic = Cesium.Cartographic.fromCartesian(sphere.center);
-    if (!cartographic) return;
-    var position = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, COUNTRY_LABEL_ALTITUDE);
+    var position = Cesium.Cartesian3.fromDegrees(country.lon, country.lat, COUNTRY_LABEL_ALTITUDE);
     var node = createMapLabelNode(name, 'country', position);
     if (node) {
       countryLabelNodes.push(node);
@@ -1351,7 +1339,7 @@ async function tglImagery() {
 
 function ensureCountryLabels() {
   if (!viewer) return;
-  if (!countryLabelNodes.length && borderDataSource) rebuildCountryLabelNodes();
+  if (!countryLabelNodes.length) rebuildCountryLabelNodes();
 }
 
 function ensureCityLabels() {
