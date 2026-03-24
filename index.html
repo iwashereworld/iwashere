@@ -608,6 +608,30 @@ var _showBorders = false;
 var bingImagery = null;
 var osmImagery = null;
 var borderDataSource = null;
+var MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id';
+
+function normalizeMarkRecord(m) {
+  if (!m) return null;
+
+  var lat = parseFloat(m.lat);
+  var lon = parseFloat(m.lon);
+  if (!isFinite(lat) || !isFinite(lon)) return null;
+
+  return {
+    id: m.id,
+    name: m.name || 'Unknown',
+    code: m.country_code || '',
+    cname: m.country_name || 'Unknown',
+    lat: lat,
+    lon: lon,
+    msg: m.message || '',
+    years: Math.round((m.capsule_days || 0) / 365),
+    capsule_days: m.capsule_days || 0,
+    photo: safeImageUrl(m.photo),
+    added: m.created_at || new Date().toISOString(),
+    owner: m.user_id || null
+  };
+}
 
 // Initialize CesiumJS
 async function initCesium() {
@@ -1346,6 +1370,8 @@ function submit() {
 
 function saveMarkToDB(pin) {
   if (AUTH.user && AUTH.user.id) {
+    var recipientInput = document.getElementById('iem');
+    var recipientEmail = ST.rc === 'o' && recipientInput ? recipientInput.value.trim() : null;
     _supabase.from('marks').insert({
       user_id: AUTH.user.id,
       name: pin.name,
@@ -1358,7 +1384,7 @@ function saveMarkToDB(pin) {
       capsule_days: ST.capsuleDays || 0,
       capsule_date: ST.capsuleDate || null,
       capsule_for: ST.rc || 'myself',
-      recipient_email: document.getElementById('iem') ? document.getElementById('iem').value : null
+      recipient_email: recipientEmail || null
     }).then(function(r) {
       if (r.error) console.error('Save error:', r.error);
       else { pin.owner = AUTH.user.id; }
@@ -1368,26 +1394,14 @@ function saveMarkToDB(pin) {
 
 function loadMarks() {
   console.log('[IWH] Loading marks from Supabase...');
-  _supabase.from('marks').select('id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id').order('created_at', { ascending: false }).limit(500).then(function(res) {
+  _supabase.from('marks').select(MARK_SELECT_FIELDS).order('created_at', { ascending: false }).limit(500).then(function(res) {
     console.log('[IWH] Marks response:', res);
     if (res.error) { console.error('[IWH] Load error:', res.error); return; }
     if (res.data) {
       ST.pins = [];
       res.data.forEach(function(m) {
-        var pin = {
-          id: m.id,
-          name: m.name,
-          code: m.country_code,
-          cname: m.country_name,
-          lat: parseFloat(m.lat) || 0,
-          lon: parseFloat(m.lon) || 0,
-          msg: m.message,
-          years: Math.round((m.capsule_days || 0) / 365),
-          capsule_days: m.capsule_days || 0,
-          photo: m.photo,
-          added: m.created_at,
-          owner: m.user_id
-        };
+        var pin = normalizeMarkRecord(m);
+        if (!pin) return;
         ST.pins.push(pin);
         if (viewer) addPinToGlobe(pin);
       });
