@@ -1358,7 +1358,7 @@ function saveMarkToDB(pin) {
 
 function loadMarks() {
   console.log('[IWH] Loading marks from Supabase...');
-  _supabase.from('marks').select('*').order('created_at', { ascending: false }).limit(500).then(function(res) {
+  _supabase.from('marks').select('id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id').order('created_at', { ascending: false }).limit(500).then(function(res) {
     console.log('[IWH] Marks response:', res);
     if (res.error) { console.error('[IWH] Load error:', res.error); return; }
     if (res.data) {
