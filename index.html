@@ -269,7 +269,44 @@ input[type=file]{display:none;}
     <div class="pc"><span class="pi2"></span><div class="pnm">Gift a Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds">Send a time capsule to someone you love.</p><ul class="pft"><li>Everything in Mark + Capsule</li><li>Recipient email notification</li><li>Beautiful reveal experience</li></ul></div>
   </div>
 </section>
-<footer><span>I Was Here 2025</span><a href="#">Privacy</a></footer>
+<footer>
+  <span>© 2026 IWASHEREWORLD · I Was Here</span>
+  <div style="display:flex;gap:1.5rem;">
+    <a href="/privacy-policy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
+    <a href="mailto:sametbasinli@gmail.com">Contact</a>
+  </div>
+</footer>
+
+<!-- Cookie Banner -->
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(8,14,24,0.98);border-top:1px solid rgba(200,169,110,0.25);padding:1rem 2rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;backdrop-filter:blur(16px);">
+  <p style="font-size:.78rem;color:rgba(240,237,232,0.7);margin:0;max-width:600px;">
+    We use essential cookies to keep you logged in and improve your experience. By continuing, you agree to our 
+    <a href="/privacy-policy.html" style="color:#c8a96e;">Privacy Policy</a> and 
+    <a href="/terms.html" style="color:#c8a96e;">Terms of Service</a>.
+  </p>
+  <div style="display:flex;gap:8px;flex-shrink:0;">
+    <button onclick="acceptCookies()" style="background:#c8a96e;color:#020408;border:none;border-radius:20px;padding:8px 20px;font-size:.78rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Accept</button>
+    <button onclick="declineCookies()" style="background:transparent;color:rgba(240,237,232,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Decline</button>
+  </div>
+</div>
+<script>
+function initCookieBanner(){
+  if(!localStorage.getItem('iwh_cookie_consent')){
+    var b=document.getElementById('cookie-banner');
+    b.style.display='flex';
+  }
+}
+function acceptCookies(){
+  localStorage.setItem('iwh_cookie_consent','accepted');
+  document.getElementById('cookie-banner').style.display='none';
+}
+function declineCookies(){
+  localStorage.setItem('iwh_cookie_consent','declined');
+  document.getElementById('cookie-banner').style.display='none';
+}
+window.addEventListener('load', initCookieBanner);
+</script>
 </div>
 
 <!-- GLOBE APP -->
