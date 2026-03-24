@@ -102,6 +102,15 @@ footer a{color:var(--muted);text-decoration:none;}
 .cb:hover,.cb.on{border-color:var(--gold);color:var(--gold);}
 #fab{position:fixed;bottom:1.5rem;right:1.5rem;width:50px;height:50px;border-radius:50%;background:var(--gold);color:#020408;font-size:1.4rem;border:none;cursor:pointer;z-index:160;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(200,169,110,.4);transition:all .2s;}
 #fab:hover{transform:scale(1.1);}
+#start-hint{position:fixed;right:1.5rem;bottom:5.6rem;z-index:161;max-width:250px;background:rgba(8,14,24,.96);border:1px solid rgba(200,169,110,.28);border-radius:16px;padding:.9rem 1rem;backdrop-filter:blur(18px);box-shadow:0 14px 36px rgba(0,0,0,.35);}
+#start-hint.hidden{display:none;}
+#start-hint::after{content:'';position:absolute;right:20px;bottom:-9px;border-width:9px 9px 0 9px;border-style:solid;border-color:rgba(8,14,24,.96) transparent transparent transparent;filter:drop-shadow(0 1px 0 rgba(200,169,110,.18));}
+.hint-k{font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);margin-bottom:.35rem;}
+.hint-t{font-size:.82rem;line-height:1.55;color:var(--text);}
+.hint-a{display:flex;gap:.5rem;align-items:center;margin-top:.8rem;}
+.hint-a .nbtn{padding:7px 14px;font-size:.72rem;}
+#sb .step-meta{font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem;}
+#sb .step-tip{font-size:.72rem;color:var(--muted);line-height:1.6;margin:-.2rem 0 1rem;}
 #srch{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:100;width:290px;}
 #si{width:100%;background:rgba(6,10,18,.92);border:1px solid rgba(200,169,110,.28);border-radius:24px;padding:9px 18px 9px 36px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;backdrop-filter:blur(16px);}
 #sres{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:rgba(6,10,18,.97);border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;z-index:200;}
@@ -231,6 +240,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   #sb{top:auto;bottom:0;right:0;width:100%;height:min(76vh,680px);border-left:none;border-top:1px solid var(--border);border-radius:18px 18px 0 0;}
   #sb.hidden{transform:translateY(100%);}
   #fab{right:1rem;bottom:1rem;}
+  #start-hint{right:1rem;bottom:5.2rem;max-width:min(280px,calc(100vw - 2rem));}
   .ctrls{bottom:1rem;left:1rem;right:4.75rem;transform:none;justify-content:flex-start;flex-wrap:wrap;}
   #zoom-level{bottom:86px;}
   .mbox,.abox{margin:.75rem;}
@@ -250,6 +260,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   .ghs{font-size:.68rem;justify-content:space-between;}
   #srch{top:154px;width:calc(100vw - 24px);}
   #click-coords{top:212px;}
+  #start-hint{left:1rem;right:1rem;bottom:5.5rem;max-width:none;}
+  .hint-a{flex-wrap:wrap;}
   .g2,.g3{grid-template-columns:1fr;}
   .sbi,.plsec{padding:1rem;}
   .plsec{padding-top:.85rem;}
@@ -374,9 +386,19 @@ window.addEventListener('load', initCookieBanner);
   
 </div>
 <button id="fab" onclick="openSb()">+</button>
+<div id="start-hint" class="hidden" aria-live="polite">
+  <div class="hint-k">Start Here</div>
+  <div class="hint-t">Open the panel to place your first mark, choose a location and leave a message.</div>
+  <div class="hint-a">
+    <button type="button" class="nbtn p" onclick="openSb()">Create My Mark</button>
+    <button type="button" class="nbtn" onclick="dismissStartHint()">Later</button>
+  </div>
+</div>
 <div id="tt"><div class="tav" id="tav"></div><div class="tn2" id="tn"></div><div class="tc2" id="tc"></div><div class="tm2" id="tm"></div></div>
 <aside id="sb" class="hidden">
   <div class="sbi">
+    <div class="step-meta" id="step-meta">Step 1 of 5</div>
+    <div class="step-tip" id="step-tip">Start with a display name so your mark has an identity.</div>
     <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
     <!-- Step 1 -->
     <div class="step active" id="step1">
@@ -977,6 +999,8 @@ async function showGlobe() {
   populateDrop();
   updateStats();
   renderLists();
+  revealStartHint();
+  if (shouldShowStartHint()) openSb();
 }
 
 function goLanding() {
@@ -986,8 +1010,28 @@ function goLanding() {
   closeSb();
 }
 
+function shouldShowStartHint() {
+  return !localStorage.getItem('iwh_started_flow');
+}
+
+function revealStartHint() {
+  var hint = document.getElementById('start-hint');
+  if (hint) hint.classList.toggle('hidden', !shouldShowStartHint());
+}
+
+function dismissStartHint() {
+  localStorage.setItem('iwh_started_flow', 'dismissed');
+  var hint = document.getElementById('start-hint');
+  if (hint) hint.classList.add('hidden');
+}
+
 // Sidebar
-function openSb() { document.getElementById('sb').classList.remove('hidden'); }
+function openSb() {
+  document.getElementById('sb').classList.remove('hidden');
+  localStorage.setItem('iwh_started_flow', 'opened');
+  var hint = document.getElementById('start-hint');
+  if (hint) hint.classList.add('hidden');
+}
 function closeSb() { document.getElementById('sb').classList.add('hidden'); }
 
 function resetForm() {
@@ -1014,6 +1058,29 @@ function resetForm() {
     tempMarker = null;
   }
   goS(1);
+  revealStartHint();
+}
+
+var STEP_COPY = {
+  1: 'Start with a display name so your mark has an identity.',
+  2: 'Pick an exact location on the globe or search for a place.',
+  3: 'Write the message that will appear with your mark.',
+  4: 'Choose when the mark opens and who it belongs to.',
+  5: 'Review the summary and place your mark on the globe.'
+};
+
+function updateStepMeta(step) {
+  var meta = document.getElementById('step-meta');
+  var tip = document.getElementById('step-tip');
+  if (!meta || !tip) return;
+
+  if (step >= 1 && step <= 5) {
+    meta.textContent = 'Step ' + step + ' of 5';
+    tip.textContent = STEP_COPY[step] || '';
+  } else {
+    meta.textContent = 'Finished';
+    tip.textContent = 'Your mark has been saved. Share it or place another one.';
+  }
 }
 
 // Steps
@@ -1031,6 +1098,7 @@ function goS(n) {
     if (i < n - 1) d.classList.add('dn');
     if (i === n - 1) d.classList.add('on');
   });
+  updateStepMeta(n);
 }
 
 // Handle photo
@@ -1049,6 +1117,8 @@ function hPh(inp) {
 
 // Name input
 document.addEventListener('DOMContentLoaded', function() {
+  updateStepMeta(1);
+  revealStartHint();
   var nameInput = document.getElementById('iname');
   if (nameInput) {
     nameInput.addEventListener('input', function() {
