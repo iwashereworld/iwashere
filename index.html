@@ -36,6 +36,7 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;o
 nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:.85rem 2.5rem;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(2,4,8,.85) 0%,transparent 100%);}
 .logo{font-family:'Cormorant Garamond',serif;font-size:1.35rem;letter-spacing:.06em;color:var(--gold);}
 .logo em{font-style:italic;color:var(--text);}
+.logo-btn{background:transparent;border:none;padding:0;cursor:pointer;text-align:left;}
 .nbtn{background:transparent;border:1px solid rgba(200,169,110,.4);border-radius:24px;padding:8px 20px;font-size:.78rem;color:var(--gold);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
 .nbtn:hover{background:rgba(200,169,110,.12);}
 .nbtn.p{background:var(--gold);color:#020408;border-color:var(--gold);}
@@ -217,6 +218,43 @@ input[type=file]{display:none;}
 #click-coords{position:fixed;top:70px;right:20px;background:var(--surface);border:1px solid rgba(200,169,110,.28);border-radius:8px;padding:10px 14px;font-size:.75rem;color:var(--text);z-index:100;display:none;min-width:180px;}
 #click-coords .label{color:var(--muted);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;}
 #click-coords .coords{color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:1rem;}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,.oc:focus-visible,.pu:focus-visible{
+  outline:2px solid var(--gold2);
+  outline-offset:2px;
+}
+@media (max-width: 900px){
+  nav,footer{padding:1rem 1.25rem;}
+  #globe-app header{padding:.85rem 1rem;gap:.75rem;flex-wrap:wrap;align-items:flex-start;}
+  .ghs{gap:1rem;order:3;width:100%;justify-content:flex-start;}
+  #srch{top:118px;width:min(92vw,420px);}
+  #click-coords{top:176px;right:12px;left:12px;min-width:0;}
+  #sb{top:auto;bottom:0;right:0;width:100%;height:min(76vh,680px);border-left:none;border-top:1px solid var(--border);border-radius:18px 18px 0 0;}
+  #sb.hidden{transform:translateY(100%);}
+  #fab{right:1rem;bottom:1rem;}
+  .ctrls{bottom:1rem;left:1rem;right:4.75rem;transform:none;justify-content:flex-start;flex-wrap:wrap;}
+  #zoom-level{bottom:86px;}
+  .mbox,.abox{margin:.75rem;}
+}
+@media (max-width: 640px){
+  nav{padding:.85rem 1rem;gap:.75rem;flex-wrap:wrap;}
+  nav > div:last-child{width:100%;display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:.5rem;}
+  .nbtn{padding:9px 12px;}
+  .h1{font-size:clamp(2.8rem,14vw,4.8rem);}
+  .hs2{max-width:unset;}
+  .hst{gap:1.25rem;bottom:1.5rem;width:100%;padding:0 1rem;justify-content:space-between;}
+  .sec,#quote{padding:5rem 1rem;}
+  .steps,.pcards{grid-template-columns:1fr;}
+  .sc:first-child,.sc:last-child{border-radius:12px;}
+  footer{flex-direction:column;gap:.75rem;text-align:center;}
+  #globe-app header .logo{font-size:1.15rem;}
+  .ghs{font-size:.68rem;justify-content:space-between;}
+  #srch{top:154px;width:calc(100vw - 24px);}
+  #click-coords{top:212px;}
+  .g2,.g3{grid-template-columns:1fr;}
+  .sbi,.plsec{padding:1rem;}
+  .plsec{padding-top:.85rem;}
+  .mhead,.mbody{padding:1rem;}
+}
 </style>
 </head>
 <body>
@@ -313,7 +351,7 @@ window.addEventListener('load', initCookieBanner);
 <!-- GLOBE APP -->
 <div id="globe-app">
 <header>
-  <div class="logo" onclick="goLanding()" style="cursor:pointer">I Was <em>Here</em></div>
+  <button type="button" class="logo logo-btn" onclick="goLanding()" aria-label="Return to landing page">I Was <em>Here</em></button>
   <div class="ghs"><div><strong id="sp">0</strong>marks</div><div><strong id="sc2">0</strong>countries</div><div><strong id="sk2">0</strong>capsules</div></div>
   <div style="display:flex;gap:10px;align-items:center">
     <button class="nbtn" id="signin-btn2" onclick="AUTH.user?showMarks():openAuth('login')">Sign in</button>
@@ -347,7 +385,7 @@ window.addEventListener('load', initCookieBanner);
       <label class="fl">Display Name</label>
       <input type="text" id="iname" placeholder="Your name">
       <label class="fl">Photo (optional)</label>
-      <div class="pu" onclick="document.getElementById('iph').click()"><span>+ Add photo</span></div>
+      <div class="pu" onclick="document.getElementById('iph').click()" role="button" tabindex="0" aria-label="Add photo"><span>+ Add photo</span></div>
       <img class="pp" id="prev">
       <input type="file" id="iph" accept="image/*" onchange="hPh(this)">
       <button class="btn bp" onclick="goS(2)" id="btn1" disabled>Continue</button>
@@ -372,8 +410,8 @@ window.addEventListener('load', initCookieBanner);
       <h3>Your Message</h3>
       <p class="sub3">What do you want to say? Voice is currently preview-only on this device.</p>
       <div class="g2">
-        <div class="oc on" id="ow" onclick="sMT('w')"><span class="ic"></span>Write</div>
-        <div class="oc" id="ov" onclick="sMT('v')"><span class="ic"></span>Voice</div>
+        <div class="oc on" id="ow" onclick="sMT('w')" role="button" tabindex="0" aria-pressed="true"><span class="ic"></span>Write</div>
+        <div class="oc" id="ov" onclick="sMT('v')" role="button" tabindex="0" aria-pressed="false"><span class="ic"></span>Voice</div>
       </div>
       <div id="written-area">
         <label class="fl">Message</label>
@@ -381,7 +419,7 @@ window.addEventListener('load', initCookieBanner);
       </div>
       <div id="voice-area" style="display:none;">
         <div style="background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
-          <div id="rec-btn" onclick="toggleRecord()" style="width:48px;height:48px;border-radius:50%;background:rgba(200,169,110,.15);border:2px solid #c8a96e;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;cursor:pointer;font-size:18px;color:#c8a96e;transition:all .2s;">&#9679;</div>
+          <button type="button" id="rec-btn" onclick="toggleRecord()" aria-label="Start or stop voice preview recording" style="width:48px;height:48px;border-radius:50%;background:rgba(200,169,110,.15);border:2px solid #c8a96e;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;cursor:pointer;font-size:18px;color:#c8a96e;transition:all .2s;">&#9679;</button>
           <div id="rec-status" style="font-size:.78rem;color:var(--muted);">Ready to record locally</div>
           <div id="rec-time" style="font-size:.68rem;color:rgba(200,169,110,.6);margin-top:2px;">Tap to start</div>
           <div id="rec-wave" style="display:none;margin-top:10px;height:28px;display:flex;align-items:center;justify-content:center;gap:2px;" ><div id="rec-wave-inner" style="display:flex;gap:2px;align-items:flex-end;height:24px;"></div></div>
@@ -399,23 +437,23 @@ window.addEventListener('load', initCookieBanner);
       <p class="sub3">When should your message be revealed?</p>
       <label class="fl">Recipient</label>
       <div class="g2">
-        <div class="oc on" id="os" onclick="sRC('s')">Myself</div>
-        <div class="oc a2" id="oo" onclick="sRC('o')">Someone Else</div>
+        <div class="oc on" id="os" onclick="sRC('s')" role="button" tabindex="0" aria-pressed="true">Myself</div>
+        <div class="oc a2" id="oo" onclick="sRC('o')" role="button" tabindex="0" aria-pressed="false">Someone Else</div>
       </div>
       <div id="re" style="display:none;"><label class="fl">Recipient Email</label><input type="email" id="iem" placeholder="their@email.com"></div>
       <label class="fl">Opens in</label>
       <div class="g3">
-        <div class="oc" id="tq7" onclick="setQuick(7,'tq7')">1 Week</div>
-        <div class="oc" id="tq30" onclick="setQuick(30,'tq30')">1 Month</div>
-        <div class="oc" id="tq90" onclick="setQuick(90,'tq90')">3 Months</div>
-        <div class="oc" id="tq180" onclick="setQuick(180,'tq180')">6 Months</div>
-        <div class="oc on" id="tq365" onclick="setQuick(365,'tq365')">1 Year</div>
-        <div class="oc" id="tq730" onclick="setQuick(730,'tq730')">2 Years</div>
+        <div class="oc" id="tq7" onclick="setQuick(7,'tq7')" role="button" tabindex="0" aria-pressed="false">1 Week</div>
+        <div class="oc" id="tq30" onclick="setQuick(30,'tq30')" role="button" tabindex="0" aria-pressed="false">1 Month</div>
+        <div class="oc" id="tq90" onclick="setQuick(90,'tq90')" role="button" tabindex="0" aria-pressed="false">3 Months</div>
+        <div class="oc" id="tq180" onclick="setQuick(180,'tq180')" role="button" tabindex="0" aria-pressed="false">6 Months</div>
+        <div class="oc on" id="tq365" onclick="setQuick(365,'tq365')" role="button" tabindex="0" aria-pressed="true">1 Year</div>
+        <div class="oc" id="tq730" onclick="setQuick(730,'tq730')" role="button" tabindex="0" aria-pressed="false">2 Years</div>
       </div>
       <div class="g3" style="margin-top:0;">
-        <div class="oc" id="tq1825" onclick="setQuick(1825,'tq1825')">5 Years</div>
-        <div class="oc" id="tq9125" onclick="setQuick(9125,'tq9125')">25 Years</div>
-        <div class="oc" id="tqcustom" onclick="toggleCustomDate()">Custom</div>
+        <div class="oc" id="tq1825" onclick="setQuick(1825,'tq1825')" role="button" tabindex="0" aria-pressed="false">5 Years</div>
+        <div class="oc" id="tq9125" onclick="setQuick(9125,'tq9125')" role="button" tabindex="0" aria-pressed="false">25 Years</div>
+        <div class="oc" id="tqcustom" onclick="toggleCustomDate()" role="button" tabindex="0" aria-pressed="false">Custom</div>
       </div>
       <div id="custom-date-area" style="display:none;margin-top:.5rem;">
         <label class="fl">Select Date</label>
@@ -427,7 +465,7 @@ window.addEventListener('load', initCookieBanner);
         <div id="opens-date-text" style="font-size:.9rem;color:var(--gold);margin-top:2px;font-family:'Cormorant Garamond',serif;">In 1 year - ...</div>
       </div>
       <div style="text-align:center;margin-bottom:.5rem;"><span style="font-size:.72rem;color:var(--muted);">or</span></div>
-      <div class="oc" id="tq0" onclick="setQuick(0,'tq0')" style="margin-bottom:1rem;">No Capsule (mark only)</div>
+      <div class="oc" id="tq0" onclick="setQuick(0,'tq0')" role="button" tabindex="0" aria-pressed="false" style="margin-bottom:1rem;">No Capsule (mark only)</div>
       <button class="btn bp" id="btn4" onclick="proceedToReview()">Review</button>
       <button class="btn bs" onclick="goS(3)">Back</button>
     </div>
@@ -1115,6 +1153,8 @@ function sMT(t) {
   ST.msgType = t;
   document.getElementById('ow').classList.toggle('on', t === 'w');
   document.getElementById('ov').classList.toggle('on', t === 'v');
+  document.getElementById('ow').setAttribute('aria-pressed', t === 'w' ? 'true' : 'false');
+  document.getElementById('ov').setAttribute('aria-pressed', t === 'v' ? 'true' : 'false');
   document.getElementById('written-area').style.display = t === 'w' ? 'block' : 'none';
   document.getElementById('voice-area').style.display = t === 'v' ? 'block' : 'none';
 }
@@ -1139,6 +1179,8 @@ function sRC(r) {
   ST.rc = r;
   document.getElementById('os').classList.toggle('on', r === 's');
   document.getElementById('oo').classList.toggle('on', r === 'o');
+  document.getElementById('os').setAttribute('aria-pressed', r === 's' ? 'true' : 'false');
+  document.getElementById('oo').setAttribute('aria-pressed', r === 'o' ? 'true' : 'false');
   document.getElementById('re').style.display = r === 'o' ? 'block' : 'none';
 }
 
@@ -1169,10 +1211,16 @@ function setQuick(days, id) {
   
   ['tq7', 'tq30', 'tq90', 'tq180', 'tq365', 'tq730', 'tq1825', 'tq9125', 'tq0', 'tqcustom'].forEach(function(i) {
     var el = document.getElementById(i);
-    if (el) el.classList.remove('on');
+    if (el) {
+      el.classList.remove('on');
+      el.setAttribute('aria-pressed', 'false');
+    }
   });
   var el = document.getElementById(id);
-  if (el) el.classList.add('on');
+  if (el) {
+    el.classList.add('on');
+    el.setAttribute('aria-pressed', 'true');
+  }
   
   var cda = document.getElementById('custom-date-area');
   if (cda) cda.style.display = 'none';
@@ -1183,10 +1231,16 @@ function setQuick(days, id) {
 function toggleCustomDate() {
   ['tq7', 'tq30', 'tq90', 'tq180', 'tq365', 'tq730', 'tq1825', 'tq9125', 'tq0'].forEach(function(i) {
     var el = document.getElementById(i);
-    if (el) el.classList.remove('on');
+    if (el) {
+      el.classList.remove('on');
+      el.setAttribute('aria-pressed', 'false');
+    }
   });
   var btn = document.getElementById('tqcustom');
-  if (btn) btn.classList.add('on');
+  if (btn) {
+    btn.classList.add('on');
+    btn.setAttribute('aria-pressed', 'true');
+  }
   
   var cda = document.getElementById('custom-date-area');
   if (cda) cda.style.display = 'block';
@@ -1682,6 +1736,18 @@ function animCount(el, target, dur) {
 
 // Keyboard zoom
 document.addEventListener('keydown', function(e) {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.classList && e.target.classList.contains('oc')) {
+    e.preventDefault();
+    e.target.click();
+    return;
+  }
+
+  if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.classList && e.target.classList.contains('pu')) {
+    e.preventDefault();
+    e.target.click();
+    return;
+  }
+
   if (!viewer) return;
   
   if (e.key === '+' || e.key === '=') {
