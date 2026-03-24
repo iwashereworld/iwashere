@@ -335,16 +335,22 @@ function renderLists() {
 }
 
 function removePinEntity(pinId) {
-  if (!viewer || !pinId) return;
+  if (!pinId) return;
   pinEntities = pinEntities.filter(function(entity) {
     var matchesDirect = entity && entity.iwhPinId === pinId;
     var matchesProperty = entity && entity.properties && entity.properties.id && typeof entity.properties.id.getValue === 'function' && entity.properties.id.getValue() === pinId;
     if (matchesDirect || matchesProperty) {
-      viewer.entities.remove(entity);
+      if (pinDataSource) {
+        pinDataSource.entities.remove(entity);
+      } else if (viewer) {
+        viewer.entities.remove(entity);
+      }
       return false;
     }
     return true;
   });
+  pinAggregateDirty = true;
+  if (typeof syncPinLOD === 'function') syncPinLOD();
 }
 
 async function deleteMark(pinId, buttonEl) {
