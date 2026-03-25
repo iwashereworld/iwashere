@@ -64,10 +64,11 @@ function dismissStartHint() {
 }
 
 function openSb() {
+  if (typeof startCreateFlow === 'function') {
+    startCreateFlow();
+    return;
+  }
   document.getElementById('sb').classList.remove('hidden');
-  localStorage.setItem('iwh_started_flow', 'opened');
-  var hint = document.getElementById('start-hint');
-  if (hint) hint.classList.add('hidden');
 }
 
 function closeSb() {
@@ -108,6 +109,10 @@ function resetForm() {
     viewer.entities.remove(tempMarker);
     tempMarker = null;
   }
+  ST.locationConfirmed = false;
+  ST.createMode = false;
+  ST.createStep = 0;
+  if (typeof updateCreateFlowUI === 'function') updateCreateFlowUI();
   updateCapsuleUI();
   goS(1);
   revealStartHint();
@@ -334,6 +339,7 @@ function updateUserUI() {
     if (chip2) chip2.textContent = t('nav_sign_in');
     if (signoutBtn) signoutBtn.style.display = 'none';
   }
+  if (typeof syncPinLOD === 'function') syncPinLOD();
 }
 
 function openAuth(tab) {
