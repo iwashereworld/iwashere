@@ -432,9 +432,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
     <a href="#how" class="hb gh" data-i18n="hero_how">How It Works</a>
   </div>
   <div class="hst">
-    <div class="st"><span class="sn" id="s1">12,847</span><span class="sl" data-i18n="stat_marks">Marks Placed</span></div>
-    <div class="st"><span class="sn" id="s2">194</span><span class="sl" data-i18n="stat_countries">Countries</span></div>
-    <div class="st"><span class="sn" id="s3">8,291</span><span class="sl" data-i18n="stat_capsules">Capsules Sealed</span></div>
+    <div class="st"><span class="sn" id="s1">0</span><span class="sl" data-i18n="stat_marks">Marks Placed</span></div>
+    <div class="st"><span class="sn" id="s2">0</span><span class="sl" data-i18n="stat_countries">Countries</span></div>
+    <div class="st"><span class="sn" id="s3">0</span><span class="sl" data-i18n="stat_capsules">Active Capsules</span></div>
   </div>
 </section>
 <section class="sec" id="how">
@@ -1889,9 +1889,18 @@ function loadStats() {
   _supabase.from('marks').select('id', { count: 'exact', head: true }).then(function(res) {
     if (res.count !== null) {
       var el = document.getElementById('s1');
-      if (el) animCount(el, res.count || 12847, 2000);
+      if (el) animCount(el, res.count || 0, 1200);
     }
   });
+}
+
+function updateLandingStatsFromPins() {
+  var countries = ST.pins.map(function(p) { return p.code || p.cname; }).filter(function(v, i, a) { return v && a.indexOf(v) === i; });
+  var capsules = ST.pins.filter(function(p) { return p.years > 0; }).length;
+  var s2 = document.getElementById('s2');
+  var s3 = document.getElementById('s3');
+  if (s2) s2.textContent = countries.length.toLocaleString();
+  if (s3) s3.textContent = capsules.toLocaleString();
 }
 
 function updateStats() {
@@ -1906,6 +1915,7 @@ function updateStats() {
   
   var sk2 = document.getElementById('sk2');
   if (sk2) sk2.textContent = ST.pins.filter(function(p) { return p.years > 0; }).length.toLocaleString();
+  updateLandingStatsFromPins();
   if (typeof renderCountrySummary === 'function') renderCountrySummary();
 }
 
