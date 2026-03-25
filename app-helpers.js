@@ -489,6 +489,31 @@ function buildProfileBio(marks) {
   return 'Building a personal map of memories on I Was Here.';
 }
 
+function buildProfileSummary(marks, countries, capsules) {
+  if (!marks.length) {
+    return 'Your globe is still empty. Start with one meaningful place and build from there.';
+  }
+
+  var latest = marks.slice().sort(function(a, b) {
+    return new Date(b.added || 0) - new Date(a.added || 0);
+  })[0];
+
+  var parts = [];
+  parts.push(marks.length + ' mark' + (marks.length === 1 ? '' : 's'));
+  parts.push(countries.length + ' countr' + (countries.length === 1 ? 'y' : 'ies'));
+  if (capsules) parts.push(capsules + ' capsule' + (capsules === 1 ? '' : 's'));
+  if (latest && latest.cname) parts.push('latest in ' + latest.cname);
+  return parts.join(' • ');
+}
+
+function buildProfileBadgeLevel(markCount) {
+  if (markCount >= 25) return 'Worldbuilder';
+  if (markCount >= 10) return 'Trail Keeper';
+  if (markCount >= 3) return 'Memory Mapper';
+  if (markCount >= 1) return 'First Marker';
+  return 'New Explorer';
+}
+
 function renderProfileRecent(container, marks) {
   clearChildren(container);
 
@@ -571,7 +596,10 @@ function openProfile() {
 
   document.getElementById('profile-name').textContent = AUTH.user.name;
   document.getElementById('profile-meta').textContent = AUTH.user.email;
+  document.getElementById('profile-badge-level').textContent = buildProfileBadgeLevel(marks.length);
+  document.getElementById('profile-badge-latest').textContent = marks.length ? ('Latest: ' + marks[0].cname) : 'No marks yet';
   document.getElementById('profile-bio').textContent = buildProfileBio(marks);
+  document.getElementById('profile-summary').textContent = buildProfileSummary(marks, countries, capsules);
   document.getElementById('profile-stat-marks').textContent = marks.length;
   document.getElementById('profile-stat-countries').textContent = countries.length;
   document.getElementById('profile-stat-capsules').textContent = capsules;
