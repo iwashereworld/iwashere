@@ -354,12 +354,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   #globe-app header{padding:.85rem 1rem;gap:.75rem;flex-wrap:wrap;align-items:flex-start;}
   .ghs{gap:1rem;order:3;width:100%;justify-content:flex-start;}
   #srch{top:118px;width:min(92vw,420px);}
+  #country-summary{top:176px;left:12px;right:12px;width:auto;max-width:none;padding:12px 12px 9px;max-height:150px;overflow:auto;}
   #click-coords{top:176px;right:12px;left:12px;min-width:0;}
   #sb{top:auto;bottom:0;right:0;width:100%;height:min(76vh,680px);border-left:none;border-top:1px solid var(--border);border-radius:18px 18px 0 0;}
   #sb.hidden{transform:translateY(100%);}
-  #fab{right:1rem;bottom:1rem;}
+  #fab{right:1rem;bottom:1rem;width:54px;height:54px;}
   #start-hint{right:1rem;bottom:5.2rem;max-width:min(280px,calc(100vw - 2rem));}
-  .ctrls{bottom:1rem;left:1rem;right:4.75rem;transform:none;justify-content:flex-start;flex-wrap:wrap;}
+  .ctrls{bottom:1rem;left:1rem;right:5.2rem;transform:none;justify-content:flex-start;flex-wrap:wrap;gap:6px;}
+  .cb{min-height:40px;}
   #zoom-level{bottom:86px;}
   .mbox,.abox{margin:.75rem;}
 }
@@ -382,13 +384,17 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   #globe-app header .logo{font-size:1.15rem;}
   .ghs{font-size:.68rem;justify-content:space-between;}
   #srch{top:154px;width:calc(100vw - 24px);}
-  #click-coords{top:212px;}
+  #country-summary{top:212px;left:12px;right:12px;max-height:132px;}
+  #click-coords{top:354px;padding:9px 12px;}
   #start-hint{left:1rem;right:1rem;bottom:5.5rem;max-width:none;}
   .hint-a{flex-wrap:wrap;}
   .g2,.g3{grid-template-columns:1fr;}
   .sbi,.plsec{padding:1rem;}
   .plsec{padding-top:.85rem;}
   .mhead,.mbody{padding:1rem;}
+  .ctrls{left:12px;right:78px;bottom:12px;}
+  #fab{right:12px;bottom:12px;width:52px;height:52px;}
+  #zoom-level{bottom:82px;left:12px;right:12px;transform:none;text-align:center;}
 }
 </style>
 </head>
