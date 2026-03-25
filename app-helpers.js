@@ -380,7 +380,7 @@ function renderCountrySummary() {
 }
 
 function bSmry() {
-  var cap = ST.capsuleDays > 0;
+  var cap = !!(ST.capsuleDate || ST.capsuleDays > 0);
   var tot = 1 + (cap ? 2 : 0);
   var opens;
   if (ST.capsuleDate) {
@@ -396,7 +396,6 @@ function bSmry() {
   summary.appendChild(createRow('Globe mark - ' + (ST.selName || '-'), '$1.00'));
   summary.appendChild(createRow('Name: ' + ST.name, '-'));
   summary.appendChild(createRow('Coordinates', ST.selLat ? ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) : '-'));
-  summary.appendChild(createRow('Photo', ST.photo ? 'Yes' : 'None'));
   if (cap) summary.appendChild(createRow('Capsule - opens ' + oy, '$2.00'));
   summary.appendChild(createRow('Total', '$' + tot.toFixed(2), true));
 }
@@ -1208,7 +1207,7 @@ function renderCountrySummary() {
 }
 
 function bSmry() {
-  var cap = ST.capsuleDays > 0;
+  var cap = !!(ST.capsuleDate || ST.capsuleDays > 0);
   var tot = 1 + (cap ? 2 : 0);
   var opens = ST.capsuleDate ? new Date(ST.capsuleDate) : new Date();
   if (!ST.capsuleDate) opens.setDate(opens.getDate() + (ST.capsuleDays || 365));
@@ -1218,7 +1217,6 @@ function bSmry() {
   summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Küre izi - ' : 'Globe mark - ') + (ST.selName || '-'), '$1.00'));
   summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'İsim: ' : 'Name: ') + ST.name, '-'));
   summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Koordinatlar' : 'Coordinates', ST.selLat ? ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) : '-'));
-  summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Fotoğraf' : 'Photo', ST.photo ? (getCurrentLanguage() === 'tr' ? 'Var' : 'Yes') : (getCurrentLanguage() === 'tr' ? 'Yok' : 'None')));
   if (cap) summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Kapsül - açılır ' : 'Capsule - opens ') + oy, '$2.00'));
   summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Toplam' : 'Total', '$' + tot.toFixed(2), true));
 }

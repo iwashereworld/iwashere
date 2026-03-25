@@ -2224,7 +2224,8 @@ function saveMarkToDB(pin) {
   if (AUTH.user && AUTH.user.id) {
     var recipientInput = document.getElementById('iem');
     var recipientEmail = ST.rc === 'o' && recipientInput ? normalizeEmail(recipientInput.value) : null;
-    var capsuleFor = ST.capsuleDays > 0 ? (ST.rc === 'o' ? 'other' : 'myself') : 'myself';
+    var hasCapsule = !!(ST.capsuleDate || ST.capsuleDays > 0);
+    var capsuleFor = hasCapsule ? (ST.rc === 'o' ? 'other' : 'myself') : 'myself';
     return _supabase.from('marks').insert({
       user_id: AUTH.user.id,
       name: clampText(pin.name, MAX_NAME_LENGTH),
@@ -2234,10 +2235,10 @@ function saveMarkToDB(pin) {
       lon: pin.lon,
       message: clampText(pin.msg, MAX_MESSAGE_LENGTH),
       photo: pin.photo,
-      capsule_days: ST.capsuleDays || 0,
-      capsule_date: ST.capsuleDays > 0 ? (ST.capsuleDate || null) : null,
+      capsule_days: hasCapsule ? Math.max(0, ST.capsuleDays || 0) : 0,
+      capsule_date: hasCapsule ? (ST.capsuleDate || null) : null,
       capsule_for: capsuleFor,
-      recipient_email: ST.capsuleDays > 0 ? (recipientEmail || null) : null
+      recipient_email: hasCapsule ? (recipientEmail || null) : null
     }).select('id').single().then(function(r) {
       if (r.error) {
         console.error('Save error:', r.error);
