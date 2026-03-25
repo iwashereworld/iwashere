@@ -1579,43 +1579,59 @@ function normalizeCountryName(name) {
   return COUNTRY_NAME_ALIASES[name] || name;
 }
 
-function wrapLongitudeForReference(lon, refLon) {
+function normalizeLonForReference(lon, refLon) {
   while (lon - refLon > 180) lon -= 360;
   while (lon - refLon < -180) lon += 360;
   return lon;
 }
 
-function cartesianToLonLatPoint(position) {
-  var cartographic = Cesium.Cartographic.fromCartesian(position);
-  if (!cartographic) return null;
+function createRingGeometry(points) {
+  if (!points || points.length < 3) return null;
+  var ring = points.map(function(point) {
+    return { lon: point[0], lat: point[1] };
+  });
+  var lons = ring.map(function(point) { return point.lon; });
+  var minLon = Math.min.apply(null, lons);
+  var maxLon = Math.max.apply(null, lons);
+  var minLat = Math.min.apply(null, ring.map(function(point) { return point.lat; }));
+  var maxLat = Math.max.apply(null, ring.map(function(point) { return point.lat; }));
   return {
-    lon: Cesium.Math.toDegrees(cartographic.longitude),
-    lat: Cesium.Math.toDegrees(cartographic.latitude)
+    points: ring,
+    minLat: minLat,
+    maxLat: maxLat,
+    minLon: minLon,
+    maxLon: maxLon,
+    crossesDateline: (maxLon - minLon) > 180
   };
 }
 
-function hierarchyToPolygonGeometry(hierarchy) {
-  if (!hierarchy || !hierarchy.positions || !hierarchy.positions.length) return null;
-  var outer = hierarchy.positions.map(cartesianToLonLatPoint).filter(Boolean);
-  if (outer.length < 3) return null;
+function createPolygonGeometry(coordinates) {
+  if (!coordinates || !coordinates.length) return null;
+  var outer = createRingGeometry(coordinates[0]);
+  if (!outer) return null;
   return {
     outer: outer,
-    holes: (hierarchy.holes || []).map(function(hole) {
-      if (!hole || !hole.positions || !hole.positions.length) return null;
-      var ring = hole.positions.map(cartesianToLonLatPoint).filter(Boolean);
-      return ring.length >= 3 ? ring : null;
+    holes: coordinates.slice(1).map(function(holeCoords) {
+      return createRingGeometry(holeCoords);
     }).filter(Boolean)
   };
 }
 
+function isPointWithinRingBounds(lat, lon, ring) {
+  if (!ring) return false;
+  if (lat < ring.minLat || lat > ring.maxLat) return false;
+  if (ring.crossesDateline) return lon >= ring.maxLon || lon <= ring.minLon;
+  return lon >= ring.minLon && lon <= ring.maxLon;
+}
+
 function isPointInRing(lat, lon, ring) {
-  if (!ring || ring.length < 3) return false;
+  if (!ring || !ring.points || ring.points.length < 3 || !isPointWithinRingBounds(lat, lon, ring)) return false;
   var inside = false;
-  for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    var xi = wrapLongitudeForReference(ring[i].lon, lon);
-    var yi = ring[i].lat;
-    var xj = wrapLongitudeForReference(ring[j].lon, lon);
-    var yj = ring[j].lat;
+  for (var i = 0, j = ring.points.length - 1; i < ring.points.length; j = i++) {
+    var xi = normalizeLonForReference(ring.points[i].lon, lon);
+    var yi = ring.points[i].lat;
+    var xj = normalizeLonForReference(ring.points[j].lon, lon);
+    var yj = ring.points[j].lat;
     var intersects = ((yi > lat) !== (yj > lat)) &&
       (lon < ((xj - xi) * (lat - yi)) / ((yj - yi) || 1e-12) + xi);
     if (intersects) inside = !inside;
@@ -1631,18 +1647,27 @@ function isPointInPolygonGeometry(lat, lon, polygon) {
   });
 }
 
-function buildCountryGeometryCache(dataSource) {
+function buildCountryGeometryCacheFromGeoJson(geojson) {
   countryGeometryCache = [];
-  if (!dataSource || !dataSource.entities || !dataSource.entities.values) return;
-  var now = Cesium.JulianDate.now();
-  dataSource.entities.values.forEach(function(entity) {
-    if (!entity || !entity.polygon || !entity.polygon.hierarchy || !entity.polygon.hierarchy.getValue) return;
-    var hierarchy = entity.polygon.hierarchy.getValue(now);
-    var polygon = hierarchyToPolygonGeometry(hierarchy);
-    if (!polygon) return;
-    var featureName = getCountryFeatureName(entity);
+  if (!geojson || !geojson.features || !geojson.features.length) return;
+  geojson.features.forEach(function(feature) {
+    if (!feature || !feature.geometry || !feature.geometry.type || !feature.properties) return;
+    var featureName = feature.properties.ADMIN || feature.properties.name || feature.properties.NAME || feature.properties.COUNTRY || feature.properties.formal_en || '';
     var canonical = normalizeCountryName(featureName);
     var country = findCountryCenter(canonical) || findCountryCenter(featureName);
+    var polygons = [];
+
+    if (feature.geometry.type === 'Polygon') {
+      var polygon = createPolygonGeometry(feature.geometry.coordinates);
+      if (polygon) polygons.push(polygon);
+    } else if (feature.geometry.type === 'MultiPolygon') {
+      feature.geometry.coordinates.forEach(function(polygonCoords) {
+        var polygon = createPolygonGeometry(polygonCoords);
+        if (polygon) polygons.push(polygon);
+      });
+    }
+
+    if (!polygons.length) return;
     countryGeometryCache.push({
       name: canonical || featureName,
       code: country ? country.code : '',
@@ -1652,14 +1677,18 @@ function buildCountryGeometryCache(dataSource) {
         lat: 0,
         lon: 0
       },
-      polygon: polygon
+      polygons: polygons
     });
   });
 }
 
 function findCountryByGeometry(lat, lon) {
   for (var i = 0; i < countryGeometryCache.length; i++) {
-    if (isPointInPolygonGeometry(lat, lon, countryGeometryCache[i].polygon)) {
+    var entry = countryGeometryCache[i];
+    var match = entry.polygons && entry.polygons.some(function(polygon) {
+      return isPointInPolygonGeometry(lat, lon, polygon);
+    });
+    if (match) {
       return countryGeometryCache[i].country;
     }
   }
@@ -1836,23 +1865,30 @@ function syncBorderLayer() {
     return;
   }
   if (borderDataSource || !viewer) return;
-  Cesium.GeoJsonDataSource.load('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson', {
-    stroke: Cesium.Color.fromCssColorString('#c8a96e').withAlpha(0.0),
-    fill: Cesium.Color.TRANSPARENT,
-    strokeWidth: 1,
-    clampToGround: false
-  }).then(function(dataSource) {
-    buildCountryGeometryCache(dataSource);
-    convertBordersToPolylines(dataSource);
-    borderDataSource = dataSource;
-    viewer.dataSources.add(dataSource);
-    rebuildCountryLabelNodes();
-    syncLabelLayer();
-  }).catch(function(err) {
-    console.error('[IWH] border layer load failed:', err);
-    _showBorders = false;
-    if (btn) btn.classList.remove('on');
-  });
+  var geoUrl = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson';
+  fetch(geoUrl)
+    .then(function(response) { return response.json(); })
+    .then(function(geojson) {
+      buildCountryGeometryCacheFromGeoJson(geojson);
+      return Cesium.GeoJsonDataSource.load(geojson, {
+        stroke: Cesium.Color.fromCssColorString('#c8a96e').withAlpha(0.0),
+        fill: Cesium.Color.TRANSPARENT,
+        strokeWidth: 1,
+        clampToGround: false
+      });
+    })
+    .then(function(dataSource) {
+      convertBordersToPolylines(dataSource);
+      borderDataSource = dataSource;
+      viewer.dataSources.add(dataSource);
+      rebuildCountryLabelNodes();
+      syncLabelLayer();
+    })
+    .catch(function(err) {
+      console.error('[IWH] border layer load failed:', err);
+      _showBorders = false;
+      if (btn) btn.classList.remove('on');
+    });
 }
 
 function tglBorders() {
