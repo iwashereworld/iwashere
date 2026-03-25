@@ -280,6 +280,54 @@ function getCountryMarkGroups() {
   });
 }
 
+var _openCountrySummaryKey = '';
+
+function getCountryPins(group) {
+  if (!group) return [];
+  return ST.pins.filter(function(pin) {
+    return (pin.code || pin.cname || 'Unknown') === group.key;
+  }).sort(function(a, b) {
+    return new Date(b.added || 0) - new Date(a.added || 0);
+  });
+}
+
+function flyToPinFromSummary(pin) {
+  if (!pin) return;
+  flyTo(pin.lat, pin.lon, getHeightForZoom(29));
+  if (typeof showPinTooltip === 'function' && viewer && viewer.scene) {
+    var position = Cesium.Cartesian3.fromDegrees(pin.lon, pin.lat, 0);
+    var windowPos = Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, position);
+    if (windowPos) showPinTooltip(pin, windowPos.x, windowPos.y);
+  }
+}
+
+function createCountrySummaryDetail(pin) {
+  var item = document.createElement('div');
+  item.className = 'cs-detail-item';
+  item.title = getCurrentLanguage() === 'tr' ? 'Bu izne git' : 'Go to this mark';
+  item.onclick = function() {
+    flyToPinFromSummary(pin);
+  };
+
+  var avatar = createAvatarNode(pin.photo, pin.name, 'cs-detail-avatar');
+  item.appendChild(avatar);
+
+  var copy = document.createElement('div');
+  copy.className = 'cs-detail-copy';
+  var name = document.createElement('div');
+  name.className = 'cs-detail-name';
+  name.textContent = pin.name;
+  var meta = document.createElement('div');
+  meta.className = 'cs-detail-meta';
+  meta.textContent = pin.msg
+    ? pin.msg
+    : (pin.lat.toFixed(3) + ', ' + pin.lon.toFixed(3));
+  copy.appendChild(name);
+  copy.appendChild(meta);
+  item.appendChild(copy);
+  return item;
+}
+
 function renderCountrySummary() {
   var body = document.getElementById('country-summary-body');
   if (!body) return;
@@ -305,7 +353,11 @@ function renderCountrySummary() {
   body.className = 'cs-list';
   groups.slice(0, 8).forEach(function(group) {
     var item = document.createElement('div');
-    item.className = 'cs-item';
+    item.className = 'cs-item clickable';
+    item.onclick = function() {
+      _openCountrySummaryKey = _openCountrySummaryKey === group.key ? '' : group.key;
+      renderCountrySummary();
+    };
     var name = document.createElement('div');
     name.className = 'cs-name';
     name.textContent = group.name;
@@ -315,6 +367,15 @@ function renderCountrySummary() {
     item.appendChild(name);
     item.appendChild(count);
     body.appendChild(item);
+
+    if (_openCountrySummaryKey === group.key) {
+      var detailWrap = document.createElement('div');
+      detailWrap.className = 'cs-detail-list';
+      getCountryPins(group).slice(0, 8).forEach(function(pin) {
+        detailWrap.appendChild(createCountrySummaryDetail(pin));
+      });
+      body.appendChild(detailWrap);
+    }
   });
 }
 
