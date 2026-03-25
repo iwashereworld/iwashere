@@ -460,7 +460,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <div id="globe-bg"></div>
 <div id="overlay"></div>
 <nav>
-  <div class="logo">I Was <em>Here</em></div>
+  <div class="logo-wrap">
+    <div class="logo">I Was <em>Here</em></div>
+    <div class="logo-sub">Leave your mark on the world</div>
+  </div>
   <div class="nav-actions">
     <div class="lang-switch" aria-label="Language switcher">
       <button class="nbtn lang-btn" type="button" data-lang-btn="en" onclick="setLanguage('en')">EN</button>
@@ -1256,6 +1259,7 @@ function updateCreateFlowUI() {
   if (fab) {
     fab.classList.toggle('cta-preview', !!_ctaPreviewEnabled);
     fab.classList.toggle('create-active', !!(_ctaPreviewEnabled && sidebar && !sidebar.classList.contains('hidden')));
+    fab.style.display = sidebar && !sidebar.classList.contains('hidden') ? 'none' : 'flex';
   }
   if (fabLabel) {
     if (_ctaPreviewEnabled) {

@@ -143,6 +143,7 @@ function goS(n) {
   }
   var active = document.getElementById('step' + n);
   if (active) active.classList.add('active');
+  ST.createMode = n === 2;
 
   var dots = document.querySelectorAll('.dot');
   dots.forEach(function(d, i) {
@@ -272,13 +273,12 @@ function toggleCustomDate() {
 
   var cd = document.getElementById('capsule-date');
   if (cd) {
-    var tomorrow = new Date();
-    tomorrow.setHours(tomorrow.getHours() + 1, 0, 0, 0);
-    cd.min = tomorrow.toISOString().slice(0, 16);
+    var now = new Date();
+    now.setSeconds(0, 0);
+    cd.min = now.toISOString().slice(0, 16);
     if (!cd.value) {
       var def = new Date();
-      def.setFullYear(def.getFullYear() + 1);
-      def.setMinutes(0, 0, 0);
+      def.setSeconds(0, 0);
       cd.value = def.toISOString().slice(0, 16);
       setCustomDate(cd.value);
     }
