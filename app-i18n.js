@@ -1,6 +1,6 @@
 var I18N_LANG_KEY = 'iwh_lang';
 var I18N_DEFAULT_LANG = 'en';
-var I18N_SUPPORTED = ['en', 'tr'];
+var I18N_SUPPORTED = ['en'];
 
 var I18N_MESSAGES = {
   en: {
@@ -61,7 +61,7 @@ var I18N_MESSAGES = {
     auth_full_name: 'Full Name',
     auth_email: 'Email',
     auth_password: 'Password',
-    auth_terms_agree: 'I agree to the Terms of Service and Privacy Policy',
+    auth_terms_agree_html: 'I agree to the <a href="/terms.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Terms of Service</a> and <a href="/privacy-policy.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Privacy Policy</a>',
     my_marks: 'My Marks',
     profile_title: 'Profile',
     profile_your_world: 'Your World',
@@ -122,142 +122,20 @@ var I18N_MESSAGES = {
     success_visible: 'Your mark is now visible.',
     share_card: 'Share Card',
     done: 'Done'
-  },
-  tr: {
-    nav_sign_in: 'Giriş yap',
-    nav_sign_out: 'Çıkış yap',
-    nav_open_globe: 'Küreyi Aç',
-    hero_eyebrow: 'İnsanlık için dijital bir anıt',
-    hero_title_html: 'Dünyaya <em>izini</em><br>bırak',
-    hero_subtitle: 'Adını küreye işle, yazılı bir anı kaydet ve istersen kapsülün için gelecekte açılacak bir tarih belirle.',
-    hero_how: 'Nasıl Çalışır',
-    stat_marks: 'Bırakılan İz',
-    stat_countries: 'Ülkeler',
-    stat_capsules: 'Aktif Kapsüller',
-    how_label: 'Yolculuk',
-    how_title_html: 'Bir <em>anı</em> bırakmak için üç adım',
-    how_step1_title: 'Noktayı Seç',
-    how_step1_body: 'Pimini yerleştirmek için 3D kürede herhangi bir yere tıkla. Uydu görüntüsüyle hassas seçim için sokak seviyesine kadar yakınlaş.',
-    how_step2_title: 'Mesajını Yaz',
-    how_step2_body: 'İzinle birlikte kaydolacak metni ekle. Fotoğraf isteğe bağlıdır, ses ise şimdilik sadece cihaz içi önizlemedir.',
-    how_step3_title: 'Görünürlüğü Seç',
-    how_step3_body: 'Bugün herkese açık bir iz olarak kaydet ya da kapsül deneyimi için gelecekte açılacak bir tarih belirle.',
-    pricing_label: 'Anıya Yatırım',
-    pricing_title_html: 'Şu an <em>canlıda</em> olanlar için sade fiyatlama',
-    footer_privacy: 'Gizlilik Politikası',
-    footer_terms: 'Hizmet Şartları',
-    footer_contact: 'İletişim',
-    cookie_text: 'Oturumu açık tutmak ve deneyimi iyileştirmek için zorunlu çerezler kullanıyoruz. Devam ederek Gizlilik Politikası ve Hizmet Şartlarını kabul etmiş olursun.',
-    cookie_accept: 'Kabul et',
-    cookie_decline: 'Reddet',
-    selected_location: 'Seçilen Konum',
-    marks_by_country: 'Ülkeye Göre İzler',
-    controls_auto_rotate: 'Otomatik döndür',
-    controls_borders: 'Sınırlar',
-    controls_labels: 'Etiketler',
-    start_here: 'Buradan Başla',
-    start_hint: 'İlk izini bırakmak, konum seçmek ve mesaj eklemek için paneli aç.',
-    create_my_mark: 'İzimi Oluştur',
-    later: 'Sonra',
-    next_up: 'Sıradaki',
-    recent_marks: 'Son İzler',
-    quick_my: 'İzlerim',
-    quick_nearby: 'Yakınım',
-    quick_trending: 'Öne Çıkanlar',
-    quick_friends: 'Arkadaşlar',
-    quick_recent: 'Yeni',
-    quick_countries: 'Ülkeler',
-    auth_welcome_back: 'Tekrar hoş geldin',
-    auth_create_account: 'Hesap oluştur',
-    auth_reset_password: 'Şifreyi sıfırla',
-    auth_sign_in_sub: 'İzlerini yönetmek için giriş yap.',
-    auth_register_sub: 'İz bırakan binlerce kişiye katıl.',
-    auth_forgot_sub: 'E-postanı gir, sana sıfırlama bağlantısı gönderelim.',
-    auth_register_tab: 'Kayıt ol',
-    auth_forgot: 'Şifremi unuttum?',
-    auth_back_to_sign_in: 'Girişe dön',
-    auth_continue_google: 'Google ile devam et',
-    auth_or_email: 'veya e-posta ile',
-    auth_full_name: 'Ad Soyad',
-    auth_email: 'E-posta',
-    auth_password: 'Şifre',
-    auth_terms_agree: 'Hizmet Şartları ve Gizlilik Politikasını kabul ediyorum',
-    my_marks: 'İzlerim',
-    profile_title: 'Profil',
-    profile_your_world: 'Senin Dünyan',
-    profile_marks: 'İz',
-    profile_countries: 'Ülke',
-    profile_capsules: 'Kapsül',
-    profile_view_marks: 'İzlerimi Gör',
-    profile_place_new: 'Yeni İz Bırak',
-    profile_recent_activity: 'Son hareketler',
-    search_placeholder: 'Şehir, ülke, iz veya koordinat ara...',
-    location_click_placeholder: 'Küre üzerinde tıkla...',
-    country_select_placeholder: 'Ülke seç...',
-    your_details: 'Bilgilerin',
-    your_details_sub: 'İzine kimlik verecek bir isim seç.',
-    display_name: 'Görünen İsim',
-    your_name: 'Adın',
-    photo_optional: 'Fotoğraf (isteğe bağlı)',
-    photo_soft_note: 'Bunu atlayabilirsin. Fotoğraflar yalnızca iz kartında kullanılır.',
-    add_photo: '+ Fotoğraf ekle',
-    continue_location: 'Konuma Devam Et',
-    choose_location: 'Konum Seç',
-    choose_location_sub: 'Küre üzerinde bir yere tıkla ya da bir yer ara. Sokak seviyesinde hassasiyet için yakınlaş.',
-    or_search: 'Ya da ara',
-    exact_coordinates: 'Tam Koordinatlar',
-    continue_message: 'Mesaja Devam Et',
-    back: 'Geri',
-    your_message: 'Mesajın',
-    your_message_sub: 'İzinle birlikte kaydedilecek mesajı yaz. Ses şimdilik sadece önizleme olarak kalır.',
-    write: 'Yazı',
-    voice: 'Ses',
-    message: 'Mesaj',
-    message_placeholder: 'Bugün İstanbul\'daydım ve bu günü hatırlamak istiyorum...',
-    voice_note: 'Ses kayıtları bu cihazda sadece yerel önizleme için tutulur. Bu izi bugün kaydetmek istiyorsan yazılı bir mesaj ekle.',
-    voice_ready: 'Yerel kayıt için hazır',
-    voice_tap_start: 'Başlamak için dokun',
-    voice_upload_pending: 'Backend yükleme bağlandığında yükleme metadatası burada görünecek.',
-    clear_rerecord: 'Temizle ve tekrar kaydet',
-    upload_audio_preview: 'önizleme için ses dosyası yükle',
-    continue_capsule: 'Kapsüle Devam Et',
-    capsule_options: 'Kapsül Seçenekleri',
-    capsule_options_sub: 'Sadece herkese açık bir iz istiyorsan bu adımı atla.',
-    recipient: 'Alıcı',
-    myself: 'Kendim',
-    someone_else: 'Başka Biri',
-    recipient_email: 'Alıcı E-postası',
-    recipient_email_placeholder: 'onun@email.com',
-    opens_in: 'Açılma Süresi',
-    custom: 'Özel',
-    select_date: 'Tarih Seç',
-    capsule_opens: 'Kapsül Açılır',
-    or: 'veya',
-    no_capsule: 'Kapsül Yok (sadece herkese açık iz)',
-    continue_review: 'İncelemeye Devam Et',
-    review_place: 'İncele ve Bırak',
-    review_place_sub: 'Kaydetmeden önce izini gözden geçir.',
-    save_my_mark: 'İzimi Kaydet',
-    success_title: 'Artık Küredesin',
-    success_visible: 'İzin artık görünür.',
-    share_card: 'Paylaşım Kartı',
-    done: 'Bitti'
   }
 };
 
 function getCurrentLanguage() {
-  return window.IWH_LANG || I18N_DEFAULT_LANG;
+  return I18N_DEFAULT_LANG;
 }
 
 function getCurrentLocale() {
-  return getCurrentLanguage() === 'tr' ? 'tr-TR' : 'en-US';
+  return 'en-US';
 }
 
 function t(key, params) {
-  var lang = getCurrentLanguage();
-  var dict = I18N_MESSAGES[lang] || I18N_MESSAGES[I18N_DEFAULT_LANG];
-  var fallback = I18N_MESSAGES[I18N_DEFAULT_LANG];
-  var text = (dict && dict[key]) || fallback[key] || key;
+  var dict = I18N_MESSAGES.en;
+  var text = dict[key] || key;
   if (!params) return text;
   return text.replace(/\{(\w+)\}/g, function(_, name) {
     return params[name] != null ? String(params[name]) : '';
@@ -269,79 +147,56 @@ function formatDateI18n(date, options) {
 }
 
 function formatRelativeDurationDays(days) {
-  var lang = getCurrentLanguage();
-  if (days <= 7) {
-    return lang === 'tr'
-      ? days + ' gün sonra'
-      : 'In ' + days + ' day' + (days > 1 ? 's' : '');
-  }
+  if (days <= 7) return 'In ' + days + ' day' + (days > 1 ? 's' : '');
   if (days <= 31) {
     var weeks = Math.round(days / 7);
-    return lang === 'tr'
-      ? weeks + ' hafta sonra'
-      : 'In ' + weeks + ' week' + (weeks > 1 ? 's' : '');
+    return 'In ' + weeks + ' week' + (weeks > 1 ? 's' : '');
   }
   if (days <= 365) {
     var months = Math.round(days / 30);
-    return lang === 'tr'
-      ? months + ' ay sonra'
-      : 'In ' + months + ' month' + (months > 1 ? 's' : '');
+    return 'In ' + months + ' month' + (months > 1 ? 's' : '');
   }
   var years = Math.round(days / 365);
-  return lang === 'tr'
-    ? years + ' yıl sonra'
-    : 'In ' + years + ' year' + (years > 1 ? 's' : '');
+  return 'In ' + years + ' year' + (years > 1 ? 's' : '');
 }
 
 function getMarkWord(count) {
-  return getCurrentLanguage() === 'tr'
-    ? count + ' iz'
-    : count + ' mark' + (count === 1 ? '' : 's');
+  return count + ' mark' + (count === 1 ? '' : 's');
 }
 
 function applyTranslations() {
-  document.documentElement.lang = getCurrentLanguage();
+  document.documentElement.lang = 'en';
   document.querySelectorAll('[data-i18n]').forEach(function(node) {
     var key = node.getAttribute('data-i18n');
-    if (!key) return;
-    node.textContent = t(key);
+    if (key) node.textContent = t(key);
   });
   document.querySelectorAll('[data-i18n-html]').forEach(function(node) {
     var key = node.getAttribute('data-i18n-html');
-    if (!key) return;
-    node.innerHTML = t(key);
+    if (key) node.innerHTML = t(key);
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(function(node) {
     var key = node.getAttribute('data-i18n-placeholder');
-    if (!key) return;
-    node.setAttribute('placeholder', t(key));
-  });
-  document.querySelectorAll('[data-i18n-aria-label]').forEach(function(node) {
-    var key = node.getAttribute('data-i18n-aria-label');
-    if (!key) return;
-    node.setAttribute('aria-label', t(key));
+    if (key) node.setAttribute('placeholder', t(key));
   });
   document.querySelectorAll('[data-lang-btn]').forEach(function(button) {
-    button.classList.toggle('on', button.getAttribute('data-lang-btn') === getCurrentLanguage());
+    button.style.display = 'none';
   });
 }
 
-function setLanguage(lang) {
-  if (I18N_SUPPORTED.indexOf(lang) === -1) lang = I18N_DEFAULT_LANG;
-  window.IWH_LANG = lang;
-  localStorage.setItem(I18N_LANG_KEY, lang);
+function setLanguage() {
+  window.IWH_LANG = 'en';
+  localStorage.setItem(I18N_LANG_KEY, 'en');
   applyTranslations();
   if (typeof window.refreshLocalizedUI === 'function') window.refreshLocalizedUI();
 }
 
 function initI18n() {
-  var lang = localStorage.getItem(I18N_LANG_KEY) || I18N_DEFAULT_LANG;
-  if (I18N_SUPPORTED.indexOf(lang) === -1) lang = I18N_DEFAULT_LANG;
-  window.IWH_LANG = lang;
+  window.IWH_LANG = 'en';
+  localStorage.setItem(I18N_LANG_KEY, 'en');
   applyTranslations();
 }
 
-window.IWH_LANG = I18N_DEFAULT_LANG;
+window.IWH_LANG = 'en';
 window.I18N_MESSAGES = I18N_MESSAGES;
 window.t = t;
 window.setLanguage = setLanguage;
