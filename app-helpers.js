@@ -1181,7 +1181,11 @@ function renderCountrySummary() {
   body.className = 'cs-list';
   groups.slice(0, 8).forEach(function(group) {
     var item = document.createElement('div');
-    item.className = 'cs-item';
+    item.className = 'cs-item clickable';
+    item.onclick = function() {
+      _openCountrySummaryKey = _openCountrySummaryKey === group.key ? '' : group.key;
+      renderCountrySummary();
+    };
     var name = document.createElement('div');
     name.className = 'cs-name';
     name.textContent = group.name;
@@ -1191,6 +1195,15 @@ function renderCountrySummary() {
     item.appendChild(name);
     item.appendChild(count);
     body.appendChild(item);
+
+    if (_openCountrySummaryKey === group.key) {
+      var detailWrap = document.createElement('div');
+      detailWrap.className = 'cs-detail-list';
+      getCountryPins(group).slice(0, 8).forEach(function(pin) {
+        detailWrap.appendChild(createCountrySummaryDetail(pin));
+      });
+      body.appendChild(detailWrap);
+    }
   });
 }
 
