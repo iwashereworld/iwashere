@@ -1909,7 +1909,7 @@ function loadStats() {
 
 function updateLandingStatsFromPins() {
   var countries = ST.pins.map(function(p) { return p.code || p.cname; }).filter(function(v, i, a) { return v && a.indexOf(v) === i; });
-  var capsules = ST.pins.filter(function(p) { return p.years > 0; }).length;
+  var capsules = ST.pins.filter(function(p) { return (p.capsule_days || 0) > 0; }).length;
   var s2 = document.getElementById('s2');
   var s3 = document.getElementById('s3');
   if (s2) s2.textContent = countries.length.toLocaleString();
@@ -1927,7 +1927,7 @@ function updateStats() {
   }
   
   var sk2 = document.getElementById('sk2');
-  if (sk2) sk2.textContent = ST.pins.filter(function(p) { return p.years > 0; }).length.toLocaleString();
+  if (sk2) sk2.textContent = ST.pins.filter(function(p) { return (p.capsule_days || 0) > 0; }).length.toLocaleString();
   updateLandingStatsFromPins();
   if (typeof renderCountrySummary === 'function') renderCountrySummary();
 }
