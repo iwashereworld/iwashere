@@ -160,6 +160,15 @@ footer a{color:var(--muted);text-decoration:none;}
 .hint-a .nbtn{padding:7px 14px;font-size:.72rem;}
 #sb .step-meta{font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem;}
 #sb .step-tip{font-size:.72rem;color:var(--muted);line-height:1.6;margin:-.2rem 0 1rem;}
+.onboard-card{background:rgba(18,26,42,.72);border:1px solid rgba(200,169,110,.16);border-radius:12px;padding:.85rem .9rem;margin:0 0 1rem;}
+.onboard-title{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.55rem;}
+.onboard-list{display:flex;flex-direction:column;gap:.45rem;}
+.onboard-item{display:flex;align-items:flex-start;gap:.55rem;font-size:.74rem;line-height:1.45;color:var(--muted);}
+.onboard-dot{width:18px;height:18px;border-radius:50%;border:1px solid rgba(200,169,110,.32);display:flex;align-items:center;justify-content:center;font-size:.62rem;flex-shrink:0;margin-top:1px;color:rgba(240,237,232,.62);}
+.onboard-item.current{color:var(--text);}
+.onboard-item.current .onboard-dot{border-color:var(--gold);color:var(--gold);}
+.onboard-item.done{color:rgba(240,237,232,.72);}
+.onboard-item.done .onboard-dot{background:rgba(200,169,110,.14);border-color:rgba(200,169,110,.4);color:var(--gold);}
 #srch{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:100;width:290px;}
 #si{width:100%;background:rgba(6,10,18,.92);border:1px solid rgba(200,169,110,.28);border-radius:24px;padding:9px 18px 9px 36px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;backdrop-filter:blur(16px);}
 #sres{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:rgba(6,10,18,.97);border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;z-index:200;}
@@ -508,6 +517,10 @@ window.addEventListener('load', initCookieBanner);
   <div class="sbi">
     <div class="step-meta" id="step-meta">Step 1 of 5</div>
     <div class="step-tip" id="step-tip">Start with a display name so your mark has an identity.</div>
+    <div class="onboard-card" id="onboard-card">
+      <div class="onboard-title">Next Up</div>
+      <div class="onboard-list" id="onboard-list"></div>
+    </div>
     <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
     <!-- Step 1 -->
     <div class="step active" id="step1">

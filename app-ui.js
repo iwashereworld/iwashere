@@ -5,6 +5,38 @@ var STEP_COPY = {
   4: 'Choose when the mark opens and who it belongs to.',
   5: 'Review the summary and place your mark on the globe.'
 };
+var ONBOARDING_STEPS = [
+  'Add your display name',
+  'Choose the exact place',
+  'Write the message',
+  'Pick capsule timing',
+  'Save and share your mark'
+];
+
+function renderOnboardingChecklist(step) {
+  var list = document.getElementById('onboard-list');
+  if (!list) return;
+  clearChildren(list);
+
+  ONBOARDING_STEPS.forEach(function(text, index) {
+    var itemStep = index + 1;
+    var item = document.createElement('div');
+    item.className = 'onboard-item';
+    if (step > itemStep) item.classList.add('done');
+    if (step === itemStep) item.classList.add('current');
+
+    var dot = document.createElement('div');
+    dot.className = 'onboard-dot';
+    dot.textContent = step > itemStep ? '✓' : String(itemStep);
+    item.appendChild(dot);
+
+    var copy = document.createElement('div');
+    copy.textContent = text;
+    item.appendChild(copy);
+
+    list.appendChild(item);
+  });
+}
 
 function shouldShowStartHint() {
   return !localStorage.getItem('iwh_started_flow');
@@ -83,6 +115,7 @@ function updateStepMeta(step) {
     meta.textContent = 'Finished';
     tip.textContent = 'Your mark has been saved. Share it or place another one.';
   }
+  renderOnboardingChecklist(step >= 1 && step <= 5 ? step : 5);
 }
 
 function goS(n) {
