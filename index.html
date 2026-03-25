@@ -1,4 +1,4 @@
-
+﻿
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -454,14 +454,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div class="secl reveal" data-i18n="pricing_label">Investment in Memory</div>
   <h2 class="sect reveal" data-i18n-html="pricing_title_html">Simple pricing for what is <em>live now</em></h2>
   <div class="pcards reveal">
-    <div class="pc"><div class="pbg alt">Available Now</div><span class="pi2"></span><div class="pnm">Public Mark</div><div class="pam">$1 <span>one-time</span></div><p class="pds">Save a public mark with your name, coordinates, and written message.</p><ul class="pft"><li>Permanent globe placement</li><li>Optional photo</li><li>Country attribution</li></ul></div>
-    <div class="pc ft"><div class="pbg">Available Now</div><span class="pi2"></span><div class="pnm">Mark + Capsule</div><div class="pam">$3 <span>one-time</span></div><p class="pds">Save your mark now and choose a future opening date for the capsule view.</p><ul class="pft"><li>Everything in Public Mark</li><li>Text message support</li><li>Future opening date</li></ul></div>
-    <div class="pc"><div class="pbg alt">Limited Today</div><span class="pi2"></span><div class="pnm">Gift Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds">Recipient flow is available in the UI while downstream delivery features continue to evolve.</p><ul class="pft"><li>Recipient email field</li><li>Capsule timing options</li><li>Share card after save</li></ul></div>
+    <div class="pc"><div class="pbg alt" data-i18n="pricing_now_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_public_name">Public Mark</div><div class="pam">$1 <span>one-time</span></div><p class="pds" data-i18n="pricing_public_desc">Save a public mark with your name, coordinates, and written message.</p><ul class="pft"><li data-i18n="pricing_public_feat1">Permanent globe placement</li><li data-i18n="pricing_public_feat2">Optional photo</li><li data-i18n="pricing_public_feat3">Country attribution</li></ul></div>
+    <div class="pc ft"><div class="pbg" data-i18n="pricing_now_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_capsule_name">Mark + Capsule</div><div class="pam">$3 <span>one-time</span></div><p class="pds" data-i18n="pricing_capsule_desc">Save your mark now and choose a future opening date for the capsule view.</p><ul class="pft"><li data-i18n="pricing_capsule_feat1">Everything in Public Mark</li><li data-i18n="pricing_capsule_feat2">Text message support</li><li data-i18n="pricing_capsule_feat3">Future opening date</li></ul></div>
+    <div class="pc"><div class="pbg alt" data-i18n="pricing_limited_badge">Limited Today</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_gift_name">Gift Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds" data-i18n="pricing_gift_desc">Recipient flow is available in the UI while downstream delivery features continue to evolve.</p><ul class="pft"><li data-i18n="pricing_gift_feat1">Recipient email field</li><li data-i18n="pricing_gift_feat2">Capsule timing options</li><li data-i18n="pricing_gift_feat3">Share card after save</li></ul></div>
   </div>
-  <p class="pricing-note reveal">Voice recording is currently local preview only. Delivery, notification, and reveal flows may continue to evolve as the product backend expands.</p>
+  <p class="pricing-note reveal" data-i18n="pricing_note">Voice recording is currently local preview only. Delivery, notification, and reveal flows may continue to evolve as the product backend expands.</p>
 </section>
 <footer>
-  <span>© 2026 IWASHEREWORLD · I Was Here</span>
+  <span>Â© 2026 IWASHEREWORLD Â· I Was Here</span>
   <div style="display:flex;gap:1.5rem;">
     <a href="/privacy-policy.html" data-i18n="footer_privacy">Privacy Policy</a>
     <a href="/terms.html" data-i18n="footer_terms">Terms of Service</a>
@@ -524,7 +524,7 @@ window.addEventListener('load', initCookieBanner);
 </div>
 <div id="country-summary">
   <div class="cs-title" data-i18n="marks_by_country">Marks by Country</div>
-  <div id="country-summary-body" class="cs-empty">No marks yet.</div>
+    <div id="country-summary-body" class="cs-empty" data-i18n="country_summary_empty">No marks yet. Place the first mark to start your country tally.</div>
 </div>
 <div class="ctrls">
   <button class="cb" id="bzoomout" onclick="stepZoom(-1)" aria-label="Zoom out">-</button>
@@ -730,7 +730,7 @@ window.addEventListener('load', initCookieBanner);
           <div class="pmeta" id="profile-meta"></div>
           <div class="pidentity">
             <div class="pbadge" id="profile-badge-level">New explorer</div>
-            <div class="pbadge" id="profile-badge-latest">No marks yet</div>
+            <div class="pbadge" id="profile-badge-latest" data-i18n="profile_no_marks">No marks yet</div>
           </div>
           <div class="pbio" id="profile-bio"></div>
           <div class="psummary">
@@ -764,16 +764,16 @@ window.addEventListener('load', initCookieBanner);
     <div id="share-country" style="font-size:.8rem;color:var(--muted);"></div>
     <div id="share-coords" style="font-size:.72rem;color:rgba(240,237,232,.48);margin-top:.4rem;"></div>
     <div class="share-meta-row">
-      <div class="share-chip" id="share-chip-type">Public mark</div>
-      <div class="share-chip" id="share-chip-date">Saved now</div>
+      <div class="share-chip" id="share-chip-type" data-i18n="share_public">Public mark</div>
+      <div class="share-chip" id="share-chip-date" data-i18n="share_visible_now">Saved now</div>
     </div>
     <div id="share-msg" style="font-size:.82rem;font-style:italic;color:rgba(240,237,232,.7);margin:1rem 0;line-height:1.6;"></div>
     <div id="share-date" style="font-size:.7rem;color:var(--gold);"></div>
-    <button id="share-delete-btn" class="share-btn" onclick="deleteSharedMark(event)">Delete</button>
+    <button id="share-delete-btn" class="share-btn" onclick="deleteSharedMark(event)" data-i18n="share_delete">Delete</button>
     <div class="share-actions">
-      <button onclick="doShr()" class="share-btn" style="background:var(--gold);color:#020408;border:none;">Share</button>
-      <button onclick="copyShareLink()" class="share-btn" style="background:rgba(240,237,232,.06);border:1px solid var(--border);color:var(--text);">Copy Link</button>
-      <button onclick="closeShareModal()" class="share-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);">Close</button>
+      <button onclick="doShr()" class="share-btn" style="background:var(--gold);color:#020408;border:none;" data-i18n="share_share">Share</button>
+      <button onclick="copyShareLink()" class="share-btn" style="background:rgba(240,237,232,.06);border:1px solid var(--border);color:var(--text);" data-i18n="share_copy_link">Copy Link</button>
+      <button onclick="closeShareModal()" class="share-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);" data-i18n="share_close">Close</button>
     </div>
   </div>
 </div>
@@ -2283,9 +2283,7 @@ window.refreshLocalizedUI = function() {
   applyTranslations();
   var termsCopy = document.getElementById('terms-copy');
   if (termsCopy) {
-    termsCopy.innerHTML = getCurrentLanguage() === 'tr'
-      ? ' <a href="/terms.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Hizmet Şartları</a> ve <a href="/privacy-policy.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Gizlilik Politikası</a>\'nı kabul ediyorum'
-      : 'I agree to the <a href="/terms.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Terms of Service</a> and <a href="/privacy-policy.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Privacy Policy</a>';
+    termsCopy.innerHTML = t('auth_terms_agree_html');
   }
   var countrySelect = document.getElementById('csel');
   if (countrySelect && countrySelect.options.length) {
@@ -2293,7 +2291,7 @@ window.refreshLocalizedUI = function() {
   }
   var headerStats = document.querySelector('#globe-app .ghs');
   if (headerStats) {
-    headerStats.innerHTML = '<div><strong id="sp">' + (document.getElementById('sp') ? document.getElementById('sp').textContent : '0') + '</strong>' + (getCurrentLanguage() === 'tr' ? 'iz' : 'marks') + '</div><div><strong id="sc2">' + (document.getElementById('sc2') ? document.getElementById('sc2').textContent : '0') + '</strong>' + (getCurrentLanguage() === 'tr' ? 'ülke' : 'countries') + '</div><div><strong id="sk2">' + (document.getElementById('sk2') ? document.getElementById('sk2').textContent : '0') + '</strong>' + (getCurrentLanguage() === 'tr' ? 'kapsül' : 'capsules') + '</div>';
+    headerStats.innerHTML = '<div><strong id="sp">' + (document.getElementById('sp') ? document.getElementById('sp').textContent : '0') + '</strong>' + t('header_marks_short') + '</div><div><strong id="sc2">' + (document.getElementById('sc2') ? document.getElementById('sc2').textContent : '0') + '</strong>' + t('header_countries_short') + '</div><div><strong id="sk2">' + (document.getElementById('sk2') ? document.getElementById('sk2').textContent : '0') + '</strong>' + t('header_capsules_short') + '</div>';
   }
   updateStepMeta(document.querySelector('.dot.on') ? Array.from(document.querySelectorAll('.dot')).findIndex(function(dot) { return dot.classList.contains('on'); }) + 1 : 1);
   updateCapsuleUI();
@@ -2315,3 +2313,5 @@ window.addEventListener('load',initCookieBanner);
 </script>
 </body>
 </html>
+
+
