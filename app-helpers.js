@@ -353,6 +353,99 @@ function bSmry() {
   summary.appendChild(createRow('Total', '$' + tot.toFixed(2), true));
 }
 
+var CURRENT_QUICK_JUMP = 'recent';
+
+function setQuickJump(mode) {
+  CURRENT_QUICK_JUMP = mode;
+  var buttons = document.querySelectorAll('#quick-jump .qjbtn');
+  buttons.forEach(function(button) {
+    button.classList.toggle('on', button.getAttribute('data-jump') === mode);
+  });
+  renderLists();
+}
+
+function getCameraTarget() {
+  if (!viewer || !viewer.camera || !viewer.camera.positionCartographic) return null;
+  return {
+    lat: Cesium.Math.toDegrees(viewer.camera.positionCartographic.latitude),
+    lon: Cesium.Math.toDegrees(viewer.camera.positionCartographic.longitude)
+  };
+}
+
+function getDistanceScore(aLat, aLon, bLat, bLon) {
+  var dLat = aLat - bLat;
+  var dLon = aLon - bLon;
+  return Math.sqrt((dLat * dLat) + (dLon * dLon));
+}
+
+function getQuickJumpPins() {
+  if (CURRENT_QUICK_JUMP === 'my') {
+    if (!AUTH.user) return [];
+    return ST.pins.filter(function(pin) { return pin.owner === AUTH.user.id; });
+  }
+
+  if (CURRENT_QUICK_JUMP === 'nearby') {
+    var target = (ST.selLat != null && ST.selLon != null) ? { lat: ST.selLat, lon: ST.selLon } : getCameraTarget();
+    if (!target) return ST.pins.slice();
+    return ST.pins.slice().sort(function(a, b) {
+      return getDistanceScore(a.lat, a.lon, target.lat, target.lon) - getDistanceScore(b.lat, b.lon, target.lat, target.lon);
+    });
+  }
+
+  if (CURRENT_QUICK_JUMP === 'trending') {
+    return ST.pins.slice().sort(function(a, b) {
+      var scoreA = (a.years ? 5 : 0) + (a.msg ? 2 : 0) + (a.photo ? 1 : 0);
+      var scoreB = (b.years ? 5 : 0) + (b.msg ? 2 : 0) + (b.photo ? 1 : 0);
+      if (scoreB !== scoreA) return scoreB - scoreA;
+      return new Date(b.added || 0) - new Date(a.added || 0);
+    });
+  }
+
+  if (CURRENT_QUICK_JUMP === 'friends') {
+    return [];
+  }
+
+  return ST.pins.slice().sort(function(a, b) {
+    return new Date(b.added || 0) - new Date(a.added || 0);
+  });
+}
+
+function renderCountriesJump(container) {
+  var groups = getCountryMarkGroups();
+  if (!groups.length) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
+    empty.textContent = 'No countries yet.';
+    container.appendChild(empty);
+    return;
+  }
+
+  groups.slice(0, 8).forEach(function(group) {
+    var item = document.createElement('div');
+    item.className = 'pitem';
+    item.onclick = function() {
+      var country = COUNTRIES.find(function(entry) { return entry.code === group.key || entry.name === group.name; });
+      if (country) flyTo(country.lat, country.lon, getHeightForZoom(6));
+    };
+
+    var info = document.createElement('div');
+    info.style.cssText = 'flex:1;min-width:0';
+
+    var name = document.createElement('div');
+    name.className = 'pnm2';
+    name.textContent = group.name;
+    info.appendChild(name);
+
+    var meta = document.createElement('div');
+    meta.className = 'pct2';
+    meta.textContent = group.count + ' mark' + (group.count === 1 ? '' : 's');
+    info.appendChild(meta);
+
+    item.appendChild(info);
+    container.appendChild(item);
+  });
+}
+
 function renderLists() {
   var pl = document.getElementById('plist');
   if (!pl) return;
@@ -380,12 +473,36 @@ function renderLists() {
     return;
   }
 
-  ST.pins.slice(0, 5).forEach(function(p) {
+  if (CURRENT_QUICK_JUMP === 'countries') {
+    renderCountriesJump(pl);
+    return;
+  }
+
+  if (CURRENT_QUICK_JUMP === 'friends') {
+    var friendsEmpty = document.createElement('div');
+    friendsEmpty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
+    friendsEmpty.textContent = 'Friends feed is not connected yet. Use Recent or My Marks for now.';
+    pl.appendChild(friendsEmpty);
+    return;
+  }
+
+  var pins = getQuickJumpPins();
+  if (!pins.length) {
+    var modeEmpty = document.createElement('div');
+    modeEmpty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
+    modeEmpty.textContent = CURRENT_QUICK_JUMP === 'my'
+      ? 'You do not have any marks yet.'
+      : 'No marks found for this view.';
+    pl.appendChild(modeEmpty);
+    return;
+  }
+
+  pins.slice(0, 5).forEach(function(p) {
     var cd = countdown(p.added, p.years);
 
     var item = document.createElement('div');
     item.className = 'pitem';
-    item.onclick = function() { flyTo(p.lat, p.lon, 800000); };
+    item.onclick = function() { flyTo(p.lat, p.lon, getHeightForZoom(29)); };
 
     item.appendChild(createAvatarNode(p.photo, p.name, 'piav'));
 

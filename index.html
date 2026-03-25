@@ -229,6 +229,9 @@ select option{background:#0e1624;}
 .cbdg .dt{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--gold);margin-top:2px;}
 .plsec{border-top:1px solid var(--border);padding:1rem 1.4rem;}
 .pltit{font-size:.65rem;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin-bottom:.65rem;}
+.qj{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.85rem;}
+.qjbtn{background:rgba(240,237,232,.04);border:1px solid rgba(255,255,255,.08);color:var(--muted);border-radius:999px;padding:7px 11px;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.qjbtn.on{border-color:var(--gold);color:var(--gold);background:rgba(200,169,110,.08);}
 .pitem{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:opacity .2s;}
 .pitem:hover{opacity:.65;}
 .piav{width:28px;height:28px;border-radius:50%;background:rgba(18,26,42,.9);border:1px solid rgba(200,169,110,.35);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--gold);flex-shrink:0;overflow:hidden;}
@@ -659,6 +662,14 @@ window.addEventListener('load', initCookieBanner);
   </div>
   <div class="plsec">
     <div class="pltit">Recent Marks</div>
+    <div class="qj" id="quick-jump">
+      <button type="button" class="qjbtn" data-jump="my" onclick="setQuickJump('my')">My Marks</button>
+      <button type="button" class="qjbtn" data-jump="nearby" onclick="setQuickJump('nearby')">Nearby</button>
+      <button type="button" class="qjbtn" data-jump="trending" onclick="setQuickJump('trending')">Trending</button>
+      <button type="button" class="qjbtn" data-jump="friends" onclick="setQuickJump('friends')">Friends</button>
+      <button type="button" class="qjbtn on" data-jump="recent" onclick="setQuickJump('recent')">Recent</button>
+      <button type="button" class="qjbtn" data-jump="countries" onclick="setQuickJump('countries')">Countries</button>
+    </div>
     <div id="plist"></div>
   </div>
 </aside>
