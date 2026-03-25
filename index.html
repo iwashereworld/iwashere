@@ -149,6 +149,13 @@ footer a{color:var(--muted);text-decoration:none;}
 .cs-item:last-child{border-bottom:none;}
 .cs-name{font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cs-count{font-size:.76rem;color:var(--gold);flex-shrink:0;}
+.share-card{background:linear-gradient(145deg,#091221 0%,#0d1f3c 52%,#0a1628 100%);border:1px solid rgba(200,169,110,.3);border-radius:20px;padding:2rem;width:360px;max-width:calc(100vw - 24px);text-align:center;position:relative;box-shadow:0 24px 80px rgba(0,0,0,.45);}
+.share-brand{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.8rem;}
+.share-meta-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:.8rem;}
+.share-chip{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(240,237,232,.72);border:1px solid rgba(255,255,255,.08);background:rgba(240,237,232,.05);border-radius:999px;padding:6px 10px;}
+.share-actions{margin-top:1.2rem;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.share-btn{border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;}
+#share-delete-btn.share-btn{display:none;margin:1rem auto 0;background:rgba(220,90,90,.08);border:1px solid rgba(220,90,90,.28);color:#ffb0b0;}
 #fab{position:fixed;bottom:1.5rem;right:1.5rem;width:50px;height:50px;border-radius:50%;background:var(--gold);color:#020408;font-size:1.4rem;border:none;cursor:pointer;z-index:160;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(200,169,110,.4);transition:all .2s;}
 #fab:hover{transform:scale(1.1);}
 #start-hint{position:fixed;right:1.5rem;bottom:5.6rem;z-index:161;max-width:250px;background:rgba(8,14,24,.96);border:1px solid rgba(200,169,110,.28);border-radius:16px;padding:.9rem 1rem;backdrop-filter:blur(18px);box-shadow:0 14px 36px rgba(0,0,0,.35);}
@@ -710,19 +717,24 @@ window.addEventListener('load', initCookieBanner);
 
 <!-- SHARE MODAL -->
 <div id="share-modal" onclick="closeShareModal()" role="dialog" aria-modal="true" aria-labelledby="share-name">
-  <div style="background:linear-gradient(135deg,#0a1628 0%,#0d1f3c 50%,#0a1628 100%);border:1px solid rgba(200,169,110,.3);border-radius:20px;padding:2rem;width:360px;max-width:calc(100vw - 24px);text-align:center;position:relative;" onclick="event.stopPropagation()">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.8rem;">I WAS HERE</div>
+  <div class="share-card" onclick="event.stopPropagation()">
+    <div class="share-brand">I WAS HERE</div>
     <div id="share-avatar" style="width:64px;height:64px;border-radius:50%;background:rgba(200,169,110,.1);border:2px solid var(--gold);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;overflow:hidden;"></div>
     <div id="share-headline" style="font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,232,.56);margin-bottom:.35rem;"></div>
     <div id="share-name" style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;margin-bottom:.3rem;"></div>
     <div id="share-country" style="font-size:.8rem;color:var(--muted);"></div>
     <div id="share-coords" style="font-size:.72rem;color:rgba(240,237,232,.48);margin-top:.4rem;"></div>
+    <div class="share-meta-row">
+      <div class="share-chip" id="share-chip-type">Public mark</div>
+      <div class="share-chip" id="share-chip-date">Saved now</div>
+    </div>
     <div id="share-msg" style="font-size:.82rem;font-style:italic;color:rgba(240,237,232,.7);margin:1rem 0;line-height:1.6;"></div>
     <div id="share-date" style="font-size:.7rem;color:var(--gold);"></div>
-    <button id="share-delete-btn" onclick="deleteSharedMark(event)" style="display:none;margin:1rem auto 0;background:rgba(220,90,90,.08);border:1px solid rgba(220,90,90,.28);color:#ffb0b0;border-radius:20px;padding:8px 20px;font-size:.76rem;cursor:pointer;">Delete</button>
-    <div style="margin-top:1.2rem;display:flex;gap:8px;justify-content:center;">
-      <button onclick="doShr()" style="background:var(--gold);color:#020408;border:none;border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;">Share</button>
-      <button onclick="closeShareModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;">Close</button>
+    <button id="share-delete-btn" class="share-btn" onclick="deleteSharedMark(event)">Delete</button>
+    <div class="share-actions">
+      <button onclick="doShr()" class="share-btn" style="background:var(--gold);color:#020408;border:none;">Share</button>
+      <button onclick="copyShareLink()" class="share-btn" style="background:rgba(240,237,232,.06);border:1px solid var(--border);color:var(--text);">Copy Link</button>
+      <button onclick="closeShareModal()" class="share-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);">Close</button>
     </div>
   </div>
 </div>
@@ -1934,6 +1946,25 @@ function doShr() {
   } else {
     showToast(url);
   }
+}
+
+function copyShareLink() {
+  var pin = window._sharePin || window._lastPin;
+  if (!pin) {
+    showToast('Choose a mark to share first.', 'error');
+    return;
+  }
+  var url = 'https://iwashere-seven.vercel.app/';
+  var text = 'I Was Here in ' + pin.cname + ' by ' + pin.name + ' - ' + url;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      showToast('Share link copied.', 'success');
+    }).catch(function() {
+      showToast(url);
+    });
+    return;
+  }
+  showToast(url);
 }
 
 // Voice recording

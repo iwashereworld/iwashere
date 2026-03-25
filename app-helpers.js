@@ -685,8 +685,16 @@ function showShareCard(pin) {
   document.getElementById('share-name').textContent = pin.name;
   document.getElementById('share-country').textContent = 'I Was Here in ' + pin.cname;
   document.getElementById('share-coords').textContent = pin.lat.toFixed(2) + ', ' + pin.lon.toFixed(2);
-  document.getElementById('share-msg').textContent = pin.msg ? '"' + pin.msg + '"' : 'A new mark on the globe.';
-  document.getElementById('share-date').textContent = new Date(pin.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('share-msg').textContent = pin.msg ? '"' + pin.msg + '"' : 'A place worth remembering, saved on the globe.';
+  document.getElementById('share-date').textContent = 'Saved ' + new Date(pin.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  var typeChip = document.getElementById('share-chip-type');
+  var dateChip = document.getElementById('share-chip-date');
+  if (typeChip) {
+    typeChip.textContent = pin.years > 0 ? 'Capsule mark' : 'Public mark';
+  }
+  if (dateChip) {
+    dateChip.textContent = pin.years > 0 ? ('Opens in ' + countdown(pin.added, pin.years)) : 'Visible now';
+  }
   var deleteBtn = document.getElementById('share-delete-btn');
   if (deleteBtn) {
     var canDelete = !!(AUTH.user && pin.owner && AUTH.user.id === pin.owner);
