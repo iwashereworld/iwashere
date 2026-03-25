@@ -432,7 +432,6 @@ function removePinEntity(pinId) {
     }
     return true;
   });
-  pinAggregateDirty = true;
   if (typeof syncPinLOD === 'function') syncPinLOD();
 }
 

@@ -862,7 +862,6 @@ var AUTH = { user: null, users: { 'admin': { name: 'Admin User', email: 'admin',
 var viewer = null;
 var pinEntities = [];
 var pinDataSource = null;
-var aggregateDataSource = null;
 var _autoRot = false;
 var _rotationSpeed = 0.5;
 var _useSatellite = true;
@@ -875,7 +874,6 @@ var countryLabelEntities = [];
 var cityLabelEntities = [];
 var countryLabelNodes = [];
 var cityLabelNodes = [];
-var pinAggregateDirty = true;
 var _lastPinLodMode = '';
 var _searchResults = [];
 var _searchActiveIndex = -1;
@@ -883,7 +881,6 @@ var PIN_MARKER_IMAGE = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xml
 var PIN_ALTITUDE = 18000;
 var CITY_LABEL_ALTITUDE = 0;
 var COUNTRY_LABEL_ALTITUDE = 0;
-var AGGREGATE_ALTITUDE = 26000;
 var MIN_CAMERA_HEIGHT = 1000;
 var MAX_CAMERA_HEIGHT = 36900000;
 var MIN_DISPLAY_ZOOM = 1;
@@ -941,11 +938,8 @@ async function initCesium() {
     viewer.scene.screenSpaceCameraController.maximumZoomDistance = MAX_CAMERA_HEIGHT;
 
     pinDataSource = new Cesium.CustomDataSource('pins');
-    aggregateDataSource = new Cesium.CustomDataSource('pin-aggregates');
     viewer.dataSources.add(pinDataSource);
-    viewer.dataSources.add(aggregateDataSource);
     pinDataSource.clustering.enabled = false;
-    aggregateDataSource.show = false;
 
     // Remove default imagery and add high quality satellite imagery
     viewer.imageryLayers.removeAll();
@@ -1309,51 +1303,14 @@ function rebuildCityLabelNodes() {
   });
 }
 
-function buildPinAggregates() {
-  if (!aggregateDataSource) return;
-  aggregateDataSource.entities.removeAll();
-
-  var groups = {};
-  ST.pins.forEach(function(pin) {
-    var key = pin.code || pin.cname || 'UN';
-    if (!groups[key]) {
-      groups[key] = { count: 0, lat: 0, lon: 0, code: pin.code, cname: pin.cname };
-    }
-    groups[key].count += 1;
-    groups[key].lat += pin.lat;
-    groups[key].lon += pin.lon;
-  });
-
-  Object.keys(groups).forEach(function(key) {
-    var group = groups[key];
-    var country = COUNTRIES.find(function(item) { return item.code === group.code; });
-    var lat = country ? country.lat : group.lat / group.count;
-    var lon = country ? country.lon : group.lon / group.count;
-    aggregateDataSource.entities.add({
-      position: Cesium.Cartesian3.fromDegrees(lon, lat, AGGREGATE_ALTITUDE),
-      point: {
-        pixelSize: Math.min(30, 14 + Math.round(group.count / 3)),
-        color: Cesium.Color.fromCssColorString('#c8a96e').withAlpha(0.9),
-        outlineColor: Cesium.Color.fromCssColorString('#020408'),
-        outlineWidth: 2
-      }
-    });
-  });
-
-  pinAggregateDirty = false;
-}
-
 function syncPinLOD() {
-  if (!viewer || !pinDataSource || !aggregateDataSource) return;
+  if (!viewer || !pinDataSource) return;
   _lastPinLodMode = 'detail';
-  aggregateDataSource.show = false;
-  aggregateDataSource.entities.removeAll();
   pinDataSource.show = true;
   pinDataSource.clustering.enabled = false;
   pinDataSource.entities.values.forEach(function(entity) {
     entity.show = true;
   });
-  pinAggregateDirty = false;
 }
 
 // Toggle functions
@@ -1500,7 +1457,6 @@ function addPinToGlobe(pin) {
   });
   entity.iwhPinId = pin.id;
   pinEntities.push(entity);
-  pinAggregateDirty = true;
   syncPinLOD();
   return entity;
 }
@@ -1859,7 +1815,6 @@ function loadMarks() {
       ST.pins = [];
       pinEntities = [];
       if (pinDataSource) pinDataSource.entities.removeAll();
-      pinAggregateDirty = true;
       res.data.forEach(function(m) {
         var pin = normalizeMarkRecord(m);
         if (!pin) return;
