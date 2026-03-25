@@ -292,7 +292,23 @@ function renderCountrySummary() {
   var groups = getCountryMarkGroups();
   if (!groups.length) {
     body.className = 'cs-empty';
-    body.textContent = 'No marks yet.';
+    var text = document.createElement('div');
+    text.textContent = 'No marks yet. Place the first mark to start your country tally.';
+    body.appendChild(text);
+
+    var cta = document.createElement('button');
+    cta.type = 'button';
+    cta.textContent = AUTH.user ? 'Place first mark' : 'Sign in to start';
+    cta.style.cssText = 'margin-top:10px;background:#c8a96e;color:#020408;border:none;border-radius:999px;padding:8px 14px;font-size:.72rem;cursor:pointer;font-family:inherit;';
+    cta.onclick = function() {
+      if (AUTH.user) {
+        showGlobe();
+        openSb();
+      } else {
+        openAuth('login');
+      }
+    };
+    body.appendChild(cta);
     return;
   }
 
@@ -347,6 +363,20 @@ function renderLists() {
     empty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
     empty.textContent = 'No public marks yet. Your first saved mark will appear here.';
     pl.appendChild(empty);
+
+    var cta = document.createElement('button');
+    cta.type = 'button';
+    cta.textContent = AUTH.user ? 'Create the first mark' : 'Sign in to create a mark';
+    cta.style.cssText = 'margin-top:10px;background:rgba(200,169,110,.14);border:1px solid rgba(200,169,110,.28);color:#c8a96e;border-radius:999px;padding:8px 12px;font-size:.72rem;cursor:pointer;font-family:inherit;';
+    cta.onclick = function() {
+      if (AUTH.user) {
+        showGlobe();
+        openSb();
+      } else {
+        openAuth('login');
+      }
+    };
+    pl.appendChild(cta);
     return;
   }
 
@@ -466,7 +496,17 @@ function renderProfileRecent(container, marks) {
     var empty = document.createElement('div');
     empty.className = 'pempty';
     empty.textContent = 'No personal activity yet. Your saved marks will appear here.';
+    var cta = document.createElement('button');
+    cta.type = 'button';
+    cta.textContent = 'Place your first mark';
+    cta.style.cssText = 'margin-top:12px;background:#c8a96e;color:#020408;border:none;border-radius:999px;padding:8px 14px;font-size:.72rem;cursor:pointer;font-family:inherit;';
+    cta.onclick = function() {
+      closeProfile();
+      showGlobe();
+      openSb();
+    };
     container.appendChild(empty);
+    container.appendChild(cta);
     return;
   }
 
