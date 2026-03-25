@@ -945,28 +945,7 @@ async function initCesium() {
     viewer.dataSources.add(pinDataSource);
     viewer.dataSources.add(aggregateDataSource);
     pinDataSource.clustering.enabled = false;
-    pinDataSource.clustering.pixelRange = 32;
-    pinDataSource.clustering.minimumClusterSize = 3;
-    pinDataSource.clustering.clusterEvent.addEventListener(function(clusteredEntities, cluster) {
-      cluster.billboard.show = false;
-      cluster.point.show = true;
-      cluster.point.pixelSize = Math.min(34, 16 + Math.round(clusteredEntities.length / 3));
-      cluster.point.color = Cesium.Color.fromCssColorString('#c8a96e').withAlpha(0.92);
-      cluster.point.outlineColor = Cesium.Color.fromCssColorString('#020408');
-      cluster.point.outlineWidth = 2;
-      cluster.point.heightReference = Cesium.HeightReference.CLAMP_TO_GROUND;
-      cluster.label.show = true;
-      cluster.label.text = String(clusteredEntities.length);
-      cluster.label.font = '14px DM Sans';
-      cluster.label.fillColor = Cesium.Color.fromCssColorString('#020408');
-      cluster.label.outlineColor = Cesium.Color.fromCssColorString('#f0ede8');
-      cluster.label.outlineWidth = 2;
-      cluster.label.style = Cesium.LabelStyle.FILL_AND_OUTLINE;
-      cluster.label.showBackground = true;
-      cluster.label.backgroundColor = Cesium.Color.fromCssColorString('#f0ede8').withAlpha(0.82);
-      cluster.label.backgroundPadding = new Cesium.Cartesian2(10, 6);
-      cluster.label.heightReference = Cesium.HeightReference.CLAMP_TO_GROUND;
-    });
+    aggregateDataSource.show = false;
 
     // Remove default imagery and add high quality satellite imagery
     viewer.imageryLayers.removeAll();
@@ -1184,10 +1163,6 @@ function updateZoomDisplay() {
 }
 
 function getPinLODMode() {
-  if (!viewer || !viewer.camera || !viewer.camera.positionCartographic) return 'detail';
-  var height = viewer.camera.positionCartographic.height;
-  if (height > 8500000) return 'aggregate';
-  if (height > 2800000) return 'cluster';
   return 'detail';
 }
 
@@ -1370,26 +1345,15 @@ function buildPinAggregates() {
 
 function syncPinLOD() {
   if (!viewer || !pinDataSource || !aggregateDataSource) return;
-  var mode = getPinLODMode();
-  _lastPinLodMode = mode;
-
-  if (mode === 'aggregate') {
-    if (pinAggregateDirty) buildPinAggregates();
-    aggregateDataSource.show = true;
-    pinDataSource.show = false;
-    pinDataSource.clustering.enabled = false;
-    aggregateDataSource.entities.values.forEach(function(entity) {
-      entity.show = isEntityOnVisibleHemisphere(entity, 0.3);
-    });
-    return;
-  }
-
+  _lastPinLodMode = 'detail';
   aggregateDataSource.show = false;
+  aggregateDataSource.entities.removeAll();
   pinDataSource.show = true;
-  pinDataSource.clustering.enabled = mode === 'cluster';
+  pinDataSource.clustering.enabled = false;
   pinDataSource.entities.values.forEach(function(entity) {
     entity.show = true;
   });
+  pinAggregateDirty = false;
 }
 
 // Toggle functions
