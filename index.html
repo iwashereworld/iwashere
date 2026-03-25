@@ -175,6 +175,12 @@ footer a{color:var(--muted);text-decoration:none;}
 #fab{position:fixed;bottom:1.5rem;right:1.5rem;height:52px;border-radius:999px;background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 100%);color:#020408;font-size:.86rem;font-weight:700;border:none;cursor:pointer;z-index:160;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 12px 36px rgba(200,169,110,.35);transition:all .2s;padding:0 18px;min-width:168px;}
 #fab:hover{transform:translateY(-2px);}
 #fab .fab-plus{font-size:1.25rem;line-height:1;}
+#fab.cta-preview{height:58px;padding:0 20px;gap:12px;background:linear-gradient(135deg,#f1d7a0 0%,#c8a96e 54%,#b88a39 100%);box-shadow:0 16px 42px rgba(200,169,110,.34),0 0 0 1px rgba(255,255,255,.12) inset;}
+#fab.cta-preview .fab-plus{display:grid;place-items:center;width:28px;height:28px;border-radius:999px;background:rgba(2,4,8,.14);font-size:1.05rem;}
+#fab.cta-preview .fab-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05;}
+#fab.cta-preview .fab-label strong{font-size:.86rem;letter-spacing:.01em;}
+#fab.cta-preview .fab-label span{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;opacity:.72;margin-top:4px;}
+#fab.cta-preview.create-active{box-shadow:0 0 0 2px rgba(200,169,110,.4),0 18px 44px rgba(200,169,110,.3);}
 #create-flow{position:fixed;left:16px;bottom:16px;z-index:170;width:min(340px,calc(100vw - 32px));background:rgba(8,14,24,.96);border:1px solid rgba(200,169,110,.28);border-radius:18px;padding:14px 16px;backdrop-filter:blur(18px);box-shadow:0 18px 48px rgba(0,0,0,.34);display:none;pointer-events:auto;}
 #create-flow.show{display:block;}
 .cf-kicker{font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);margin-bottom:.35rem;}
@@ -199,6 +205,10 @@ footer a{color:var(--muted);text-decoration:none;}
 .hint-a .nbtn{padding:7px 14px;font-size:.72rem;}
 #sb .step-meta{font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem;}
 #sb .step-tip{font-size:.72rem;color:var(--muted);line-height:1.6;margin:-.2rem 0 1rem;}
+.locked-location{display:none;background:rgba(18,26,42,.8);border:1px solid rgba(200,169,110,.18);border-radius:12px;padding:.75rem .8rem;margin:0 0 1rem;}
+.locked-location.show{display:block;}
+.locked-location-label{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.3rem;}
+.locked-location-text{font-size:.76rem;line-height:1.55;color:var(--text);}
 .onboard-card{background:rgba(18,26,42,.72);border:1px solid rgba(200,169,110,.16);border-radius:12px;padding:.85rem .9rem;margin:0 0 1rem;}
 .onboard-title{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.55rem;}
 .onboard-list{display:flex;flex-direction:column;gap:.45rem;}
@@ -432,6 +442,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   .ctrls{left:12px;right:12px;bottom:12px;}
   #fab{right:12px;bottom:12px;height:52px;padding:0 14px;width:auto;min-width:0;}
   #fab .fab-label{display:none;}
+  #fab.cta-preview .fab-label{display:flex;}
+  #fab.cta-preview{height:56px;padding:0 16px;min-width:0;max-width:calc(100vw - 24px);}
+  #fab.cta-preview .fab-label span{display:none;}
   #pin-filter-bar{bottom:76px;}
   #zoom-level{bottom:82px;left:12px;right:12px;transform:none;text-align:center;}
 }
@@ -601,6 +614,10 @@ window.addEventListener('load', initCookieBanner);
     <div class="onboard-card" id="onboard-card">
       <div class="onboard-title" data-i18n="next_up">Next Up</div>
       <div class="onboard-list" id="onboard-list"></div>
+    </div>
+    <div class="locked-location" id="locked-location-banner">
+      <div class="locked-location-label">Selected Place</div>
+      <div class="locked-location-text" id="locked-location-text">No location locked yet.</div>
     </div>
     <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
     <!-- Step 1 -->
@@ -954,6 +971,7 @@ var cityLabelNodes = [];
 var _lastPinLodMode = '';
 var _searchResults = [];
 var _searchActiveIndex = -1;
+var _ctaPreviewEnabled = true;
 function createPinSvg(fill, inner, stroke, dashed, glow) {
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="38" viewBox="0 0 28 38">' +
@@ -1242,16 +1260,34 @@ function setPinFilter(mode) {
 function updateCreateFlowUI() {
   var panel = document.getElementById('create-flow');
   if (!panel) return;
-  panel.classList.toggle('show', !!ST.createMode);
+  panel.classList.toggle('show', !!ST.createMode && ST.createStep < 3);
   applyBodyModeState();
+  var fab = document.getElementById('fab');
   var fabLabel = document.querySelector('#fab .fab-label');
-  if (fabLabel) fabLabel.textContent = ltxt('Add Memory', 'Anı Ekle');
+  if (fab) {
+    fab.classList.toggle('cta-preview', !!_ctaPreviewEnabled);
+    fab.classList.toggle('create-active', !!(_ctaPreviewEnabled && ST.createMode));
+  }
+  if (fabLabel) {
+    if (_ctaPreviewEnabled) {
+      if (!ST.createMode) {
+        fabLabel.innerHTML = '<strong>' + ltxt('Add Memory', 'Anı Ekle') + '</strong><span>' + ltxt('Guided 3-step flow', 'Yönlendirmeli 3 adım') + '</span>';
+      } else if (ST.createStep <= 2) {
+        fabLabel.innerHTML = '<strong>' + ltxt('Selecting Location', 'Konum Seçiliyor') + '</strong><span>' + ltxt('Preview before you place it', 'Bırakmadan önce önizle') + '</span>';
+      } else {
+        fabLabel.innerHTML = '<strong>' + ltxt('Writing the Memory', 'Anı Yazılıyor') + '</strong><span>' + ltxt('Finish the story in the panel', 'Panelde hikayeyi tamamla') + '</span>';
+      }
+    } else {
+      fabLabel.textContent = ltxt('Add Memory', 'Anı Ekle');
+    }
+  }
   var btn1 = document.getElementById('btn1');
   if (btn1) btn1.textContent = ltxt('Continue to Message', 'Mesaja Geç');
   var kicker = panel.querySelector('.cf-kicker');
-  if (kicker) kicker.textContent = ltxt('Create Memory', 'Anı Oluştur');
+  if (kicker) kicker.textContent = _ctaPreviewEnabled ? ltxt('Guided Memory Flow', 'Yönlendirmeli Anı Akışı') : ltxt('Create Memory', 'Anı Oluştur');
   var cancelBtn = document.getElementById('create-cancel-btn');
   if (cancelBtn) cancelBtn.textContent = ltxt('Cancel', 'İptal');
+  updateLockedLocationBanner();
   if (!ST.createMode) return;
 
   var title = document.getElementById('create-flow-title');
@@ -1277,8 +1313,21 @@ function updateCreateFlowUI() {
   if (confirmBtn) {
     confirmBtn.disabled = !(ST.createStep === 2 && ST.selLat != null && ST.selLon != null);
     confirmBtn.style.display = ST.createStep >= 3 ? 'none' : 'inline-flex';
-    confirmBtn.textContent = ltxt('Confirm location', 'Konumu onayla');
+    confirmBtn.textContent = _ctaPreviewEnabled ? ltxt('Confirm This Place', 'Bu Yeri Onayla') : ltxt('Confirm location', 'Konumu onayla');
   }
+}
+
+function updateLockedLocationBanner() {
+  var banner = document.getElementById('locked-location-banner');
+  var text = document.getElementById('locked-location-text');
+  if (!banner || !text) return;
+  var hasLocation = !!ST.locationConfirmed && ST.selLat != null && ST.selLon != null;
+  banner.classList.toggle('show', hasLocation);
+  if (!hasLocation) {
+    text.textContent = ltxt('No location locked yet.', 'Henüz bir konum kilitlenmedi.');
+    return;
+  }
+  text.textContent = (ST.selName || ltxt('Selected place', 'Seçili yer')) + ' • ' + ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4);
 }
 
 function startCreateFlow() {
@@ -1318,6 +1367,7 @@ function confirmCreateLocation() {
   if (ST.selLat == null || ST.selLon == null) return;
   ST.locationConfirmed = true;
   ST.createStep = 3;
+  ST.createMode = false;
   document.getElementById('sb').classList.remove('hidden');
   var locDisplay = document.getElementById('loc-display');
   if (locDisplay) locDisplay.value = ST.selName + ' (' + ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) + ')';
