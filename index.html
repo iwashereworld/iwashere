@@ -76,6 +76,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:.85rem 2.5rem;displa
 .nbtn:hover{background:rgba(200,169,110,.12);}
 .nbtn.p{background:var(--gold);color:#020408;border-color:var(--gold);}
 .nbtn.p:hover{background:var(--gold2);}
+.lang-switch{display:flex;gap:6px;align-items:center;}
+.lang-btn{min-width:40px;padding:8px 10px;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;}
+.lang-btn.on{background:rgba(200,169,110,.12);border-color:var(--gold);color:var(--gold);}
 #globe-bg{position:fixed;inset:0;z-index:1;opacity:.8;overflow:hidden;pointer-events:none;}
 #overlay{position:fixed;inset:0;z-index:2;background:radial-gradient(ellipse at 50% 50%,transparent 20%,rgba(2,4,8,.55) 70%),linear-gradient(to bottom,rgba(2,4,8,.3) 0%,transparent 30%,transparent 60%,rgba(2,4,8,.95) 100%);}
 #hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 2rem;position:relative;z-index:5;}
@@ -411,32 +414,36 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <nav>
   <div class="logo">I Was <em>Here</em></div>
   <div class="nav-actions">
-    <button class="nbtn" id="signin-btn" onclick="AUTH.user?openProfile():openAuth('login')">Sign in</button>
-    <button class="nbtn" id="signout-btn" onclick="signOut()" style="display:none">Sign out</button>
-    <button class="nbtn p" onclick="showGlobe()">Open Globe</button>
+    <div class="lang-switch" aria-label="Language switcher">
+      <button class="nbtn lang-btn" type="button" data-lang-btn="en" onclick="setLanguage('en')">EN</button>
+      <button class="nbtn lang-btn" type="button" data-lang-btn="tr" onclick="setLanguage('tr')">TR</button>
+    </div>
+    <button class="nbtn" id="signin-btn" onclick="AUTH.user?openProfile():openAuth('login')" data-i18n="nav_sign_in">Sign in</button>
+    <button class="nbtn" id="signout-btn" onclick="signOut()" style="display:none" data-i18n="nav_sign_out">Sign out</button>
+    <button class="nbtn p" onclick="showGlobe()" data-i18n="nav_open_globe">Open Globe</button>
   </div>
 </nav>
 <section id="hero">
-  <div class="ey">A digital monument for humanity</div>
-  <h1 class="h1">Leave your <em>mark</em><br>on the world</h1>
-  <p class="hs2">Pin your name to the globe, save a written memory, and optionally set a future opening date for your capsule.</p>
+  <div class="ey" data-i18n="hero_eyebrow">A digital monument for humanity</div>
+  <h1 class="h1" data-i18n-html="hero_title_html">Leave your <em>mark</em><br>on the world</h1>
+  <p class="hs2" data-i18n="hero_subtitle">Pin your name to the globe, save a written memory, and optionally set a future opening date for your capsule.</p>
   <div class="hbs">
-    <button class="hb g" onclick="showGlobe()">Open Globe</button>
-    <a href="#how" class="hb gh">How It Works</a>
+    <button class="hb g" onclick="showGlobe()" data-i18n="nav_open_globe">Open Globe</button>
+    <a href="#how" class="hb gh" data-i18n="hero_how">How It Works</a>
   </div>
   <div class="hst">
-    <div class="st"><span class="sn" id="s1">12,847</span><span class="sl">Marks Placed</span></div>
-    <div class="st"><span class="sn" id="s2">194</span><span class="sl">Countries</span></div>
-    <div class="st"><span class="sn" id="s3">8,291</span><span class="sl">Capsules Sealed</span></div>
+    <div class="st"><span class="sn" id="s1">12,847</span><span class="sl" data-i18n="stat_marks">Marks Placed</span></div>
+    <div class="st"><span class="sn" id="s2">194</span><span class="sl" data-i18n="stat_countries">Countries</span></div>
+    <div class="st"><span class="sn" id="s3">8,291</span><span class="sl" data-i18n="stat_capsules">Capsules Sealed</span></div>
   </div>
 </section>
 <section class="sec" id="how">
-  <div class="secl reveal">The Journey</div>
-  <h2 class="sect reveal">Three steps to leave a <em>memory</em></h2>
+  <div class="secl reveal" data-i18n="how_label">The Journey</div>
+  <h2 class="sect reveal" data-i18n-html="how_title_html">Three steps to leave a <em>memory</em></h2>
   <div class="steps reveal">
-    <div class="sc"><div class="sn2">01</div><div class="stit">Choose Your Spot</div><p class="sdes">Click anywhere on the 3D globe to place your pin. Zoom to street level for precise placement with satellite imagery.</p></div>
-    <div class="sc"><div class="sn2">02</div><div class="stit">Write Your Message</div><p class="sdes">Add the text that will be saved with your mark. Photos are optional, and voice is currently on-device preview only.</p></div>
-    <div class="sc"><div class="sn2">03</div><div class="stit">Choose Visibility</div><p class="sdes">Save it as a public mark today, or set a future opening date for a capsule experience.</p></div>
+    <div class="sc"><div class="sn2">01</div><div class="stit" data-i18n="how_step1_title">Choose Your Spot</div><p class="sdes" data-i18n="how_step1_body">Click anywhere on the 3D globe to place your pin. Zoom to street level for precise placement with satellite imagery.</p></div>
+    <div class="sc"><div class="sn2">02</div><div class="stit" data-i18n="how_step2_title">Write Your Message</div><p class="sdes" data-i18n="how_step2_body">Add the text that will be saved with your mark. Photos are optional, and voice is currently on-device preview only.</p></div>
+    <div class="sc"><div class="sn2">03</div><div class="stit" data-i18n="how_step3_title">Choose Visibility</div><p class="sdes" data-i18n="how_step3_body">Save it as a public mark today, or set a future opening date for a capsule experience.</p></div>
   </div>
 </section>
 <section id="quote">
@@ -444,8 +451,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <cite class="qa reveal">I Was Here Manifesto</cite>
 </section>
 <section class="sec">
-  <div class="secl reveal">Investment in Memory</div>
-  <h2 class="sect reveal">Simple pricing for what is <em>live now</em></h2>
+  <div class="secl reveal" data-i18n="pricing_label">Investment in Memory</div>
+  <h2 class="sect reveal" data-i18n-html="pricing_title_html">Simple pricing for what is <em>live now</em></h2>
   <div class="pcards reveal">
     <div class="pc"><div class="pbg alt">Available Now</div><span class="pi2"></span><div class="pnm">Public Mark</div><div class="pam">$1 <span>one-time</span></div><p class="pds">Save a public mark with your name, coordinates, and written message.</p><ul class="pft"><li>Permanent globe placement</li><li>Optional photo</li><li>Country attribution</li></ul></div>
     <div class="pc ft"><div class="pbg">Available Now</div><span class="pi2"></span><div class="pnm">Mark + Capsule</div><div class="pam">$3 <span>one-time</span></div><p class="pds">Save your mark now and choose a future opening date for the capsule view.</p><ul class="pft"><li>Everything in Public Mark</li><li>Text message support</li><li>Future opening date</li></ul></div>
@@ -456,22 +463,18 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <footer>
   <span>© 2026 IWASHEREWORLD · I Was Here</span>
   <div style="display:flex;gap:1.5rem;">
-    <a href="/privacy-policy.html">Privacy Policy</a>
-    <a href="/terms.html">Terms of Service</a>
-    <a href="mailto:sametbasinli@gmail.com">Contact</a>
+    <a href="/privacy-policy.html" data-i18n="footer_privacy">Privacy Policy</a>
+    <a href="/terms.html" data-i18n="footer_terms">Terms of Service</a>
+    <a href="mailto:sametbasinli@gmail.com" data-i18n="footer_contact">Contact</a>
   </div>
 </footer>
 
 <!-- Cookie Banner -->
 <div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(8,14,24,0.98);border-top:1px solid rgba(200,169,110,0.25);padding:1rem 2rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;backdrop-filter:blur(16px);">
-  <p style="font-size:.78rem;color:rgba(240,237,232,0.7);margin:0;max-width:600px;">
-    We use essential cookies to keep you logged in and improve your experience. By continuing, you agree to our 
-    <a href="/privacy-policy.html" style="color:#c8a96e;">Privacy Policy</a> and 
-    <a href="/terms.html" style="color:#c8a96e;">Terms of Service</a>.
-  </p>
+  <p style="font-size:.78rem;color:rgba(240,237,232,0.7);margin:0;max-width:600px;" data-i18n="cookie_text">We use essential cookies to keep you logged in and improve your experience. By continuing, you agree to our Privacy Policy and Terms of Service.</p>
   <div style="display:flex;gap:8px;flex-shrink:0;">
-    <button onclick="acceptCookies()" style="background:#c8a96e;color:#020408;border:none;border-radius:20px;padding:8px 20px;font-size:.78rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Accept</button>
-    <button onclick="declineCookies()" style="background:transparent;color:rgba(240,237,232,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Decline</button>
+    <button onclick="acceptCookies()" style="background:#c8a96e;color:#020408;border:none;border-radius:20px;padding:8px 20px;font-size:.78rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;" data-i18n="cookie_accept">Accept</button>
+    <button onclick="declineCookies()" style="background:transparent;color:rgba(240,237,232,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;" data-i18n="cookie_decline">Decline</button>
   </div>
 </div>
 <script>
@@ -499,40 +502,44 @@ window.addEventListener('load', initCookieBanner);
   <button type="button" class="logo logo-btn" onclick="goLanding()" aria-label="Return to landing page">I Was <em>Here</em></button>
   <div class="ghs"><div><strong id="sp">0</strong>marks</div><div><strong id="sc2">0</strong>countries</div><div><strong id="sk2">0</strong>capsules</div></div>
   <div class="header-actions">
-    <button class="nbtn" id="signin-btn2" onclick="AUTH.user?openProfile():openAuth('login')">Sign in</button>
+    <div class="lang-switch" aria-label="Language switcher">
+      <button class="nbtn lang-btn" type="button" data-lang-btn="en" onclick="setLanguage('en')">EN</button>
+      <button class="nbtn lang-btn" type="button" data-lang-btn="tr" onclick="setLanguage('tr')">TR</button>
+    </div>
+    <button class="nbtn" id="signin-btn2" onclick="AUTH.user?openProfile():openAuth('login')" data-i18n="nav_sign_in">Sign in</button>
   </div>
 </header>
 <div id="globe-container"><div id="cesiumContainer"></div></div>
 <div id="map-label-layer" class="map-label-layer"></div>
 <div id="srch">
   <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:rgba(240,237,232,.35);fill:none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
-  <input type="text" id="si" placeholder="Search city, country, mark, or coordinates..." autocomplete="off">
+  <input type="text" id="si" placeholder="Search city, country, mark, or coordinates..." autocomplete="off" data-i18n-placeholder="search_placeholder">
   <div id="sres"></div>
 </div>
 <div id="zoom-level">Zoom: <span id="zoom-val">--</span> | Altitude: <span id="alt-val">--</span></div>
 <div id="click-coords">
-  <div class="label">Selected Location</div>
+  <div class="label" data-i18n="selected_location">Selected Location</div>
   <div class="coords" id="coords-val">--</div>
   <div style="margin-top:6px;font-size:.7rem;color:var(--muted)" id="addr-val"></div>
 </div>
 <div id="country-summary">
-  <div class="cs-title">Marks by Country</div>
+  <div class="cs-title" data-i18n="marks_by_country">Marks by Country</div>
   <div id="country-summary-body" class="cs-empty">No marks yet.</div>
 </div>
 <div class="ctrls">
   <button class="cb" id="bzoomout" onclick="stepZoom(-1)" aria-label="Zoom out">-</button>
   <button class="cb" id="bzoomin" onclick="stepZoom(1)" aria-label="Zoom in">+</button>
-  <button class="cb" id="brot" onclick="tglRot()">Auto-rotate</button>
-  <button class="cb on" id="bbrd" onclick="tglBorders()">Borders</button>
-  <button class="cb" id="blbl" onclick="tglLabels()">Labels</button>
+  <button class="cb" id="brot" onclick="tglRot()" data-i18n="controls_auto_rotate">Auto-rotate</button>
+  <button class="cb on" id="bbrd" onclick="tglBorders()" data-i18n="controls_borders">Borders</button>
+  <button class="cb" id="blbl" onclick="tglLabels()" data-i18n="controls_labels">Labels</button>
 </div>
 <button id="fab" onclick="openSb()">+</button>
 <div id="start-hint" class="hidden" aria-live="polite">
-  <div class="hint-k">Start Here</div>
-  <div class="hint-t">Open the panel to place your first mark, choose a location and leave a message.</div>
+  <div class="hint-k" data-i18n="start_here">Start Here</div>
+  <div class="hint-t" data-i18n="start_hint">Open the panel to place your first mark, choose a location and leave a message.</div>
   <div class="hint-a">
-    <button type="button" class="nbtn p" onclick="openSb()">Create My Mark</button>
-    <button type="button" class="nbtn" onclick="dismissStartHint()">Later</button>
+    <button type="button" class="nbtn p" onclick="openSb()" data-i18n="create_my_mark">Create My Mark</button>
+    <button type="button" class="nbtn" onclick="dismissStartHint()" data-i18n="later">Later</button>
   </div>
 </div>
 <div id="tt"><div class="tav" id="tav"></div><div class="tn2" id="tn"></div><div class="tc2" id="tc"></div><div class="tm2" id="tm"></div></div>
@@ -541,80 +548,80 @@ window.addEventListener('load', initCookieBanner);
     <div class="step-meta" id="step-meta">Step 1 of 5</div>
     <div class="step-tip" id="step-tip">Start with a display name so your mark has an identity.</div>
     <div class="onboard-card" id="onboard-card">
-      <div class="onboard-title">Next Up</div>
+      <div class="onboard-title" data-i18n="next_up">Next Up</div>
       <div class="onboard-list" id="onboard-list"></div>
     </div>
     <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
     <!-- Step 1 -->
     <div class="step active" id="step1">
-      <h3>Your Details</h3>
-      <p class="sub3">Choose a name that will stand for eternity.</p>
-      <label class="fl">Display Name</label>
-      <input type="text" id="iname" placeholder="Your name" maxlength="80">
-      <label class="fl">Photo (optional)</label>
-      <div class="soft-note">You can skip this. Photos are only used on your mark card after you save.</div>
-      <div class="pu" onclick="document.getElementById('iph').click()" role="button" tabindex="0" aria-label="Add photo"><span>+ Add photo</span></div>
+      <h3 data-i18n="your_details">Your Details</h3>
+      <p class="sub3" data-i18n="your_details_sub">Choose a name that will stand for eternity.</p>
+      <label class="fl" data-i18n="display_name">Display Name</label>
+      <input type="text" id="iname" placeholder="Your name" maxlength="80" data-i18n-placeholder="your_name">
+      <label class="fl" data-i18n="photo_optional">Photo (optional)</label>
+      <div class="soft-note" data-i18n="photo_soft_note">You can skip this. Photos are only used on your mark card after you save.</div>
+      <div class="pu" onclick="document.getElementById('iph').click()" role="button" tabindex="0" aria-label="Add photo"><span data-i18n="add_photo">+ Add photo</span></div>
       <img class="pp" id="prev">
       <input type="file" id="iph" accept="image/*" onchange="hPh(this)">
-      <button class="btn bp" onclick="goS(2)" id="btn1" disabled>Continue to Location</button>
+      <button class="btn bp" onclick="goS(2)" id="btn1" disabled data-i18n="continue_location">Continue to Location</button>
     </div>
     <!-- Step 2 -->
     <div class="step" id="step2">
-      <h3>Choose Location</h3>
-      <p class="sub3">Click anywhere on the globe or search for a place. Zoom in for street-level precision.</p>
-      <label class="fl">Selected Location</label>
-      <input type="text" id="loc-display" readonly placeholder="Click on the globe...">
-      <label class="fl">Or search</label>
-      <select id="csel" onchange="selCC(this.value)"><option value="">Select country...</option></select>
+      <h3 data-i18n="choose_location">Choose Location</h3>
+      <p class="sub3" data-i18n="choose_location_sub">Click anywhere on the globe or search for a place. Zoom in for street-level precision.</p>
+      <label class="fl" data-i18n="selected_location">Selected Location</label>
+      <input type="text" id="loc-display" readonly placeholder="Click on the globe..." data-i18n-placeholder="location_click_placeholder">
+      <label class="fl" data-i18n="or_search">Or search</label>
+      <select id="csel" onchange="selCC(this.value)"><option value="" data-i18n="country_select_placeholder">Select country...</option></select>
       <div id="precise-coords" style="margin-top:8px;padding:10px;background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;display:none;">
-        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px;">Exact Coordinates</div>
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px;" data-i18n="exact_coordinates">Exact Coordinates</div>
         <div style="font-size:.9rem;color:var(--gold);font-family:'Cormorant Garamond',serif;" id="exact-coords-display">--</div>
       </div>
-      <button class="btn bp" onclick="goS(3)" id="btn2" disabled>Continue to Message</button>
-      <button class="btn bs" onclick="goS(1)">Back</button>
+      <button class="btn bp" onclick="goS(3)" id="btn2" disabled data-i18n="continue_message">Continue to Message</button>
+      <button class="btn bs" onclick="goS(1)" data-i18n="back">Back</button>
     </div>
     <!-- Step 3 -->
     <div class="step" id="step3">
-      <h3>Your Message</h3>
-      <p class="sub3">Write the message that will be saved with your mark. Voice stays preview-only for now.</p>
+      <h3 data-i18n="your_message">Your Message</h3>
+      <p class="sub3" data-i18n="your_message_sub">Write the message that will be saved with your mark. Voice stays preview-only for now.</p>
       <div class="g2">
-        <div class="oc on" id="ow" onclick="sMT('w')" role="button" tabindex="0" aria-pressed="true"><span class="ic"></span>Write</div>
-        <div class="oc" id="ov" onclick="sMT('v')" role="button" tabindex="0" aria-pressed="false"><span class="ic"></span>Voice</div>
+        <div class="oc on" id="ow" onclick="sMT('w')" role="button" tabindex="0" aria-pressed="true" data-i18n="write"><span class="ic"></span>Write</div>
+        <div class="oc" id="ov" onclick="sMT('v')" role="button" tabindex="0" aria-pressed="false" data-i18n="voice"><span class="ic"></span>Voice</div>
       </div>
       <div id="written-area">
-        <label class="fl">Message</label>
-        <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..." maxlength="500"></textarea>
+        <label class="fl" data-i18n="message">Message</label>
+        <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..." maxlength="500" data-i18n-placeholder="message_placeholder"></textarea>
       </div>
       <div id="voice-area" style="display:none;">
-        <div class="note-box">Voice recordings are kept for local preview on this device only. Add a written message if you want to save this mark today.</div>
+        <div class="note-box" data-i18n="voice_note">Voice recordings are kept for local preview on this device only. Add a written message if you want to save this mark today.</div>
         <div style="background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
           <button type="button" id="rec-btn" onclick="toggleRecord()" aria-label="Start or stop voice preview recording" style="width:48px;height:48px;border-radius:50%;background:rgba(200,169,110,.15);border:2px solid #c8a96e;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;cursor:pointer;font-size:18px;color:#c8a96e;transition:all .2s;">&#9679;</button>
-          <div id="rec-status" style="font-size:.78rem;color:var(--muted);">Ready to record locally</div>
-          <div id="rec-time" style="font-size:.68rem;color:rgba(200,169,110,.6);margin-top:2px;">Tap to start</div>
-          <div id="voice-upload-status" style="font-size:.68rem;color:rgba(240,237,232,.45);margin-top:6px;">Upload-ready metadata will appear here when backend upload is connected.</div>
+          <div id="rec-status" style="font-size:.78rem;color:var(--muted);" data-i18n="voice_ready">Ready to record locally</div>
+          <div id="rec-time" style="font-size:.68rem;color:rgba(200,169,110,.6);margin-top:2px;" data-i18n="voice_tap_start">Tap to start</div>
+          <div id="voice-upload-status" style="font-size:.68rem;color:rgba(240,237,232,.45);margin-top:6px;" data-i18n="voice_upload_pending">Upload-ready metadata will appear here when backend upload is connected.</div>
           <div id="rec-wave" style="display:none;margin-top:10px;height:28px;display:flex;align-items:center;justify-content:center;gap:2px;" ><div id="rec-wave-inner" style="display:flex;gap:2px;align-items:flex-end;height:24px;"></div></div>
-          <div id="voice-preview" style="display:none;margin-top:12px;"><audio id="voice-audio" controls style="width:100%;height:32px;"></audio><button onclick="clearVoice()" style="margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 12px;font-size:.72rem;color:var(--muted);cursor:pointer;">Clear & re-record</button></div>
+          <div id="voice-preview" style="display:none;margin-top:12px;"><audio id="voice-audio" controls style="width:100%;height:32px;"></audio><button onclick="clearVoice()" style="margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 12px;font-size:.72rem;color:var(--muted);cursor:pointer;" data-i18n="clear_rerecord">Clear & re-record</button></div>
         </div>
-        <div style="margin-top:10px;text-align:center;font-size:.72rem;color:var(--muted);">or <label style="color:var(--gold);cursor:pointer;text-decoration:underline;">upload audio file for preview<input type="file" accept="audio/*" onchange="hVoice(this)" style="display:none"></label></div>
+        <div style="margin-top:10px;text-align:center;font-size:.72rem;color:var(--muted);"><span data-i18n="or">or</span> <label style="color:var(--gold);cursor:pointer;text-decoration:underline;" data-i18n="upload_audio_preview">upload audio file for preview<input type="file" accept="audio/*" onchange="hVoice(this)" style="display:none"></label></div>
         <div id="voice-file-name" style="display:none;text-align:center;font-size:.72rem;color:var(--gold);margin-top:6px;"></div>
       </div>
-      <button class="btn bp" id="btn3" onclick="proceedFromMessageStep()" style="margin-top:1rem;">Continue to Capsule</button>
-      <button class="btn bs" onclick="goS(2)">Back</button>
+      <button class="btn bp" id="btn3" onclick="proceedFromMessageStep()" style="margin-top:1rem;" data-i18n="continue_capsule">Continue to Capsule</button>
+      <button class="btn bs" onclick="goS(2)" data-i18n="back">Back</button>
     </div>
     <!-- Step 4 -->
     <div class="step" id="step4">
-      <h3>Capsule Options</h3>
-      <p class="sub3">Skip this if you only want a public mark right now.</p>
+      <h3 data-i18n="capsule_options">Capsule Options</h3>
+      <p class="sub3" data-i18n="capsule_options_sub">Skip this if you only want a public mark right now.</p>
       <div class="note-box" id="capsule-note">Recipient email is only needed when you send a future capsule to someone else.</div>
       <div id="recipient-block">
-      <label class="fl">Recipient</label>
+      <label class="fl" data-i18n="recipient">Recipient</label>
       <div class="g2">
-        <div class="oc on" id="os" onclick="sRC('s')" role="button" tabindex="0" aria-pressed="true">Myself</div>
-        <div class="oc a2" id="oo" onclick="sRC('o')" role="button" tabindex="0" aria-pressed="false">Someone Else</div>
+        <div class="oc on" id="os" onclick="sRC('s')" role="button" tabindex="0" aria-pressed="true" data-i18n="myself">Myself</div>
+        <div class="oc a2" id="oo" onclick="sRC('o')" role="button" tabindex="0" aria-pressed="false" data-i18n="someone_else">Someone Else</div>
       </div>
-      <div id="re" style="display:none;"><label class="fl">Recipient Email</label><input type="email" id="iem" placeholder="their@email.com" maxlength="254"></div>
+      <div id="re" style="display:none;"><label class="fl" data-i18n="recipient_email">Recipient Email</label><input type="email" id="iem" placeholder="their@email.com" maxlength="254" data-i18n-placeholder="recipient_email_placeholder"></div>
       </div>
-      <label class="fl">Opens in</label>
+      <label class="fl" data-i18n="opens_in">Opens in</label>
       <div class="g3">
         <div class="oc" id="tq7" onclick="setQuick(7,'tq7')" role="button" tabindex="0" aria-pressed="false">1 Week</div>
         <div class="oc" id="tq30" onclick="setQuick(30,'tq30')" role="button" tabindex="0" aria-pressed="false">1 Month</div>
@@ -626,49 +633,49 @@ window.addEventListener('load', initCookieBanner);
       <div class="g3" style="margin-top:0;">
         <div class="oc" id="tq1825" onclick="setQuick(1825,'tq1825')" role="button" tabindex="0" aria-pressed="false">5 Years</div>
         <div class="oc" id="tq9125" onclick="setQuick(9125,'tq9125')" role="button" tabindex="0" aria-pressed="false">25 Years</div>
-        <div class="oc" id="tqcustom" onclick="toggleCustomDate()" role="button" tabindex="0" aria-pressed="false">Custom</div>
+        <div class="oc" id="tqcustom" onclick="toggleCustomDate()" role="button" tabindex="0" aria-pressed="false" data-i18n="custom">Custom</div>
       </div>
       <div id="custom-date-area" style="display:none;margin-top:.5rem;">
-        <label class="fl">Select Date</label>
+        <label class="fl" data-i18n="select_date">Select Date</label>
         <input type="date" id="capsule-date" onchange="setCustomDate(this.value)">
         <div id="date-preview" style="display:none;font-size:.72rem;color:var(--gold);margin-top:-6px;margin-bottom:8px;"></div>
       </div>
       <div id="opens-preview" style="background:rgba(18,26,42,.9);border:1px solid rgba(200,169,110,.2);border-radius:8px;padding:10px;text-align:center;margin:.8rem 0;">
-        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);">Capsule Opens</div>
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);" data-i18n="capsule_opens">Capsule Opens</div>
         <div id="opens-date-text" style="font-size:.9rem;color:var(--gold);margin-top:2px;font-family:'Cormorant Garamond',serif;">In 1 year - ...</div>
       </div>
-      <div style="text-align:center;margin-bottom:.5rem;"><span style="font-size:.72rem;color:var(--muted);">or</span></div>
-      <div class="oc" id="tq0" onclick="setQuick(0,'tq0')" role="button" tabindex="0" aria-pressed="false" style="margin-bottom:1rem;">No Capsule (public mark only)</div>
-      <button class="btn bp" id="btn4" onclick="proceedToReview()">Continue to Review</button>
-      <button class="btn bs" onclick="goS(3)">Back</button>
+      <div style="text-align:center;margin-bottom:.5rem;"><span style="font-size:.72rem;color:var(--muted);" data-i18n="or">or</span></div>
+      <div class="oc" id="tq0" onclick="setQuick(0,'tq0')" role="button" tabindex="0" aria-pressed="false" style="margin-bottom:1rem;" data-i18n="no_capsule">No Capsule (public mark only)</div>
+      <button class="btn bp" id="btn4" onclick="proceedToReview()" data-i18n="continue_review">Continue to Review</button>
+      <button class="btn bs" onclick="goS(3)" data-i18n="back">Back</button>
     </div>
     <!-- Step 5 -->
     <div class="step" id="step5">
-      <h3>Review & Place</h3>
-      <p class="sub3">Review your mark before saving it to the globe.</p>
+      <h3 data-i18n="review_place">Review & Place</h3>
+      <p class="sub3" data-i18n="review_place_sub">Review your mark before saving it to the globe.</p>
       <div class="pb" id="smry"></div>
-      <button class="btn bp" id="btn-submit-mark" onclick="submit()">Save My Mark</button>
-      <button class="btn bs" onclick="goS(4)">Back</button>
+      <button class="btn bp" id="btn-submit-mark" onclick="submit()" data-i18n="save_my_mark">Save My Mark</button>
+      <button class="btn bs" onclick="goS(4)" data-i18n="back">Back</button>
     </div>
     <!-- Step 6 (success) -->
     <div class="step" id="step6">
       <div class="sic"></div>
-      <div class="st2">You're on the Globe</div>
-      <p class="ss3" id="ss4">Your mark is now visible.</p>
+      <div class="st2" data-i18n="success_title">You're on the Globe</div>
+      <p class="ss3" id="ss4" data-i18n="success_visible">Your mark is now visible.</p>
       <div class="cbdg" id="cbdg" style="display:none;"><div class="op">Capsule Opens</div><div class="dt" id="cdt"></div></div>
-      <button class="btn bp" id="btn-share-card" onclick="showShareCard(window._lastPin)" style="display:none;margin-bottom:8px;">Share Card</button>
-      <button class="btn bp" onclick="closeSb();resetForm()">Done</button>
+      <button class="btn bp" id="btn-share-card" onclick="showShareCard(window._lastPin)" style="display:none;margin-bottom:8px;" data-i18n="share_card">Share Card</button>
+      <button class="btn bp" onclick="closeSb();resetForm()" data-i18n="done">Done</button>
     </div>
   </div>
   <div class="plsec">
-    <div class="pltit">Recent Marks</div>
+    <div class="pltit" data-i18n="recent_marks">Recent Marks</div>
     <div class="qj" id="quick-jump">
-      <button type="button" class="qjbtn" data-jump="my" onclick="setQuickJump('my')">My Marks</button>
-      <button type="button" class="qjbtn" data-jump="nearby" onclick="setQuickJump('nearby')">Nearby</button>
-      <button type="button" class="qjbtn" data-jump="trending" onclick="setQuickJump('trending')">Trending</button>
-      <button type="button" class="qjbtn" data-jump="friends" onclick="setQuickJump('friends')">Friends</button>
-      <button type="button" class="qjbtn on" data-jump="recent" onclick="setQuickJump('recent')">Recent</button>
-      <button type="button" class="qjbtn" data-jump="countries" onclick="setQuickJump('countries')">Countries</button>
+      <button type="button" class="qjbtn" data-jump="my" onclick="setQuickJump('my')" data-i18n="quick_my">My Marks</button>
+      <button type="button" class="qjbtn" data-jump="nearby" onclick="setQuickJump('nearby')" data-i18n="quick_nearby">Nearby</button>
+      <button type="button" class="qjbtn" data-jump="trending" onclick="setQuickJump('trending')" data-i18n="quick_trending">Trending</button>
+      <button type="button" class="qjbtn" data-jump="friends" onclick="setQuickJump('friends')" data-i18n="quick_friends">Friends</button>
+      <button type="button" class="qjbtn on" data-jump="recent" onclick="setQuickJump('recent')" data-i18n="quick_recent">Recent</button>
+      <button type="button" class="qjbtn" data-jump="countries" onclick="setQuickJump('countries')" data-i18n="quick_countries">Countries</button>
     </div>
     <div id="plist"></div>
   </div>
@@ -680,30 +687,30 @@ window.addEventListener('load', initCookieBanner);
   <div class="abox">
     <button class="aclose" onclick="closeAuth()">&times;</button>
     <div class="alogo">I Was Here</div>
-    <h2 class="atitle" id="atitle">Welcome back</h2>
-    <p class="asub" id="asub">Sign in to manage your marks.</p>
-    <div class="atabs"><button class="atab on" id="tab-l" onclick="switchTab('login')">Sign in</button><button class="atab" id="tab-r" onclick="switchTab('register')">Register</button></div>
+    <h2 class="atitle" id="atitle" data-i18n="auth_welcome_back">Welcome back</h2>
+    <p class="asub" id="asub" data-i18n="auth_sign_in_sub">Sign in to manage your marks.</p>
+    <div class="atabs"><button class="atab on" id="tab-l" onclick="switchTab('login')" data-i18n="nav_sign_in">Sign in</button><button class="atab" id="tab-r" onclick="switchTab('register')" data-i18n="auth_register_tab">Register</button></div>
 
     <button onclick="signInWithGoogle()" style="width:100%;padding:11px;background:#fff;color:#333;border:1px solid #ddd;border-radius:10px;font-size:.88rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:1rem;transition:all .2s">
       <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      Continue with Google
+      <span data-i18n="auth_continue_google">Continue with Google</span>
     </button>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem;color:rgba(240,237,232,.25);font-size:.72rem"><div style="flex:1;height:1px;background:rgba(255,255,255,.07)"></div>or email<div style="flex:1;height:1px;background:rgba(255,255,255,.07)"></div></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem;color:rgba(240,237,232,.25);font-size:.72rem"><div style="flex:1;height:1px;background:rgba(255,255,255,.07)"></div><span data-i18n="auth_or_email">or email</span><div style="flex:1;height:1px;background:rgba(255,255,255,.07)"></div></div>
 
-    <div class="afield" id="name-f" style="display:none"><label>Full Name</label><input type="text" id="aname" placeholder="Your name"></div>
-    <div class="afield"><label>Email</label><input type="email" id="aemail" placeholder="your@email.com"></div>
-    <div class="afield" id="password-field"><label>Password</label><input type="password" id="apw" placeholder="********"></div>
-    <div class="auth-link-row" id="forgot-link-row"><button class="auth-link" type="button" onclick="switchTab('forgot')">Forgot password?</button></div>
-    <div id="terms-check" style="display:none;margin-bottom:1rem;"><label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:.76rem;color:rgba(240,237,232,.6);line-height:1.5;"><input type="checkbox" id="terms-agree" style="margin-top:2px;accent-color:#c8a96e;cursor:pointer;flex-shrink:0;"> I agree to the <a href="/terms.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Terms of Service</a> and <a href="/privacy-policy.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Privacy Policy</a></label></div>
-    <button class="abtn" id="auth-btn" onclick="submitAuth()">Sign in</button>
-    <div class="auth-link-row center" id="back-to-login-row" style="display:none;"><button class="auth-link" type="button" onclick="switchTab('login')">Back to sign in</button></div>
+    <div class="afield" id="name-f" style="display:none"><label data-i18n="auth_full_name">Full Name</label><input type="text" id="aname" placeholder="Your name" data-i18n-placeholder="your_name"></div>
+    <div class="afield"><label data-i18n="auth_email">Email</label><input type="email" id="aemail" placeholder="your@email.com"></div>
+    <div class="afield" id="password-field"><label data-i18n="auth_password">Password</label><input type="password" id="apw" placeholder="********"></div>
+    <div class="auth-link-row" id="forgot-link-row"><button class="auth-link" type="button" onclick="switchTab('forgot')" data-i18n="auth_forgot">Forgot password?</button></div>
+    <div id="terms-check" style="display:none;margin-bottom:1rem;"><label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:.76rem;color:rgba(240,237,232,.6);line-height:1.5;"><input type="checkbox" id="terms-agree" style="margin-top:2px;accent-color:#c8a96e;cursor:pointer;flex-shrink:0;"> <span id="terms-copy">I agree to the <a href="/terms.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Terms of Service</a> and <a href="/privacy-policy.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Privacy Policy</a></span></label></div>
+    <button class="abtn" id="auth-btn" onclick="submitAuth()" data-i18n="nav_sign_in">Sign in</button>
+    <div class="auth-link-row center" id="back-to-login-row" style="display:none;"><button class="auth-link" type="button" onclick="switchTab('login')" data-i18n="auth_back_to_sign_in">Back to sign in</button></div>
   </div>
 </div>
 
 <!-- MY MARKS -->
 <div id="mmarks" role="dialog" aria-modal="true" aria-labelledby="my-marks-title">
   <div class="mbox">
-    <div class="mhead"><h2 class="mtitle" id="my-marks-title">My Marks</h2><button onclick="closeMarks()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">&times;</button></div>
+    <div class="mhead"><h2 class="mtitle" id="my-marks-title" data-i18n="my_marks">My Marks</h2><button onclick="closeMarks()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">&times;</button></div>
     <div class="mbody" id="mbody"></div>
   </div>
 </div>
@@ -712,7 +719,7 @@ window.addEventListener('load', initCookieBanner);
 <div id="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
   <div class="pbox">
     <div class="phead">
-      <h2 class="ptitle" id="profile-title">Profile</h2>
+      <h2 class="ptitle" id="profile-title" data-i18n="profile_title">Profile</h2>
       <button onclick="closeProfile()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">&times;</button>
     </div>
     <div class="pbody">
@@ -727,21 +734,21 @@ window.addEventListener('load', initCookieBanner);
           </div>
           <div class="pbio" id="profile-bio"></div>
           <div class="psummary">
-            <div class="psummary-label">Your World</div>
+            <div class="psummary-label" data-i18n="profile_your_world">Your World</div>
             <div class="psummary-text" id="profile-summary">Place your first mark to start building your map.</div>
           </div>
         </div>
       </div>
       <div class="pstats">
-        <div class="pstat"><strong id="profile-stat-marks">0</strong><span>Marks</span></div>
-        <div class="pstat"><strong id="profile-stat-countries">0</strong><span>Countries</span></div>
-        <div class="pstat"><strong id="profile-stat-capsules">0</strong><span>Capsules</span></div>
+        <div class="pstat"><strong id="profile-stat-marks">0</strong><span data-i18n="profile_marks">Marks</span></div>
+        <div class="pstat"><strong id="profile-stat-countries">0</strong><span data-i18n="profile_countries">Countries</span></div>
+        <div class="pstat"><strong id="profile-stat-capsules">0</strong><span data-i18n="profile_capsules">Capsules</span></div>
       </div>
       <div class="pactions">
-        <button type="button" class="pbtn p" onclick="openMarksFromProfile()">View My Marks</button>
-        <button type="button" class="pbtn" onclick="closeProfile();showGlobe();">Place New Mark</button>
+        <button type="button" class="pbtn p" onclick="openMarksFromProfile()" data-i18n="profile_view_marks">View My Marks</button>
+        <button type="button" class="pbtn" onclick="closeProfile();showGlobe();" data-i18n="profile_place_new">Place New Mark</button>
       </div>
-      <div class="psec-title">Recent activity</div>
+      <div class="psec-title" data-i18n="profile_recent_activity">Recent activity</div>
       <div class="precent" id="profile-recent"></div>
     </div>
   </div>
@@ -773,6 +780,7 @@ window.addEventListener('load', initCookieBanner);
 
 <script src="/api/runtime-config.js"></script>
 <script src="app-config.js"></script>
+<script src="app-i18n.js"></script>
 <script src="app-helpers.js"></script>
 <script src="app-ui.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2247,6 +2255,34 @@ document.getElementById('mmarks').addEventListener('click', function(e) {
 document.getElementById('profile-modal').addEventListener('click', function(e) {
   if (e.target === this) closeProfile();
 });
+
+window.refreshLocalizedUI = function() {
+  applyTranslations();
+  var termsCopy = document.getElementById('terms-copy');
+  if (termsCopy) {
+    termsCopy.innerHTML = getCurrentLanguage() === 'tr'
+      ? ' <a href="/terms.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Hizmet Şartları</a> ve <a href="/privacy-policy.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Gizlilik Politikası</a>\'nı kabul ediyorum'
+      : 'I agree to the <a href="/terms.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Terms of Service</a> and <a href="/privacy-policy.html" target="_blank" style="color:#c8a96e;margin:0 3px;">Privacy Policy</a>';
+  }
+  var countrySelect = document.getElementById('csel');
+  if (countrySelect && countrySelect.options.length) {
+    countrySelect.options[0].textContent = t('country_select_placeholder');
+  }
+  var headerStats = document.querySelector('#globe-app .ghs');
+  if (headerStats) {
+    headerStats.innerHTML = '<div><strong id="sp">' + (document.getElementById('sp') ? document.getElementById('sp').textContent : '0') + '</strong>' + (getCurrentLanguage() === 'tr' ? 'iz' : 'marks') + '</div><div><strong id="sc2">' + (document.getElementById('sc2') ? document.getElementById('sc2').textContent : '0') + '</strong>' + (getCurrentLanguage() === 'tr' ? 'ülke' : 'countries') + '</div><div><strong id="sk2">' + (document.getElementById('sk2') ? document.getElementById('sk2').textContent : '0') + '</strong>' + (getCurrentLanguage() === 'tr' ? 'kapsül' : 'capsules') + '</div>';
+  }
+  updateStepMeta(document.querySelector('.dot.on') ? Array.from(document.querySelectorAll('.dot')).findIndex(function(dot) { return dot.classList.contains('on'); }) + 1 : 1);
+  updateCapsuleUI();
+  updateUserUI();
+  renderLists();
+  renderCountrySummary();
+  if (document.getElementById('profile-modal').classList.contains('show')) openProfile();
+  if (document.getElementById('mmarks').classList.contains('show')) showMarks();
+  if ((window._sharePin || window._lastPin) && document.getElementById('share-modal').classList.contains('show')) {
+    showShareCard(window._sharePin || window._lastPin);
+  }
+};
 </script>
 <script>
 function initCookieBanner(){if(!localStorage.getItem('iwh_cookie_consent')){var b=document.getElementById('cookie-banner');if(b)b.style.display='flex';}}

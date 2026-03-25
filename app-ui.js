@@ -1,24 +1,34 @@
-var STEP_COPY = {
-  1: 'Start with a display name so your mark has an identity.',
-  2: 'Pick an exact location on the globe or search for a place.',
-  3: 'Write the message that will appear with your mark.',
-  4: 'Choose when the mark opens and who it belongs to.',
-  5: 'Review the summary and place your mark on the globe.'
-};
-var ONBOARDING_STEPS = [
-  'Add your display name',
-  'Choose the exact place',
-  'Write the message',
-  'Pick capsule timing',
-  'Save and share your mark'
-];
+function getStepCopy() {
+  if (getCurrentLanguage() === 'tr') {
+    return {
+      1: 'İzine kimlik kazandırmak için görünen bir isimle başla.',
+      2: 'Küre üzerinde tam bir nokta seç ya da bir yer ara.',
+      3: 'İzinle birlikte görünecek mesajı yaz.',
+      4: 'Ne zaman açılacağını ve kime ait olacağını seç.',
+      5: 'Özeti gözden geçir ve izini küreye bırak.'
+    };
+  }
+  return {
+    1: 'Start with a display name so your mark has an identity.',
+    2: 'Pick an exact location on the globe or search for a place.',
+    3: 'Write the message that will appear with your mark.',
+    4: 'Choose when the mark opens and who it belongs to.',
+    5: 'Review the summary and place your mark on the globe.'
+  };
+}
+
+function getOnboardingSteps() {
+  return getCurrentLanguage() === 'tr'
+    ? ['Görünen ismini ekle', 'Tam yeri seç', 'Mesajını yaz', 'Kapsül zamanını seç', 'İzini kaydet ve paylaş']
+    : ['Add your display name', 'Choose the exact place', 'Write the message', 'Pick capsule timing', 'Save and share your mark'];
+}
 
 function renderOnboardingChecklist(step) {
   var list = document.getElementById('onboard-list');
   if (!list) return;
   clearChildren(list);
 
-  ONBOARDING_STEPS.forEach(function(text, index) {
+  getOnboardingSteps().forEach(function(text, index) {
     var itemStep = index + 1;
     var item = document.createElement('div');
     item.className = 'onboard-item';
@@ -86,7 +96,7 @@ function resetForm() {
   var submitBtn = document.getElementById('btn-submit-mark');
   if (submitBtn) {
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Save My Mark';
+    submitBtn.textContent = t('save_my_mark');
   }
   document.getElementById('btn1').disabled = true;
   document.getElementById('btn2').disabled = true;
@@ -109,11 +119,13 @@ function updateStepMeta(step) {
   if (!meta || !tip) return;
 
   if (step >= 1 && step <= 5) {
-    meta.textContent = 'Step ' + step + ' of 5';
-    tip.textContent = STEP_COPY[step] || '';
+    meta.textContent = getCurrentLanguage() === 'tr' ? step + ' / 5. Adım' : 'Step ' + step + ' of 5';
+    tip.textContent = getStepCopy()[step] || '';
   } else {
-    meta.textContent = 'Finished';
-    tip.textContent = 'Your mark has been saved. Share it or place another one.';
+    meta.textContent = getCurrentLanguage() === 'tr' ? 'Tamamlandı' : 'Finished';
+    tip.textContent = getCurrentLanguage() === 'tr'
+      ? 'İzin kaydedildi. Paylaşabilir ya da yeni bir tane bırakabilirsin.'
+      : 'Your mark has been saved. Share it or place another one.';
   }
   renderOnboardingChecklist(step >= 1 && step <= 5 ? step : 5);
 }
@@ -151,12 +163,12 @@ function proceedFromMessageStep() {
   messageInput.value = message;
 
   if (ST.msgType === 'w' && !message) {
-    showToast('Please add a message before continuing.');
+    showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden önce bir mesaj ekle.' : 'Please add a message before continuing.');
     return;
   }
 
   if (ST.msgType === 'v' && !message) {
-    showToast('Voice preview is not saved yet. Add a written message to continue.');
+    showToast(getCurrentLanguage() === 'tr' ? 'Ses önizlemesi henüz kaydedilmiyor. Devam etmek için yazılı mesaj ekle.' : 'Voice preview is not saved yet. Add a written message to continue.');
     return;
   }
 
@@ -179,12 +191,12 @@ function proceedToReview() {
 
   if (ST.capsuleDays > 0 && ST.rc === 'o') {
     if (!recipientEmail) {
-      showToast('Please enter a recipient email before continuing.');
+      showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden önce alıcı e-postasını gir.' : 'Please enter a recipient email before continuing.');
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
-      showToast('Please enter a valid recipient email.');
+      showToast(getCurrentLanguage() === 'tr' ? 'Geçerli bir alıcı e-postası gir.' : 'Please enter a valid recipient email.');
       return;
     }
   }
@@ -200,8 +212,12 @@ function updateCapsuleUI() {
   var preview = document.getElementById('opens-preview');
   if (recipientBlock) recipientBlock.classList.toggle('section-hidden', !hasCapsule);
   if (note) note.textContent = hasCapsule
-    ? 'Recipient email is only needed when you send a future capsule to someone else.'
-    : 'No capsule selected. This will be saved as a public mark right away.';
+    ? (getCurrentLanguage() === 'tr'
+      ? 'Alıcı e-postası yalnızca gelecekte açılacak kapsülü başka birine gönderdiğinde gerekir.'
+      : 'Recipient email is only needed when you send a future capsule to someone else.')
+    : (getCurrentLanguage() === 'tr'
+      ? 'Kapsül seçilmedi. Bu iz hemen herkese açık olarak kaydedilecek.'
+      : 'No capsule selected. This will be saved as a public mark right away.');
   if (preview) preview.classList.toggle('section-hidden', !hasCapsule);
 }
 
@@ -272,7 +288,7 @@ function setCustomDate(val) {
   var dp = document.getElementById('date-preview');
   if (dp) {
     var d = new Date(val);
-    dp.textContent = 'Opens ' + d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    dp.textContent = (getCurrentLanguage() === 'tr' ? 'Açılır: ' : 'Opens ') + d.toLocaleDateString(getCurrentLocale(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     dp.style.display = 'block';
   }
 }
@@ -285,7 +301,7 @@ function updateOpensPreview() {
   if (!ST.capsuleDays && ST.capsuleDays !== 0) ST.capsuleDays = 365;
 
   if (ST.capsuleDays === 0) {
-    el.textContent = 'No capsule - mark only';
+    el.textContent = getCurrentLanguage() === 'tr' ? 'Kapsül yok - sadece iz' : 'No capsule - mark only';
     if (preview) preview.style.opacity = '.4';
     return;
   }
@@ -301,13 +317,8 @@ function updateOpensPreview() {
   }
 
   var days = ST.capsuleDays;
-  var timeStr;
-  if (days <= 7) timeStr = 'In ' + days + ' day' + (days > 1 ? 's' : '');
-  else if (days <= 31) timeStr = 'In ' + Math.round(days / 7) + ' week' + (Math.round(days / 7) > 1 ? 's' : '');
-  else if (days <= 365) timeStr = 'In ' + Math.round(days / 30) + ' month' + (Math.round(days / 30) > 1 ? 's' : '');
-  else timeStr = 'In ' + Math.round(days / 365) + ' year' + (Math.round(days / 365) > 1 ? 's' : '');
-
-  el.textContent = timeStr + ' - ' + opens.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  var timeStr = formatRelativeDurationDays(days);
+  el.textContent = timeStr + ' - ' + opens.toLocaleDateString(getCurrentLocale(), { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function updateUserUI() {
@@ -319,8 +330,8 @@ function updateUserUI() {
     if (chip2) chip2.textContent = AUTH.user.name.split(' ')[0];
     if (signoutBtn) signoutBtn.style.display = 'inline-block';
   } else {
-    if (chip) chip.textContent = 'Sign in';
-    if (chip2) chip2.textContent = 'Sign in';
+    if (chip) chip.textContent = t('nav_sign_in');
+    if (chip2) chip2.textContent = t('nav_sign_in');
     if (signoutBtn) signoutBtn.style.display = 'none';
   }
 }
@@ -337,7 +348,7 @@ function openAuth(tab) {
 
 function signInWithGoogle() {
   if (!_supabase) {
-    showToast('Service unavailable.');
+    showToast(getCurrentLanguage() === 'tr' ? 'Servis kullanılamıyor.' : 'Service unavailable.');
     return;
   }
   _supabase.auth.signInWithOAuth({
@@ -357,11 +368,11 @@ function switchTab(tab) {
   var isForgot = tab === 'forgot';
   document.getElementById('tab-l').classList.toggle('on', isLogin);
   document.getElementById('tab-r').classList.toggle('on', isRegister);
-  document.getElementById('atitle').textContent = isLogin ? 'Welcome back' : (isRegister ? 'Create account' : 'Reset password');
+  document.getElementById('atitle').textContent = isLogin ? t('auth_welcome_back') : (isRegister ? t('auth_create_account') : t('auth_reset_password'));
   document.getElementById('asub').textContent = isLogin
-    ? 'Sign in to manage your marks.'
-    : (isRegister ? 'Join thousands leaving their mark.' : 'Enter your email and we will send a reset link.');
-  document.getElementById('auth-btn').textContent = isLogin ? 'Sign in' : (isRegister ? 'Create account' : 'Send reset link');
+    ? t('auth_sign_in_sub')
+    : (isRegister ? t('auth_register_sub') : t('auth_forgot_sub'));
+  document.getElementById('auth-btn').textContent = isLogin ? t('nav_sign_in') : (isRegister ? t('auth_create_account') : (getCurrentLanguage() === 'tr' ? 'Sıfırlama bağlantısı gönder' : 'Send reset link'));
   document.getElementById('name-f').style.display = isRegister ? 'block' : 'none';
   document.getElementById('terms-check').style.display = isRegister ? 'block' : 'none';
   document.getElementById('password-field').style.display = isForgot ? 'none' : 'block';
@@ -381,7 +392,7 @@ function submitAuth() {
   var name = nameEl ? nameEl.value.trim() : '';
   var btn = document.getElementById('auth-btn');
   if (tab === 'register' && !document.getElementById('terms-agree').checked) {
-    showToast('Please accept the Terms of Service and Privacy Policy.');
+    showToast(getCurrentLanguage() === 'tr' ? 'Lütfen Hizmet Şartları ve Gizlilik Politikasını kabul et.' : 'Please accept the Terms of Service and Privacy Policy.');
     return;
   }
   if (!email || (tab !== 'forgot' && !pw)) {
@@ -400,10 +411,10 @@ function submitAuth() {
     promise = _supabase.auth.signInWithPassword({ email: email, password: pw });
   }
   promise.then(function(result) {
-    btn.textContent = tab === 'login' ? 'Sign in' : (tab === 'register' ? 'Create account' : 'Send reset link');
+    btn.textContent = tab === 'login' ? t('nav_sign_in') : (tab === 'register' ? t('auth_create_account') : (getCurrentLanguage() === 'tr' ? 'Sıfırlama bağlantısı gönder' : 'Send reset link'));
     btn.disabled = false;
     if (result.error) {
-      showToast(result.error.message || 'Error. Please try again.', 'error');
+      showToast(result.error.message || (getCurrentLanguage() === 'tr' ? 'Bir hata oluştu. Tekrar dene.' : 'Error. Please try again.'), 'error');
       var pwEl = document.getElementById('apw');
       if (pwEl && tab !== 'forgot') {
         pwEl.style.borderColor = 'rgba(220,60,60,.6)';
@@ -412,16 +423,18 @@ function submitAuth() {
       return;
     }
     if (tab === 'forgot') {
-      showToast('Password reset link sent. Check your email.', 'success');
+      showToast(getCurrentLanguage() === 'tr' ? 'Şifre sıfırlama bağlantısı gönderildi. E-postanı kontrol et.' : 'Password reset link sent. Check your email.', 'success');
       switchTab('login');
       return;
     }
-    showToast(tab === 'register' ? 'Account created! You can now sign in.' : 'Welcome back!', 'success');
+    showToast(tab === 'register'
+      ? (getCurrentLanguage() === 'tr' ? 'Hesap oluşturuldu. Artık giriş yapabilirsin.' : 'Account created! You can now sign in.')
+      : (getCurrentLanguage() === 'tr' ? 'Tekrar hoş geldin!' : 'Welcome back!'), 'success');
     closeAuth();
   }).catch(function(err) {
-    btn.textContent = tab === 'login' ? 'Sign in' : (tab === 'register' ? 'Create account' : 'Send reset link');
+    btn.textContent = tab === 'login' ? t('nav_sign_in') : (tab === 'register' ? t('auth_create_account') : (getCurrentLanguage() === 'tr' ? 'Sıfırlama bağlantısı gönder' : 'Send reset link'));
     btn.disabled = false;
-    showToast(err.message || 'Error. Please try again.', 'error');
+    showToast(err.message || (getCurrentLanguage() === 'tr' ? 'Bir hata oluştu. Tekrar dene.' : 'Error. Please try again.'), 'error');
   });
 }
 
@@ -429,7 +442,7 @@ function signOut() {
   _supabase.auth.signOut().then(function() {
     AUTH.user = null;
     updateUserUI();
-    showToast('Signed out.', 'success');
+    showToast(getCurrentLanguage() === 'tr' ? 'Çıkış yapıldı.' : 'Signed out.', 'success');
   });
 }
 

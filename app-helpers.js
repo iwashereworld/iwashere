@@ -111,7 +111,7 @@ function parseCoordinateQuery(query) {
   return {
     type: 'coords',
     key: 'coords:' + lat.toFixed(4) + ',' + lon.toFixed(4),
-    name: 'Coordinates',
+    name: getCurrentLanguage() === 'tr' ? 'Koordinatlar' : 'Coordinates',
     sub: lat.toFixed(4) + ', ' + lon.toFixed(4),
     lat: lat,
     lon: lon,
@@ -171,7 +171,7 @@ function buildSearchResults(query) {
       type: 'country',
       key: key,
       name: country.name,
-      sub: 'Country',
+      sub: getCurrentLanguage() === 'tr' ? 'Ülke' : 'Country',
       lat: country.lat,
       lon: country.lon,
       code: country.code,
@@ -192,7 +192,7 @@ function buildSearchResults(query) {
       type: 'pin',
       key: key,
       name: pin.cname,
-      sub: 'Mark by ' + pin.name,
+      sub: (getCurrentLanguage() === 'tr' ? 'İz bırakan: ' : 'Mark by ') + pin.name,
       lat: pin.lat,
       lon: pin.lon,
       pinId: pin.id,
@@ -239,7 +239,7 @@ function showPinTooltip(pin, x, y) {
   tav.appendChild(createAvatarNode(pin.photo, pin.name, ''));
 
   var isOwner = AUTH.user && pin.owner && AUTH.user.id === pin.owner;
-  tn.textContent = pin.name + (isOwner ? ' • Your mark' : '');
+  tn.textContent = pin.name + (isOwner ? (getCurrentLanguage() === 'tr' ? ' • Senin izin' : ' • Your mark') : '');
   tc.textContent = pin.cname + ' • ' + pin.lat.toFixed(3) + ', ' + pin.lon.toFixed(3);
   tm.textContent = pin.msg || ('Saved ' + new Date(pin.added || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }));
 
@@ -632,6 +632,188 @@ function buildProfileBadgeLevel(markCount) {
 
 function renderProfileRecent(container, marks) {
   clearChildren(container);
+  if (!marks.length) {
+    var empty = document.createElement('div');
+    empty.className = 'pempty';
+    empty.textContent = getCurrentLanguage() === 'tr'
+      ? 'Henüz kişisel hareket yok. Kaydedilen izlerin burada görünecek.'
+      : 'No personal activity yet. Your saved marks will appear here.';
+    var cta = document.createElement('button');
+    cta.type = 'button';
+    cta.textContent = getCurrentLanguage() === 'tr' ? 'İlk izini bırak' : 'Place your first mark';
+    cta.style.cssText = 'margin-top:12px;background:#c8a96e;color:#020408;border:none;border-radius:999px;padding:8px 14px;font-size:.72rem;cursor:pointer;font-family:inherit;';
+    cta.onclick = function() { closeProfile(); showGlobe(); openSb(); };
+    container.appendChild(empty);
+    container.appendChild(cta);
+    return;
+  }
+  marks.slice(0, 4).forEach(function(p) {
+    var item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'pritem';
+    item.style.background = 'transparent';
+    item.style.border = 'none';
+    item.style.width = '100%';
+    item.style.textAlign = 'left';
+    item.style.cursor = 'pointer';
+    item.onclick = function() { closeProfile(); showGlobe(); flyTo(p.lat, p.lon, 500000); };
+    item.appendChild(createAvatarNode(p.photo, p.name, 'pravatar'));
+    var info = document.createElement('div');
+    info.className = 'prinfo';
+    var name = document.createElement('div');
+    name.className = 'prname';
+    name.textContent = p.cname;
+    var meta = document.createElement('div');
+    meta.className = 'prmeta';
+    meta.textContent = new Date(p.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' }) + (p.years ? (getCurrentLanguage() === 'tr' ? ' - kapsül aktif' : ' - capsule active') : '');
+    info.appendChild(name);
+    info.appendChild(meta);
+    if (p.msg) {
+      var msg = document.createElement('div');
+      msg.className = 'prmsg';
+      msg.textContent = '"' + p.msg + '"';
+      info.appendChild(msg);
+    }
+    item.appendChild(info);
+    container.appendChild(item);
+  });
+}
+
+function openProfile() {
+  if (!AUTH.user) {
+    openAuth('login');
+    return;
+  }
+  var marks = ST.pins.filter(function(p) { return p.owner === AUTH.user.id; });
+  var countries = marks.map(function(p) { return p.code || p.cname; }).filter(function(value, index, arr) { return value && arr.indexOf(value) === index; });
+  var capsules = marks.filter(function(p) { return p.years > 0; }).length;
+  var avatarSource = marks.find(function(p) { return safeImageUrl(p.photo); });
+  var avatar = document.getElementById('profile-avatar');
+  clearChildren(avatar);
+  avatar.appendChild(createAvatarNode(avatarSource ? avatarSource.photo : '', AUTH.user.name, ''));
+  document.getElementById('profile-name').textContent = AUTH.user.name;
+  document.getElementById('profile-meta').textContent = AUTH.user.email;
+  document.getElementById('profile-badge-level').textContent = buildProfileBadgeLevel(marks.length);
+  document.getElementById('profile-badge-latest').textContent = marks.length
+    ? ((getCurrentLanguage() === 'tr' ? 'Son: ' : 'Latest: ') + marks[0].cname)
+    : (getCurrentLanguage() === 'tr' ? 'Henüz iz yok' : 'No marks yet');
+  document.getElementById('profile-bio').textContent = buildProfileBio(marks);
+  document.getElementById('profile-summary').textContent = buildProfileSummary(marks, countries, capsules);
+  document.getElementById('profile-stat-marks').textContent = marks.length;
+  document.getElementById('profile-stat-countries').textContent = countries.length;
+  document.getElementById('profile-stat-capsules').textContent = capsules;
+  renderProfileRecent(document.getElementById('profile-recent'), marks);
+  document.getElementById('profile-modal').classList.add('show');
+  if (typeof syncOverlayState === 'function') syncOverlayState();
+}
+
+function showMarks() {
+  if (!AUTH.user) {
+    openAuth('login');
+    return;
+  }
+  var body = document.getElementById('mbody');
+  var marks = ST.pins.filter(function(p) { return p.owner === AUTH.user.id; });
+  clearChildren(body);
+  if (!marks.length) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'text-align:center;padding:3rem 1rem;font-size:.85rem;color:rgba(240,237,232,.35)';
+    empty.appendChild(document.createTextNode(getCurrentLanguage() === 'tr' ? 'Henüz iz yok.' : 'No marks yet.'));
+    empty.appendChild(document.createElement('br'));
+    empty.appendChild(document.createElement('br'));
+    var cta = document.createElement('button');
+    cta.textContent = getCurrentLanguage() === 'tr' ? 'İlk izimi bırak' : 'Place my first mark';
+    cta.onclick = function() { closeMarks(); showGlobe(); };
+    cta.style.cssText = 'background:#c8a96e;color:#020408;border:none;border-radius:20px;padding:9px 22px;cursor:pointer;font-size:.82rem;font-family:sans-serif';
+    empty.appendChild(cta);
+    body.appendChild(empty);
+  } else {
+    marks.forEach(function(p) {
+      var cd = countdown(p.added, p.years);
+      var item = document.createElement('div');
+      item.className = 'mitem';
+      item.onclick = function() { closeMarks(); flyTo(p.lat, p.lon, 500000); };
+      item.appendChild(createAvatarNode(p.photo, p.name, 'mdot'));
+      var info = document.createElement('div');
+      info.className = 'minfo';
+      var country = document.createElement('div');
+      country.className = 'mcn';
+      country.textContent = '- ' + p.cname;
+      info.appendChild(country);
+      var date = document.createElement('div');
+      date.className = 'mdt';
+      date.textContent = new Date(p.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' });
+      info.appendChild(date);
+      if (p.msg) {
+        var msg = document.createElement('div');
+        msg.className = 'mmsg';
+        msg.textContent = '"' + p.msg + '"';
+        info.appendChild(msg);
+      }
+      if (p.years) {
+        var cap = document.createElement('div');
+        cap.className = 'mcap';
+        cap.textContent = (getCurrentLanguage() === 'tr' ? 'Açılmasına ' : 'Opens in ') + cd;
+        info.appendChild(cap);
+      }
+      item.appendChild(info);
+      var actions = document.createElement('div');
+      actions.className = 'mact';
+      var del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'mdel';
+      del.textContent = getCurrentLanguage() === 'tr' ? 'Sil' : 'Delete';
+      del.setAttribute('aria-label', (getCurrentLanguage() === 'tr' ? p.cname + ' içindeki izi sil' : 'Delete mark in ' + p.cname));
+      del.onclick = function(event) { event.stopPropagation(); deleteMark(p.id, del); };
+      actions.appendChild(del);
+      item.appendChild(actions);
+      body.appendChild(item);
+    });
+  }
+  document.getElementById('mmarks').classList.add('show');
+  if (typeof syncOverlayState === 'function') syncOverlayState();
+}
+
+function showShareCard(pin) {
+  if (!pin) return;
+  window._sharePin = pin;
+  var avatar = document.getElementById('share-avatar');
+  clearChildren(avatar);
+  if (safeImageUrl(pin.photo)) {
+    var img = document.createElement('img');
+    img.src = safeImageUrl(pin.photo);
+    img.alt = '';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
+    avatar.appendChild(img);
+  } else {
+    var initial = document.createElement('span');
+    initial.style.cssText = 'font-size:24px;color:#c8a96e';
+    initial.textContent = String(pin.name || '').trim().charAt(0).toUpperCase() || '?';
+    avatar.appendChild(initial);
+  }
+  document.getElementById('share-headline').textContent = getCurrentLanguage() === 'tr' ? 'Bu izi paylaş' : 'Share this mark';
+  document.getElementById('share-name').textContent = pin.name;
+  document.getElementById('share-country').textContent = (getCurrentLanguage() === 'tr' ? 'I Was Here • ' : 'I Was Here in ') + pin.cname;
+  document.getElementById('share-coords').textContent = pin.lat.toFixed(2) + ', ' + pin.lon.toFixed(2);
+  document.getElementById('share-msg').textContent = pin.msg ? '"' + pin.msg + '"' : (getCurrentLanguage() === 'tr' ? 'Hatırlamaya değer bir yer, küreye kaydedildi.' : 'A place worth remembering, saved on the globe.');
+  document.getElementById('share-date').textContent = (getCurrentLanguage() === 'tr' ? 'Kaydedildi ' : 'Saved ') + new Date(pin.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' });
+  var typeChip = document.getElementById('share-chip-type');
+  var dateChip = document.getElementById('share-chip-date');
+  if (typeChip) typeChip.textContent = pin.years > 0 ? (getCurrentLanguage() === 'tr' ? 'Kapsül izi' : 'Capsule mark') : (getCurrentLanguage() === 'tr' ? 'Herkese açık iz' : 'Public mark');
+  if (dateChip) dateChip.textContent = pin.years > 0 ? ((getCurrentLanguage() === 'tr' ? 'Açılmasına ' : 'Opens in ') + countdown(pin.added, pin.years)) : (getCurrentLanguage() === 'tr' ? 'Şimdi görünür' : 'Visible now');
+  var deleteBtn = document.getElementById('share-delete-btn');
+  if (deleteBtn) {
+    var canDelete = !!(AUTH.user && pin.owner && AUTH.user.id === pin.owner);
+    deleteBtn.style.display = canDelete ? 'block' : 'none';
+    deleteBtn.disabled = false;
+    deleteBtn.textContent = getCurrentLanguage() === 'tr' ? 'Sil' : 'Delete';
+  }
+  if (typeof openShareModal === 'function') openShareModal();
+  else document.getElementById('share-modal').classList.add('show');
+}
+
+function renderProfileRecent(container, marks) {
+  clearChildren(container);
 
   if (!marks.length) {
     var empty = document.createElement('div');
@@ -862,4 +1044,260 @@ async function deleteSharedMark(event) {
   if (!getPinById(pin.id) && typeof closeShareModal === 'function') {
     closeShareModal();
   }
+}
+
+function showPinTooltip(pin, x, y) {
+  if (!pin) {
+    hidePinTooltip();
+    return;
+  }
+  var tt = document.getElementById('tt');
+  var tav = document.getElementById('tav');
+  var tn = document.getElementById('tn');
+  var tc = document.getElementById('tc');
+  var tm = document.getElementById('tm');
+  if (!tt || !tav || !tn || !tc || !tm) return;
+  clearChildren(tav);
+  tav.appendChild(createAvatarNode(pin.photo, pin.name, ''));
+  var isOwner = AUTH.user && pin.owner && AUTH.user.id === pin.owner;
+  tn.textContent = pin.name + (isOwner ? (getCurrentLanguage() === 'tr' ? ' • Senin izin' : ' • Your mark') : '');
+  tc.textContent = pin.cname + ' • ' + pin.lat.toFixed(3) + ', ' + pin.lon.toFixed(3);
+  tm.textContent = pin.msg || ((getCurrentLanguage() === 'tr' ? 'Kaydedildi ' : 'Saved ') + new Date(pin.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'short', day: 'numeric' }));
+  tt.classList.add('show');
+  positionTooltip(tt, x, y);
+}
+
+function renderCountrySummary() {
+  var body = document.getElementById('country-summary-body');
+  if (!body) return;
+  clearChildren(body);
+  var groups = getCountryMarkGroups();
+  if (!groups.length) {
+    body.className = 'cs-empty';
+    var text = document.createElement('div');
+    text.textContent = getCurrentLanguage() === 'tr'
+      ? 'Henüz iz yok. Ülke sayacını başlatmak için ilk izini bırak.'
+      : 'No marks yet. Place the first mark to start your country tally.';
+    body.appendChild(text);
+    var cta = document.createElement('button');
+    cta.type = 'button';
+    cta.textContent = AUTH.user
+      ? (getCurrentLanguage() === 'tr' ? 'İlk izini bırak' : 'Place first mark')
+      : (getCurrentLanguage() === 'tr' ? 'Başlamak için giriş yap' : 'Sign in to start');
+    cta.style.cssText = 'margin-top:10px;background:#c8a96e;color:#020408;border:none;border-radius:999px;padding:8px 14px;font-size:.72rem;cursor:pointer;font-family:inherit;';
+    cta.onclick = function() { AUTH.user ? (showGlobe(), openSb()) : openAuth('login'); };
+    body.appendChild(cta);
+    return;
+  }
+  body.className = 'cs-list';
+  groups.slice(0, 8).forEach(function(group) {
+    var item = document.createElement('div');
+    item.className = 'cs-item';
+    var name = document.createElement('div');
+    name.className = 'cs-name';
+    name.textContent = group.name;
+    var count = document.createElement('div');
+    count.className = 'cs-count';
+    count.textContent = getMarkWord(group.count);
+    item.appendChild(name);
+    item.appendChild(count);
+    body.appendChild(item);
+  });
+}
+
+function bSmry() {
+  var cap = ST.capsuleDays > 0;
+  var tot = 1 + (cap ? 2 : 0);
+  var opens = ST.capsuleDate ? new Date(ST.capsuleDate) : new Date();
+  if (!ST.capsuleDate) opens.setDate(opens.getDate() + (ST.capsuleDays || 365));
+  var oy = opens.toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' });
+  var summary = document.getElementById('smry');
+  clearChildren(summary);
+  summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Küre izi - ' : 'Globe mark - ') + (ST.selName || '-'), '$1.00'));
+  summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'İsim: ' : 'Name: ') + ST.name, '-'));
+  summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Koordinatlar' : 'Coordinates', ST.selLat ? ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) : '-'));
+  summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Fotoğraf' : 'Photo', ST.photo ? (getCurrentLanguage() === 'tr' ? 'Var' : 'Yes') : (getCurrentLanguage() === 'tr' ? 'Yok' : 'None')));
+  if (cap) summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Kapsül - açılır ' : 'Capsule - opens ') + oy, '$2.00'));
+  summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Toplam' : 'Total', '$' + tot.toFixed(2), true));
+}
+
+function renderCountriesJump(container) {
+  var groups = getCountryMarkGroups();
+  if (!groups.length) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
+    empty.textContent = getCurrentLanguage() === 'tr' ? 'Henüz ülke yok.' : 'No countries yet.';
+    container.appendChild(empty);
+    return;
+  }
+  groups.slice(0, 8).forEach(function(group) {
+    var item = document.createElement('div');
+    item.className = 'pitem';
+    item.onclick = function() {
+      var country = COUNTRIES.find(function(entry) { return entry.code === group.key || entry.name === group.name; });
+      if (country) flyTo(country.lat, country.lon, getHeightForZoom(6));
+    };
+    var info = document.createElement('div');
+    info.style.cssText = 'flex:1;min-width:0';
+    var name = document.createElement('div');
+    name.className = 'pnm2';
+    name.textContent = group.name;
+    var meta = document.createElement('div');
+    meta.className = 'pct2';
+    meta.textContent = getMarkWord(group.count);
+    info.appendChild(name);
+    info.appendChild(meta);
+    item.appendChild(info);
+    container.appendChild(item);
+  });
+}
+
+function renderLists() {
+  var pl = document.getElementById('plist');
+  if (!pl) return;
+  clearChildren(pl);
+  if (!ST.pins.length) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
+    empty.textContent = getCurrentLanguage() === 'tr'
+      ? 'Henüz herkese açık iz yok. İlk kaydın burada görünecek.'
+      : 'No public marks yet. Your first saved mark will appear here.';
+    pl.appendChild(empty);
+    var cta = document.createElement('button');
+    cta.type = 'button';
+    cta.textContent = AUTH.user
+      ? (getCurrentLanguage() === 'tr' ? 'İlk izi oluştur' : 'Create the first mark')
+      : (getCurrentLanguage() === 'tr' ? 'İz bırakmak için giriş yap' : 'Sign in to create a mark');
+    cta.style.cssText = 'margin-top:10px;background:rgba(200,169,110,.14);border:1px solid rgba(200,169,110,.28);color:#c8a96e;border-radius:999px;padding:8px 12px;font-size:.72rem;cursor:pointer;font-family:inherit;';
+    cta.onclick = function() { AUTH.user ? (showGlobe(), openSb()) : openAuth('login'); };
+    pl.appendChild(cta);
+    return;
+  }
+  if (CURRENT_QUICK_JUMP === 'countries') {
+    renderCountriesJump(pl);
+    return;
+  }
+  if (CURRENT_QUICK_JUMP === 'friends') {
+    var friendsEmpty = document.createElement('div');
+    friendsEmpty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
+    friendsEmpty.textContent = getCurrentLanguage() === 'tr'
+      ? 'Arkadaş akışı henüz bağlı değil. Şimdilik Yeni veya İzlerim görünümünü kullan.'
+      : 'Friends feed is not connected yet. Use Recent or My Marks for now.';
+    pl.appendChild(friendsEmpty);
+    return;
+  }
+  var pins = getQuickJumpPins();
+  if (!pins.length) {
+    var modeEmpty = document.createElement('div');
+    modeEmpty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
+    modeEmpty.textContent = CURRENT_QUICK_JUMP === 'my'
+      ? (getCurrentLanguage() === 'tr' ? 'Henüz hiç izin yok.' : 'You do not have any marks yet.')
+      : (getCurrentLanguage() === 'tr' ? 'Bu görünüm için iz bulunamadı.' : 'No marks found for this view.');
+    pl.appendChild(modeEmpty);
+    return;
+  }
+  pins.slice(0, 5).forEach(function(p) {
+    var cd = countdown(p.added, p.years);
+    var item = document.createElement('div');
+    item.className = 'pitem';
+    item.onclick = function() { flyTo(p.lat, p.lon, getHeightForZoom(29)); };
+    item.appendChild(createAvatarNode(p.photo, p.name, 'piav'));
+    var info = document.createElement('div');
+    info.style.cssText = 'flex:1;min-width:0';
+    var name = document.createElement('div');
+    name.className = 'pnm2';
+    name.textContent = p.name;
+    var meta = document.createElement('div');
+    meta.className = 'pct2';
+    meta.textContent = p.cname + (cd ? ' - ' + cd : '');
+    info.appendChild(name);
+    info.appendChild(meta);
+    item.appendChild(info);
+    var link = document.createElement('div');
+    link.className = 'plk';
+    link.textContent = '>';
+    link.onclick = function(event) {
+      event.stopPropagation();
+      showShareCard(ST.pins.find(function(x) { return x.id === p.id; }));
+    };
+    item.appendChild(link);
+    pl.appendChild(item);
+  });
+}
+
+async function deleteMark(pinId, buttonEl) {
+  if (!AUTH.user || !AUTH.user.id) {
+    openAuth('login');
+    return;
+  }
+  var pin = ST.pins.find(function(item) { return item.id === pinId; });
+  if (!pin || pin.owner !== AUTH.user.id) {
+    showToast(getCurrentLanguage() === 'tr' ? 'Yalnızca kendi izlerini silebilirsin.' : 'You can only delete your own marks.', 'error');
+    return;
+  }
+  if (!window.confirm(getCurrentLanguage() === 'tr' ? 'Bu iz silinsin mi? Bu işlem geri alınamaz.' : 'Delete this mark? This cannot be undone.')) return;
+  if (buttonEl) {
+    buttonEl.disabled = true;
+    buttonEl.textContent = getCurrentLanguage() === 'tr' ? 'Siliniyor...' : 'Deleting...';
+  }
+  var result = await _supabase.from('marks').delete().eq('id', pinId);
+  if (result.error) {
+    console.error('Delete error:', result.error);
+    if (buttonEl) {
+      buttonEl.disabled = false;
+      buttonEl.textContent = getCurrentLanguage() === 'tr' ? 'Sil' : 'Delete';
+    }
+    showToast(result.error.message || (getCurrentLanguage() === 'tr' ? 'İz silinemedi.' : 'Could not delete your mark.'), 'error');
+    return;
+  }
+  ST.pins = ST.pins.filter(function(item) { return item.id !== pinId; });
+  if (window._lastPin && window._lastPin.id === pinId) window._lastPin = null;
+  removePinEntity(pinId);
+  updateStats();
+  renderLists();
+  showMarks();
+  showToast(getCurrentLanguage() === 'tr' ? 'İz silindi.' : 'Mark deleted.', 'success');
+}
+
+function buildProfileBio(marks) {
+  if (AUTH.user && AUTH.user.meta && AUTH.user.meta.bio) return clampText(AUTH.user.meta.bio, 220);
+  if (!marks.length) return getCurrentLanguage() === 'tr'
+    ? 'Henüz bir iz bırakmadın. İlk konumunla başla ve hikâyeni küre üzerinde kur.'
+    : 'You have not placed a mark yet. Start with your first location and build your story on the globe.';
+  var countries = marks.map(function(mark) { return mark.cname; }).filter(function(value, index, arr) { return value && arr.indexOf(value) === index; });
+  if (countries.length > 1) {
+    return getCurrentLanguage() === 'tr'
+      ? countries.length + ' ülkede anlamlı yerleri takip ediyorsun.'
+      : 'Tracking meaningful places across ' + countries.length + ' countries on I Was Here.';
+  }
+  return getCurrentLanguage() === 'tr' ? 'I Was Here üzerinde kişisel anı haritanı kuruyorsun.' : 'Building a personal map of memories on I Was Here.';
+}
+
+function buildProfileSummary(marks, countries, capsules) {
+  if (!marks.length) {
+    return getCurrentLanguage() === 'tr'
+      ? 'Küren henüz boş. Tek bir anlamlı yerle başla ve oradan ilerle.'
+      : 'Your globe is still empty. Start with one meaningful place and build from there.';
+  }
+  var latest = marks.slice().sort(function(a, b) { return new Date(b.added || 0) - new Date(a.added || 0); })[0];
+  var parts = [getMarkWord(marks.length)];
+  parts.push(getCurrentLanguage() === 'tr' ? countries.length + ' ülke' : countries.length + ' countr' + (countries.length === 1 ? 'y' : 'ies'));
+  if (capsules) parts.push(getCurrentLanguage() === 'tr' ? capsules + ' kapsül' : capsules + ' capsule' + (capsules === 1 ? '' : 's'));
+  if (latest && latest.cname) parts.push(getCurrentLanguage() === 'tr' ? 'son: ' + latest.cname : 'latest in ' + latest.cname);
+  return parts.join(' • ');
+}
+
+function buildProfileBadgeLevel(markCount) {
+  if (getCurrentLanguage() === 'tr') {
+    if (markCount >= 25) return 'Dünya Kurucusu';
+    if (markCount >= 10) return 'İz Bekçisi';
+    if (markCount >= 3) return 'Anı Haritacısı';
+    if (markCount >= 1) return 'İlk İşaretçi';
+    return 'Yeni Kâşif';
+  }
+  if (markCount >= 25) return 'Worldbuilder';
+  if (markCount >= 10) return 'Trail Keeper';
+  if (markCount >= 3) return 'Memory Mapper';
+  if (markCount >= 1) return 'First Marker';
+  return 'New Explorer';
 }
