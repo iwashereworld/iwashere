@@ -89,7 +89,8 @@ function resetForm() {
   ST.vis = 'pub';
   ST.voice = null;
   document.getElementById('iname').value = '';
-  document.getElementById('prev').style.display = 'none';
+  var prev = document.getElementById('prev');
+  if (prev) prev.style.display = 'none';
   document.getElementById('loc-display').value = '';
   document.getElementById('csel').value = '';
   document.getElementById('imsg').value = '';
@@ -272,12 +273,13 @@ function toggleCustomDate() {
   var cd = document.getElementById('capsule-date');
   if (cd) {
     var tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    cd.min = tomorrow.toISOString().split('T')[0];
+    tomorrow.setHours(tomorrow.getHours() + 1, 0, 0, 0);
+    cd.min = tomorrow.toISOString().slice(0, 16);
     if (!cd.value) {
       var def = new Date();
       def.setFullYear(def.getFullYear() + 1);
-      cd.value = def.toISOString().split('T')[0];
+      def.setMinutes(0, 0, 0);
+      cd.value = def.toISOString().slice(0, 16);
       setCustomDate(cd.value);
     }
   }
@@ -293,7 +295,7 @@ function setCustomDate(val) {
   var dp = document.getElementById('date-preview');
   if (dp) {
     var d = new Date(val);
-    dp.textContent = (getCurrentLanguage() === 'tr' ? 'Açılır: ' : 'Opens ') + d.toLocaleDateString(getCurrentLocale(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    dp.textContent = (getCurrentLanguage() === 'tr' ? 'Açılır: ' : 'Opens ') + d.toLocaleString(getCurrentLocale(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     dp.style.display = 'block';
   }
 }
@@ -323,7 +325,7 @@ function updateOpensPreview() {
 
   var days = ST.capsuleDays;
   var timeStr = formatRelativeDurationDays(days);
-  el.textContent = timeStr + ' - ' + opens.toLocaleDateString(getCurrentLocale(), { month: 'short', day: 'numeric', year: 'numeric' });
+  el.textContent = timeStr + ' - ' + opens.toLocaleString(getCurrentLocale(), { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 function updateUserUI() {

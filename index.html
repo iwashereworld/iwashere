@@ -71,6 +71,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:.85rem 2.5rem;displa
 .logo{font-family:'Cormorant Garamond',serif;font-size:1.35rem;letter-spacing:.06em;color:var(--gold);}
 .logo em{font-style:italic;color:var(--text);}
 .logo-btn{background:transparent;border:none;padding:0;cursor:pointer;text-align:left;}
+.logo-wrap{display:flex;flex-direction:column;gap:2px;align-items:flex-start;}
+.logo-sub{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,232,.55);}
 .nav-actions,.header-actions{display:flex;gap:10px;align-items:center;}
 .nbtn{background:transparent;border:1px solid rgba(200,169,110,.4);border-radius:24px;padding:8px 20px;font-size:.78rem;color:var(--gold);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
 .nbtn:hover{background:rgba(200,169,110,.12);}
@@ -181,7 +183,7 @@ footer a{color:var(--muted);text-decoration:none;}
 #fab.cta-preview .fab-label strong{font-size:.86rem;letter-spacing:.01em;}
 #fab.cta-preview .fab-label span{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;opacity:.72;margin-top:4px;}
 #fab.cta-preview.create-active{box-shadow:0 0 0 2px rgba(200,169,110,.4),0 18px 44px rgba(200,169,110,.3);}
-#create-flow{position:fixed;left:16px;bottom:16px;z-index:170;width:min(340px,calc(100vw - 32px));background:rgba(8,14,24,.96);border:1px solid rgba(200,169,110,.28);border-radius:18px;padding:14px 16px;backdrop-filter:blur(18px);box-shadow:0 18px 48px rgba(0,0,0,.34);display:none;pointer-events:auto;}
+#create-flow{display:none !important;}
 #create-flow.show{display:block;}
 .cf-kicker{font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);margin-bottom:.35rem;}
 .cf-title{font-family:'Cormorant Garamond',serif;font-size:1.35rem;line-height:1.1;margin-bottom:.35rem;}
@@ -545,7 +547,12 @@ window.addEventListener('load', initCookieBanner);
 <!-- GLOBE APP -->
 <div id="globe-app">
 <header>
-  <button type="button" class="logo logo-btn" onclick="goLanding()" aria-label="Return to landing page">I Was <em>Here</em></button>
+  <button type="button" class="logo-btn" onclick="goLanding()" aria-label="Return to landing page">
+    <span class="logo-wrap">
+      <span class="logo">I Was <em>Here</em></span>
+      <span class="logo-sub">Leave your mark on the world</span>
+    </span>
+  </button>
   <div class="ghs"><div><strong id="sp">0</strong>marks</div><div><strong id="sc2">0</strong>countries</div><div><strong id="sk2">0</strong>capsules</div></div>
   <div class="header-actions">
     <div class="lang-switch" aria-label="Language switcher">
@@ -575,9 +582,6 @@ window.addEventListener('load', initCookieBanner);
 <div id="pin-filter-bar" aria-label="Pin filters">
   <button type="button" class="pfb on" data-filter="all" onclick="setPinFilter('all')">All Pins</button>
   <button type="button" class="pfb" data-filter="my" onclick="setPinFilter('my')">My Pins</button>
-  <button type="button" class="pfb" data-filter="friends" onclick="setPinFilter('friends')">Friends</button>
-  <button type="button" class="pfb" data-filter="public" onclick="setPinFilter('public')">Public</button>
-  <button type="button" class="pfb" data-filter="recent" onclick="setPinFilter('recent')">Recent</button>
 </div>
 <div class="ctrls">
   <button class="cb" id="bzoomout" onclick="stepZoom(-1)" aria-label="Zoom out">-</button>
@@ -626,12 +630,7 @@ window.addEventListener('load', initCookieBanner);
       <p class="sub3" data-i18n="your_details_sub">Choose a name that will stand for eternity.</p>
       <label class="fl" data-i18n="display_name">Display Name</label>
       <input type="text" id="iname" placeholder="Your name" maxlength="80" data-i18n-placeholder="your_name">
-      <label class="fl" data-i18n="photo_optional">Photo (optional)</label>
-      <div class="soft-note" data-i18n="photo_soft_note">You can skip this. Photos are only used on your mark card after you save.</div>
-      <div class="pu" onclick="document.getElementById('iph').click()" role="button" tabindex="0" aria-label="Add photo"><span data-i18n="add_photo">+ Add photo</span></div>
-      <img class="pp" id="prev">
-      <input type="file" id="iph" accept="image/*" onchange="hPh(this)">
-      <button class="btn bp" onclick="goS(3)" id="btn1" disabled>Continue to Message</button>
+      <button class="btn bp" onclick="goS(2)" id="btn1" disabled>Continue to Location</button>
     </div>
     <!-- Step 2 -->
     <div class="step" id="step2">
@@ -645,7 +644,7 @@ window.addEventListener('load', initCookieBanner);
         <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px;" data-i18n="exact_coordinates">Exact Coordinates</div>
         <div style="font-size:.9rem;color:var(--gold);font-family:'Cormorant Garamond',serif;" id="exact-coords-display">--</div>
       </div>
-      <button class="btn bp" onclick="goS(3)" id="btn2" disabled data-i18n="continue_message">Continue to Message</button>
+      <button class="btn bp" onclick="confirmCreateLocation()" id="btn2" disabled>Confirm location</button>
       <button class="btn bs" onclick="goS(1)" data-i18n="back">Back</button>
     </div>
     <!-- Step 3 -->
@@ -703,14 +702,14 @@ window.addEventListener('load', initCookieBanner);
         <div class="oc" id="tq9125" onclick="setQuick(9125,'tq9125')" role="button" tabindex="0" aria-pressed="false">25 Years</div>
         <div class="oc" id="tqcustom" onclick="toggleCustomDate()" role="button" tabindex="0" aria-pressed="false" data-i18n="custom">Custom</div>
       </div>
-      <div id="custom-date-area" style="display:none;margin-top:.5rem;">
+      <div id="custom-date-area" style="display:none;margin-top:.75rem;">
         <label class="fl" data-i18n="select_date">Select Date</label>
-        <input type="date" id="capsule-date" onchange="setCustomDate(this.value)">
-        <div id="date-preview" style="display:none;font-size:.72rem;color:var(--gold);margin-top:-6px;margin-bottom:8px;"></div>
+        <input type="datetime-local" id="capsule-date" onchange="setCustomDate(this.value)">
+        <div id="date-preview" style="display:none;font-size:.72rem;color:var(--gold);margin-top:6px;margin-bottom:12px;line-height:1.5;"></div>
       </div>
-      <div id="opens-preview" style="background:rgba(18,26,42,.9);border:1px solid rgba(200,169,110,.2);border-radius:8px;padding:10px;text-align:center;margin:.8rem 0;">
+      <div id="opens-preview" style="background:rgba(18,26,42,.9);border:1px solid rgba(200,169,110,.2);border-radius:8px;padding:10px;text-align:center;margin:1rem 0 0;">
         <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);" data-i18n="capsule_opens">Capsule Opens</div>
-        <div id="opens-date-text" style="font-size:.9rem;color:var(--gold);margin-top:2px;font-family:'Cormorant Garamond',serif;">In 1 year - ...</div>
+        <div id="opens-date-text" style="font-size:.9rem;color:var(--gold);margin-top:6px;font-family:'Cormorant Garamond',serif;line-height:1.5;">In 1 year - ...</div>
       </div>
       <div style="text-align:center;margin-bottom:.5rem;"><span style="font-size:.72rem;color:var(--muted);" data-i18n="or">or</span></div>
       <div class="oc" id="tq0" onclick="setQuick(0,'tq0')" role="button" tabindex="0" aria-pressed="false" style="margin-bottom:1rem;" data-i18n="no_capsule">No Capsule (public mark only)</div>
@@ -734,18 +733,6 @@ window.addEventListener('load', initCookieBanner);
       <button class="btn bp" id="btn-share-card" onclick="showShareCard(window._lastPin)" style="display:none;margin-bottom:8px;" data-i18n="share_card">Share Card</button>
       <button class="btn bp" onclick="closeSb();resetForm()" data-i18n="done">Done</button>
     </div>
-  </div>
-  <div class="plsec">
-    <div class="pltit" data-i18n="recent_marks">Recent Marks</div>
-    <div class="qj" id="quick-jump">
-      <button type="button" class="qjbtn" data-jump="my" onclick="setQuickJump('my')" data-i18n="quick_my">My Marks</button>
-      <button type="button" class="qjbtn" data-jump="nearby" onclick="setQuickJump('nearby')" data-i18n="quick_nearby">Nearby</button>
-      <button type="button" class="qjbtn" data-jump="trending" onclick="setQuickJump('trending')" data-i18n="quick_trending">Trending</button>
-      <button type="button" class="qjbtn" data-jump="friends" onclick="setQuickJump('friends')" data-i18n="quick_friends">Friends</button>
-      <button type="button" class="qjbtn on" data-jump="recent" onclick="setQuickJump('recent')" data-i18n="quick_recent">Recent</button>
-      <button type="button" class="qjbtn" data-jump="countries" onclick="setQuickJump('countries')" data-i18n="quick_countries">Countries</button>
-    </div>
-    <div id="plist"></div>
   </div>
 </aside>
 </div>
@@ -1232,16 +1219,16 @@ async function initCesium() {
 }
 
 function handleGlobeClick(lat, lon) {
+  var step2 = document.getElementById('step2');
+  var sidebar = document.getElementById('sb');
+  if (!step2 || !sidebar || sidebar.classList.contains('hidden') || !step2.classList.contains('active')) return;
   previewCreateLocation(lat, lon);
 }
 
 function updatePinFilterUI() {
   var labels = {
     all: ltxt('All Pins', 'Tüm Pinler'),
-    my: ltxt('My Pins', 'Pinlerim'),
-    friends: ltxt('Friends', 'Arkadaşlar'),
-    public: ltxt('Public', 'Herkese Açık'),
-    recent: ltxt('Recent', 'Yeni')
+    my: ltxt('My Pins', 'Pinlerim')
   };
   document.querySelectorAll('#pin-filter-bar .pfb').forEach(function(button) {
     var mode = button.getAttribute('data-filter');
@@ -1259,62 +1246,40 @@ function setPinFilter(mode) {
 
 function updateCreateFlowUI() {
   var panel = document.getElementById('create-flow');
-  if (!panel) return;
-  panel.classList.toggle('show', !!ST.createMode && ST.createStep < 3);
+  if (panel) panel.classList.remove('show');
   applyBodyModeState();
   var fab = document.getElementById('fab');
   var fabLabel = document.querySelector('#fab .fab-label');
+  var sidebar = document.getElementById('sb');
+  var activeStep = sidebar ? sidebar.querySelector('.step.active') : null;
+  var activeStepId = activeStep ? activeStep.id : '';
   if (fab) {
     fab.classList.toggle('cta-preview', !!_ctaPreviewEnabled);
-    fab.classList.toggle('create-active', !!(_ctaPreviewEnabled && ST.createMode));
+    fab.classList.toggle('create-active', !!(_ctaPreviewEnabled && sidebar && !sidebar.classList.contains('hidden')));
   }
   if (fabLabel) {
     if (_ctaPreviewEnabled) {
-      if (!ST.createMode) {
+      if (!sidebar || sidebar.classList.contains('hidden')) {
         fabLabel.innerHTML = '<strong>' + ltxt('Add Memory', 'Anı Ekle') + '</strong><span>' + ltxt('Guided 3-step flow', 'Yönlendirmeli 3 adım') + '</span>';
-      } else if (ST.createStep <= 2) {
+      } else if (activeStepId === 'step2') {
         fabLabel.innerHTML = '<strong>' + ltxt('Selecting Location', 'Konum Seçiliyor') + '</strong><span>' + ltxt('Preview before you place it', 'Bırakmadan önce önizle') + '</span>';
-      } else {
+      } else if (activeStepId === 'step3' || activeStepId === 'step4' || activeStepId === 'step5') {
         fabLabel.innerHTML = '<strong>' + ltxt('Writing the Memory', 'Anı Yazılıyor') + '</strong><span>' + ltxt('Finish the story in the panel', 'Panelde hikayeyi tamamla') + '</span>';
+      } else {
+        fabLabel.innerHTML = '<strong>' + ltxt('Add Memory', 'Anı Ekle') + '</strong><span>' + ltxt('Guided 3-step flow', 'Yönlendirmeli 3 adım') + '</span>';
       }
     } else {
       fabLabel.textContent = ltxt('Add Memory', 'Anı Ekle');
     }
   }
   var btn1 = document.getElementById('btn1');
-  if (btn1) btn1.textContent = ltxt('Continue to Message', 'Mesaja Geç');
-  var kicker = panel.querySelector('.cf-kicker');
-  if (kicker) kicker.textContent = _ctaPreviewEnabled ? ltxt('Guided Memory Flow', 'Yönlendirmeli Anı Akışı') : ltxt('Create Memory', 'Anı Oluştur');
-  var cancelBtn = document.getElementById('create-cancel-btn');
-  if (cancelBtn) cancelBtn.textContent = ltxt('Cancel', 'İptal');
+  if (btn1) btn1.textContent = ltxt('Continue to Location', 'Konuma Geç');
+  var btn2 = document.getElementById('btn2');
+  if (btn2) {
+    btn2.textContent = ltxt('Confirm location', 'Konumu onayla');
+    btn2.disabled = !(ST.selLat != null && ST.selLon != null);
+  }
   updateLockedLocationBanner();
-  if (!ST.createMode) return;
-
-  var title = document.getElementById('create-flow-title');
-  var sub = document.getElementById('create-flow-sub');
-  var coords = document.getElementById('create-flow-coords');
-  var confirmBtn = document.getElementById('create-confirm-btn');
-
-  if (ST.createStep <= 1) {
-    title.textContent = ltxt('1. Select a location', '1. Konum seç');
-    sub.textContent = ltxt('Click anywhere on the globe or use search to preview where your memory will be placed.', 'İzinin yerini önizlemek için küre üzerinde bir yere tıkla ya da aramayı kullan.');
-  } else if (ST.createStep === 2) {
-    title.textContent = ltxt('2. Confirm the location', '2. Konumu onayla');
-    sub.textContent = ltxt('Review the ghost pin preview and confirm before the real pin is created.', 'Hayalet pin önizlemesini kontrol et ve gerçek pin oluşmadan önce onayla.');
-  } else {
-    title.textContent = ltxt('3. Add the story', '3. İçeriği gir');
-    sub.textContent = ltxt('You are in create mode. Finish your memory details in the panel, or cancel to return to exploring.', 'Şu anda oluşturma modundasın. Ayrıntıları panelde tamamla ya da keşfe dönmek için iptal et.');
-  }
-
-  coords.textContent = ST.selLat != null && ST.selLon != null
-    ? ((ST.selName || ltxt('Selected place', 'Seçili yer')) + ' • ' + ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4))
-    : ltxt('No location selected yet.', 'Henüz bir konum seçilmedi.');
-
-  if (confirmBtn) {
-    confirmBtn.disabled = !(ST.createStep === 2 && ST.selLat != null && ST.selLon != null);
-    confirmBtn.style.display = ST.createStep >= 3 ? 'none' : 'inline-flex';
-    confirmBtn.textContent = _ctaPreviewEnabled ? ltxt('Confirm This Place', 'Bu Yeri Onayla') : ltxt('Confirm location', 'Konumu onayla');
-  }
 }
 
 function updateLockedLocationBanner() {
@@ -1331,14 +1296,15 @@ function updateLockedLocationBanner() {
 }
 
 function startCreateFlow() {
-  ST.createMode = true;
-  ST.createStep = ST.selLat != null && !ST.locationConfirmed ? 2 : 1;
+  ST.createMode = false;
+  ST.createStep = 0;
   ST.locationConfirmed = false;
   localStorage.setItem('iwh_started_flow', 'opened');
   var hint = document.getElementById('start-hint');
   if (hint) hint.classList.add('hidden');
   var sb = document.getElementById('sb');
-  if (sb) sb.classList.add('hidden');
+  if (sb) sb.classList.remove('hidden');
+  goS(1);
   updateCreateFlowUI();
 }
 
@@ -1366,14 +1332,12 @@ function cancelCreateFlow() {
 function confirmCreateLocation() {
   if (ST.selLat == null || ST.selLon == null) return;
   ST.locationConfirmed = true;
-  ST.createStep = 3;
-  ST.createMode = false;
-  document.getElementById('sb').classList.remove('hidden');
   var locDisplay = document.getElementById('loc-display');
   if (locDisplay) locDisplay.value = ST.selName + ' (' + ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) + ')';
-  document.getElementById('btn2').disabled = false;
+  var btn2 = document.getElementById('btn2');
+  if (btn2) btn2.disabled = false;
   updateCreateFlowUI();
-  goS(1);
+  goS(3);
 }
 
 function previewCreateLocation(lat, lon) {
@@ -1410,7 +1374,6 @@ function previewCreateLocation(lat, lon) {
   var csel = document.getElementById('csel');
   if (csel) csel.value = country.code;
   
-  ST.createStep = 2;
   ST.locationConfirmed = false;
   addTemporaryMarker(lat, lon);
   updateCreateFlowUI();
@@ -1979,9 +1942,12 @@ function hPh(inp) {
   reader.onload = function(e) {
     ST.photo = e.target.result;
     var prev = document.getElementById('prev');
-    prev.src = e.target.result;
-    prev.style.display = 'block';
-    document.querySelector('.pu').style.display = 'none';
+    if (prev) {
+      prev.src = e.target.result;
+      prev.style.display = 'block';
+    }
+    var photoUpload = document.querySelector('.pu');
+    if (photoUpload) photoUpload.style.display = 'none';
   };
   reader.readAsDataURL(f);
 }
@@ -1996,9 +1962,9 @@ document.addEventListener('DOMContentLoaded', function() {
   var nameInput = document.getElementById('iname');
   if (nameInput) {
     nameInput.addEventListener('input', function() {
-      ST.name = clampText(this.value, MAX_NAME_LENGTH);
+      ST.name = String(this.value == null ? '' : this.value).slice(0, MAX_NAME_LENGTH);
       this.value = ST.name;
-      document.getElementById('btn1').disabled = ST.name.length < 2;
+      document.getElementById('btn1').disabled = ST.name.trim().length < 2;
     });
   }
   
