@@ -588,6 +588,7 @@ window.addEventListener('load', initCookieBanner);
   <button type="button" class="pfb" data-filter="my" onclick="setPinFilter('my')">My Pins</button>
 </div>
 <div class="ctrls">
+  <button class="cb" id="bzoomreset" onclick="resetZoom()" aria-label="Reset zoom">Reset</button>
   <button class="cb" id="bzoomout" onclick="stepZoom(-1)" aria-label="Zoom out">-</button>
   <button class="cb" id="bzoomin" onclick="stepZoom(1)" aria-label="Zoom in">+</button>
   <button class="cb" id="brot" onclick="tglRot()" data-i18n="controls_auto_rotate">Auto-rotate</button>
@@ -1583,6 +1584,31 @@ function stepZoom(direction) {
     complete: function() {
       updateZoomDisplay();
       syncLabelsForZoom(nextHeight);
+      requestSceneRender();
+    },
+    cancel: function() {
+      updateZoomDisplay();
+    }
+  });
+}
+
+function resetZoom() {
+  if (!viewer || !viewer.camera || !viewer.camera.positionCartographic) return;
+  var resetLevel = 4;
+  _targetZoomLevel = resetLevel;
+  var cameraCarto = viewer.camera.positionCartographic;
+  var resetHeight = getHeightForZoom(resetLevel);
+  renderZoomDisplay(resetLevel, resetHeight);
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromRadians(
+      cameraCarto.longitude,
+      cameraCarto.latitude,
+      resetHeight
+    ),
+    duration: 0.55,
+    complete: function() {
+      updateZoomDisplay();
+      syncLabelsForZoom(resetHeight);
       requestSceneRender();
     },
     cancel: function() {
