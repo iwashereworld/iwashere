@@ -975,6 +975,7 @@ var _pendingHoverMovement = null;
 var _lastHoverPinId = null;
 var _borderLoadPromise = null;
 var _borderLoadQueued = false;
+var _targetZoomLevel = null;
 function createPinSvg(fill, inner, stroke, dashed, glow) {
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="38" viewBox="0 0 28 38">' +
@@ -1504,13 +1505,18 @@ function addTemporaryMarker(lat, lon) {
 
 function updateZoomDisplay() {
   var height = viewer.camera.positionCartographic.height;
+  var zoom = getZoomFromHeight(height);
+  _targetZoomLevel = zoom;
+  renderZoomDisplay(zoom, height);
+}
+
+function renderZoomDisplay(zoom, height) {
   var zoomEl = document.getElementById('zoom-level');
   var zoomVal = document.getElementById('zoom-val');
   var altVal = document.getElementById('alt-val');
   
   if (zoomEl && zoomVal && altVal) {
     var clampedHeight = Math.min(MAX_CAMERA_HEIGHT, Math.max(MIN_CAMERA_HEIGHT, height));
-    var zoom = getZoomFromHeight(clampedHeight);
     
     var altStr;
     if (clampedHeight >= 1000000) {
@@ -1557,18 +1563,31 @@ function getHeightForZoom(zoom) {
 
 function stepZoom(direction) {
   if (!viewer || !viewer.camera || !viewer.camera.positionCartographic) return;
-  var current = getZoomFromHeight(viewer.camera.positionCartographic.height);
+  var current = _targetZoomLevel != null
+    ? _targetZoomLevel
+    : getZoomFromHeight(viewer.camera.positionCartographic.height);
   var next = Math.max(MIN_DISPLAY_ZOOM, Math.min(MAX_DISPLAY_ZOOM, current + direction));
   if (next === current) return;
 
+  _targetZoomLevel = next;
   var cameraCarto = viewer.camera.positionCartographic;
+  var nextHeight = getHeightForZoom(next);
+  renderZoomDisplay(next, nextHeight);
   viewer.camera.flyTo({
     destination: Cesium.Cartesian3.fromRadians(
       cameraCarto.longitude,
       cameraCarto.latitude,
-      getHeightForZoom(next)
+      nextHeight
     ),
-    duration: 0.45
+    duration: 0.45,
+    complete: function() {
+      updateZoomDisplay();
+      syncLabelsForZoom(nextHeight);
+      requestSceneRender();
+    },
+    cancel: function() {
+      updateZoomDisplay();
+    }
   });
 }
 
