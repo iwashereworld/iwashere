@@ -1530,7 +1530,7 @@ function updateZoomDisplay() {
 function syncLabelsForZoom(height) {
   if (!viewer) return;
   var zoom = getZoomFromHeight(height != null ? height : viewer.camera.positionCartographic.height);
-  var shouldShow = zoom >= 10;
+  var shouldShow = zoom >= 8 && zoom <= 15;
   if (_showLabels === shouldShow) return;
   _showLabels = shouldShow;
   maybeSyncLabelLayer(true);
