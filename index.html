@@ -874,7 +874,7 @@ _supabase.auth.onAuthStateChange(function(event, session) {
 
 // COUNTRIES DATABASE
 var COUNTRIES = [
-  {code:'TR',name:'Turkey',lat:39.0,lon:35.0},{code:'US',name:'United States',lat:37.0,lon:-95.7},
+  {code:'TR',name:'Turkey',lat:39.0,lon:35.0},{code:'US',name:'United States of America',lat:37.0,lon:-95.7},
   {code:'GB',name:'United Kingdom',lat:55.4,lon:-3.4},{code:'DE',name:'Germany',lat:51.2,lon:10.5},
   {code:'FR',name:'France',lat:46.2,lon:2.2},{code:'JP',name:'Japan',lat:36.2,lon:138.3},
   {code:'BR',name:'Brazil',lat:-14.2,lon:-51.9},{code:'IN',name:'India',lat:20.6,lon:78.9},
@@ -999,8 +999,8 @@ var MAX_CAMERA_HEIGHT = 36900000;
 var MIN_DISPLAY_ZOOM = 1;
 var MAX_DISPLAY_ZOOM = 30;
 var COUNTRY_NAME_ALIASES = {
-  'United States of America': 'USA',
-  'United States': 'USA',
+  'United States': 'United States of America',
+  'USA': 'United States of America',
   'Russian Federation': 'Russia',
   'Czech Republic': 'Czechia',
   'Republic of Korea': 'South Korea',
