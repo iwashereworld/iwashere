@@ -596,7 +596,7 @@ function removePinEntity(pinId) {
     }
     return true;
   });
-  if (typeof syncPinLOD === 'function') syncPinLOD();
+  if (typeof syncPinLOD === 'function') syncPinLOD(true);
 }
 
 async function deleteMark(pinId, buttonEl) {

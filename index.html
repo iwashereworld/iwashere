@@ -962,6 +962,14 @@ var _lastPinLodMode = '';
 var _searchResults = [];
 var _searchActiveIndex = -1;
 var _ctaPreviewEnabled = true;
+var _lastPinZoomBucket = '';
+var _lastPinFilterKey = '';
+var _lastLabelSyncAt = 0;
+var _lastLabelSyncKey = '';
+var _labelSyncThrottleMs = 60;
+var _hoverFrameQueued = false;
+var _pendingHoverMovement = null;
+var _lastHoverPinId = null;
 function createPinSvg(fill, inner, stroke, dashed, glow) {
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="38" viewBox="0 0 28 38">' +
@@ -1085,7 +1093,7 @@ async function initCesium() {
       scene3DOnly: true,
       shadows: false,
       terrainShadows: Cesium.ShadowMode.DISABLED,
-      requestRenderMode: false,
+      requestRenderMode: true,
       maximumRenderTimeChange: Infinity
     });
     viewer.scene.screenSpaceCameraController.minimumZoomDistance = MIN_CAMERA_HEIGHT;
@@ -1160,37 +1168,29 @@ async function initCesium() {
         var lat = Cesium.Math.toDegrees(cartographic.latitude);
         if (ST.createMode) {
           previewCreateLocation(lat, lon);
+          requestSceneRender();
         }
       }
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
     handler.setInputAction(function(movement) {
-      if (ST.createMode) {
-        viewer.scene.canvas.style.cursor = 'crosshair';
-        hidePinTooltip();
-        return;
-      }
-      var picked = viewer.scene.pick(movement.endPosition);
-      if (picked && picked.id && picked.id.iwhPinId) {
-        var hoveredPin = getPinById(picked.id.iwhPinId);
-        if (hoveredPin) {
-          showPinTooltip(hoveredPin, movement.endPosition.x, movement.endPosition.y);
-          viewer.scene.canvas.style.cursor = 'pointer';
-          return;
-        }
-      }
-      viewer.scene.canvas.style.cursor = '';
-      hidePinTooltip();
+      _pendingHoverMovement = movement;
+      if (_hoverFrameQueued) return;
+      _hoverFrameQueued = true;
+      window.requestAnimationFrame(function() {
+        processHoverPick(_pendingHoverMovement);
+      });
     }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
     // Update zoom level display
     viewer.camera.changed.addEventListener(function() {
       updateZoomDisplay();
-      syncPinLOD();
+      syncPinLOD(false);
+      maybeSyncLabelLayer(false);
     });
 
     viewer.scene.postRender.addEventListener(function() {
-      syncLabelLayer();
+      maybeSyncLabelLayer(false);
     });
 
     // Auto-rotation
@@ -1213,7 +1213,7 @@ async function initCesium() {
 
     // Load existing marks
     syncBorderLayer();
-    syncLabelLayer();
+    maybeSyncLabelLayer(true);
     loadMarks();
     updateOpensPreview();
   } catch (err) {
@@ -1243,8 +1243,66 @@ function updatePinFilterUI() {
 function setPinFilter(mode) {
   ST.pinFilter = mode || 'all';
   updatePinFilterUI();
-  syncPinLOD();
+  syncPinLOD(true);
   renderLists();
+}
+
+function requestSceneRender() {
+  if (viewer && viewer.scene && viewer.scene.requestRender) {
+    viewer.scene.requestRender();
+  }
+}
+
+function getPinZoomBucket(currentZoom) {
+  if (currentZoom < 3) return 'hidden';
+  if (currentZoom <= 7) return 'cluster';
+  if (currentZoom >= 18) return 'detail-close';
+  return 'detail';
+}
+
+function maybeSyncLabelLayer(force) {
+  if (!viewer) return;
+  var now = Date.now();
+  var height = viewer.camera.positionCartographic ? Math.round(viewer.camera.positionCartographic.height) : 20000000;
+  var key = [_showLabels ? 1 : 0, height, window.innerWidth, window.innerHeight].join(':');
+  if (!force && key === _lastLabelSyncKey && (now - _lastLabelSyncAt) < _labelSyncThrottleMs) return;
+  _lastLabelSyncAt = now;
+  _lastLabelSyncKey = key;
+  syncLabelLayer();
+}
+
+function processHoverPick(movement) {
+  _hoverFrameQueued = false;
+  if (!viewer || !movement) return;
+  if (ST.createMode) {
+    viewer.scene.canvas.style.cursor = 'crosshair';
+    if (_lastHoverPinId) {
+      _lastHoverPinId = null;
+      hidePinTooltip();
+    }
+    return;
+  }
+
+  var picked = viewer.scene.pick(movement.endPosition);
+  if (picked && picked.id && picked.id.iwhPinId) {
+    var hoveredPin = getPinById(picked.id.iwhPinId);
+    if (hoveredPin) {
+      viewer.scene.canvas.style.cursor = 'pointer';
+      if (_lastHoverPinId === hoveredPin.id) {
+        positionTooltip(document.getElementById('tt'), movement.endPosition.x, movement.endPosition.y);
+      } else {
+        _lastHoverPinId = hoveredPin.id;
+        showPinTooltip(hoveredPin, movement.endPosition.x, movement.endPosition.y);
+      }
+      return;
+    }
+  }
+
+  viewer.scene.canvas.style.cursor = '';
+  if (_lastHoverPinId) {
+    _lastHoverPinId = null;
+    hidePinTooltip();
+  }
 }
 
 function updateCreateFlowUI() {
@@ -1749,11 +1807,16 @@ function rebuildCityLabelNodes() {
   });
 }
 
-function syncPinLOD() {
+function syncPinLOD(force) {
   if (!viewer || !pinDataSource) return;
   var currentZoom = viewer.camera && viewer.camera.positionCartographic
     ? getZoomFromHeight(viewer.camera.positionCartographic.height)
     : MIN_DISPLAY_ZOOM;
+  var nextBucket = getPinZoomBucket(currentZoom);
+  var nextFilterKey = ST.pinFilter || 'all';
+  if (!force && _lastPinZoomBucket === nextBucket && _lastPinFilterKey === nextFilterKey) return;
+  _lastPinZoomBucket = nextBucket;
+  _lastPinFilterKey = nextFilterKey;
   pinDataSource.show = currentZoom >= 3;
   pinDataSource.clustering.enabled = currentZoom >= 3 && currentZoom <= 7;
   _lastPinLodMode = currentZoom <= 7 ? 'cluster' : (currentZoom >= 18 ? 'detail-close' : 'detail');
@@ -1769,6 +1832,7 @@ function syncPinLOD() {
     entity.billboard.height = Math.round(size.height * detailBoost);
     entity.billboard.pixelOffset = new Cesium.Cartesian2(0, getPinCategory(pin) === 'my' ? -18 : -14);
   });
+  requestSceneRender();
 }
 
 // Toggle functions
@@ -1827,7 +1891,8 @@ function syncLabelLayer() {
 
 function tglLabels() {
   _showLabels = !_showLabels;
-  syncLabelLayer();
+  maybeSyncLabelLayer(true);
+  requestSceneRender();
 }
 
 function addBorderHierarchyLines(entity, hierarchy) {
@@ -1882,7 +1947,8 @@ function syncBorderLayer() {
       borderDataSource = dataSource;
       viewer.dataSources.add(dataSource);
       rebuildCountryLabelNodes();
-      syncLabelLayer();
+      maybeSyncLabelLayer(true);
+      requestSceneRender();
     })
     .catch(function(err) {
       console.error('[IWH] border layer load failed:', err);
@@ -1894,6 +1960,7 @@ function syncBorderLayer() {
 function tglBorders() {
   _showBorders = !_showBorders;
   syncBorderLayer();
+  requestSceneRender();
 }
 
 // Fly to location
@@ -1926,7 +1993,7 @@ function addPinToGlobe(pin) {
   entity.iwhPinId = pin.id;
   entity.iwhPinData = pin;
   pinEntities.push(entity);
-  syncPinLOD();
+  syncPinLOD(true);
   return entity;
 }
 
@@ -2312,7 +2379,7 @@ function loadMarks() {
       console.log('[IWH] Loaded ' + ST.pins.length + ' marks');
       updateStats();
       renderLists();
-      syncPinLOD();
+      syncPinLOD(true);
     }
   });
 }

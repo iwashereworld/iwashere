@@ -341,7 +341,7 @@ function updateUserUI() {
     if (chip2) chip2.textContent = t('nav_sign_in');
     if (signoutBtn) signoutBtn.style.display = 'none';
   }
-  if (typeof syncPinLOD === 'function') syncPinLOD();
+  if (typeof syncPinLOD === 'function') syncPinLOD(true);
 }
 
 function openAuth(tab) {
