@@ -1810,7 +1810,7 @@ function rebuildCountryLabelNodes() {
   if (!viewer) return;
   var seen = {};
   COUNTRIES.forEach(function(country) {
-    var name = country.name;
+    var name = COUNTRY_NAME_ALIASES[country.name] || country.name;
     if (!name || seen[name]) return;
     var position = Cesium.Cartesian3.fromDegrees(country.lon, country.lat, COUNTRY_LABEL_ALTITUDE);
     var node = createMapLabelNode(name, 'country', position);
