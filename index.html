@@ -1190,6 +1190,7 @@ async function initCesium() {
     // Update zoom level display
     viewer.camera.changed.addEventListener(function() {
       updateZoomDisplay();
+      syncLabelsForZoom(viewer.camera.positionCartographic ? viewer.camera.positionCartographic.height : null);
       syncPinLOD(false);
       maybeSyncLabelLayer(false);
     });
@@ -1218,6 +1219,7 @@ async function initCesium() {
 
     // Load existing marks
     queueBorderLayerLoad();
+    syncLabelsForZoom(viewer.camera.positionCartographic ? viewer.camera.positionCartographic.height : null);
     maybeSyncLabelLayer(true);
     loadMarks();
     updateOpensPreview();
@@ -1523,6 +1525,16 @@ function updateZoomDisplay() {
     altVal.textContent = altStr;
     zoomEl.style.display = 'block';
   }
+}
+
+function syncLabelsForZoom(height) {
+  if (!viewer) return;
+  var zoom = getZoomFromHeight(height != null ? height : viewer.camera.positionCartographic.height);
+  var shouldShow = zoom >= 10;
+  if (_showLabels === shouldShow) return;
+  _showLabels = shouldShow;
+  maybeSyncLabelLayer(true);
+  requestSceneRender();
 }
 
 function getZoomFromHeight(height) {
