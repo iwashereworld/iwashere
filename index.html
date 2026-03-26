@@ -558,6 +558,7 @@ window.addEventListener('load', initCookieBanner);
   </button>
   <div class="ghs"><div><strong id="sp">0</strong>marks</div><div><strong id="sc2">0</strong>countries</div><div><strong id="sk2">0</strong>capsules</div></div>
   <div class="header-actions">
+    <button type="button" class="nbtn" onclick="goLanding()" data-i18n="nav_back_home">Back to Home</button>
     <div class="lang-switch" aria-label="Language switcher">
       <button class="nbtn lang-btn" type="button" data-lang-btn="en" onclick="setLanguage('en')">EN</button>
       <button class="nbtn lang-btn" type="button" data-lang-btn="tr" onclick="setLanguage('tr')">TR</button>
@@ -983,6 +984,7 @@ function createPinSvg(fill, inner, stroke, dashed, glow) {
     '</svg>'
   );
 }
+
 var PIN_MARKER_IMAGE = createPinSvg('#e7edf6', '#182433', '#020408', false, false);
 var PIN_MARKER_MY = createPinSvg('#c8a96e', '#f7edd6', '#020408', false, true);
 var PIN_MARKER_FRIEND = createPinSvg('#7fb9ff', '#eff7ff', '#04111f', false, false);
@@ -1150,7 +1152,6 @@ async function initCesium() {
     viewer.scene.globe.showGroundAtmosphere = true;
     viewer.scene.backgroundColor = Cesium.Color.fromCssColorString('#020408');
     viewer.scene.globe.depthTestAgainstTerrain = true;
-
     // Handle click events for pin placement
     var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
     
@@ -2057,8 +2058,12 @@ function goLanding() {
   document.getElementById('globe-app').style.display = 'none';
   document.getElementById('globe-container').style.display = 'none';
   hidePinTooltip();
+  closeShareModal();
+  closeMarks();
+  closeProfile();
   closeSb();
   cancelCreateFlow();
+  syncOverlayState();
 }
 
 // Handle photo
@@ -2765,6 +2770,10 @@ document.addEventListener('keydown', function(e) {
     }
     if (document.getElementById('profile-modal').classList.contains('show')) {
       closeProfile();
+      return;
+    }
+    if (document.getElementById('globe-app').style.display === 'block') {
+      goLanding();
       return;
     }
   }
