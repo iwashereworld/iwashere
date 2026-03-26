@@ -401,9 +401,13 @@ I18N_MESSAGES.en.your_message_sub = 'Write the note that will be saved with this
 I18N_MESSAGES.en.message_for_memory = 'Message for This Memory';
 I18N_MESSAGES.en.message_for_memory_sub = 'Now write the note that will be saved with this mark or revealed when the capsule opens.';
 I18N_MESSAGES.en.capsule_options_sub = 'Choose whether this should stay public now or open later as a capsule.';
+I18N_MESSAGES.en.memory_note = 'Memory Note';
+I18N_MESSAGES.en.memory_note_placeholder = 'Leave a short note for this place...';
 
 I18N_MESSAGES.tr.your_message = 'Bu Ani Icin Mesaj';
 I18N_MESSAGES.tr.your_message_sub = 'Bu izle kaydedilecek ya da kapsul acildiginda gorunecek notu yaz.';
 I18N_MESSAGES.tr.message_for_memory = 'Bu Ani Icin Mesaj';
 I18N_MESSAGES.tr.message_for_memory_sub = 'Simdi bu izle kaydedilecek ya da kapsul acildiginda gorunecek notu yaz.';
 I18N_MESSAGES.tr.capsule_options_sub = 'Bunun simdi herkese acik mi kalacagina yoksa sonra kapsul olarak mi acilacagina karar ver.';
+I18N_MESSAGES.tr.memory_note = 'Anı Notu';
+I18N_MESSAGES.tr.memory_note_placeholder = 'Bu yer için kısa bir not bırak...';

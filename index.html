@@ -643,6 +643,8 @@ window.addEventListener('load', initCookieBanner);
       <input type="text" id="loc-display" readonly placeholder="Click on the globe..." data-i18n-placeholder="location_click_placeholder">
       <label class="fl" data-i18n="or_search">Or search</label>
       <select id="csel" onchange="selCC(this.value)"><option value="" data-i18n="country_select_placeholder">Select country...</option></select>
+      <label class="fl" data-i18n="memory_note">Memory Note</label>
+      <textarea id="quick-imsg" placeholder="Leave a short note for this place..." maxlength="500" data-i18n-placeholder="memory_note_placeholder" oninput="syncMemoryMessage(this.value,'quick')" style="min-height:96px;"></textarea>
       <div id="precise-coords" style="margin-top:8px;padding:10px;background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;display:none;">
         <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px;" data-i18n="exact_coordinates">Exact Coordinates</div>
         <div style="font-size:.9rem;color:var(--gold);font-family:'Cormorant Garamond',serif;" id="exact-coords-display">--</div>
@@ -701,7 +703,7 @@ window.addEventListener('load', initCookieBanner);
       </div>
       <div id="written-area">
         <label class="fl" data-i18n="message">Message</label>
-        <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..." maxlength="500" data-i18n-placeholder="message_placeholder"></textarea>
+        <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..." maxlength="500" data-i18n-placeholder="message_placeholder" oninput="syncMemoryMessage(this.value,'main')"></textarea>
       </div>
       <div id="voice-area" style="display:none;">
         <div class="note-box" data-i18n="voice_note">Voice recordings are kept for local preview on this device only. Add a written message if you want to save this mark today.</div>

@@ -93,6 +93,8 @@ function resetForm() {
   if (prev) prev.style.display = 'none';
   document.getElementById('loc-display').value = '';
   document.getElementById('csel').value = '';
+  var quickMessageInput = document.getElementById('quick-imsg');
+  if (quickMessageInput) quickMessageInput.value = '';
   document.getElementById('imsg').value = '';
   if (typeof clearVoice === 'function') clearVoice();
   var submitBtn = document.getElementById('btn-submit-mark');
@@ -504,6 +506,19 @@ function showToast(msg, tone) {
     t.style.opacity = '0';
     setTimeout(function() { t.remove(); }, 300);
   }, 2500);
+}
+
+function syncMemoryMessage(value, source) {
+  var next = clampText(value || '', MAX_MESSAGE_LENGTH);
+  var quickInput = document.getElementById('quick-imsg');
+  var mainInput = document.getElementById('imsg');
+
+  if (source !== 'quick' && quickInput && quickInput.value !== next) {
+    quickInput.value = next;
+  }
+  if (source !== 'main' && mainInput && mainInput.value !== next) {
+    mainInput.value = next;
+  }
 }
 
 function getStepCopy() {
