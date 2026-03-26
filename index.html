@@ -970,6 +970,8 @@ var _labelSyncThrottleMs = 60;
 var _hoverFrameQueued = false;
 var _pendingHoverMovement = null;
 var _lastHoverPinId = null;
+var _borderLoadPromise = null;
+var _borderLoadQueued = false;
 function createPinSvg(fill, inner, stroke, dashed, glow) {
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="38" viewBox="0 0 28 38">' +
@@ -1212,7 +1214,7 @@ async function initCesium() {
     }, { passive: true });
 
     // Load existing marks
-    syncBorderLayer();
+    queueBorderLayerLoad();
     maybeSyncLabelLayer(true);
     loadMarks();
     updateOpensPreview();
@@ -1269,6 +1271,20 @@ function maybeSyncLabelLayer(force) {
   _lastLabelSyncAt = now;
   _lastLabelSyncKey = key;
   syncLabelLayer();
+}
+
+function queueBorderLayerLoad() {
+  if (_borderLoadQueued || _borderLoadPromise || borderDataSource || !_showBorders || !viewer) return;
+  _borderLoadQueued = true;
+  var loadTask = function() {
+    _borderLoadQueued = false;
+    syncBorderLayer();
+  };
+  if (window.requestIdleCallback) {
+    window.requestIdleCallback(loadTask, { timeout: 1200 });
+  } else {
+    window.setTimeout(loadTask, 180);
+  }
 }
 
 function processHoverPick(movement) {
@@ -1923,15 +1939,16 @@ function syncBorderLayer() {
   var btn = document.getElementById('bbrd');
   if (btn) btn.classList.toggle('on', _showBorders);
   if (!_showBorders) {
+    _borderLoadQueued = false;
     if (borderDataSource) {
       viewer.dataSources.remove(borderDataSource);
       borderDataSource = null;
     }
     return;
   }
-  if (borderDataSource || !viewer) return;
+  if (borderDataSource || !viewer || _borderLoadPromise) return;
   var geoUrl = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson';
-  fetch(geoUrl)
+  _borderLoadPromise = fetch(geoUrl)
     .then(function(response) { return response.json(); })
     .then(function(geojson) {
       buildCountryGeometryCacheFromGeoJson(geojson);
@@ -1954,6 +1971,9 @@ function syncBorderLayer() {
       console.error('[IWH] border layer load failed:', err);
       _showBorders = false;
       if (btn) btn.classList.remove('on');
+    })
+    .finally(function() {
+      _borderLoadPromise = null;
     });
 }
 
