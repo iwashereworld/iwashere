@@ -505,3 +505,71 @@ function showToast(msg, tone) {
     setTimeout(function() { t.remove(); }, 300);
   }, 2500);
 }
+
+function getStepCopy() {
+  if (getCurrentLanguage() === 'tr') {
+    return {
+      1: 'Gorunen bir isimle basla ve izine kimlik kazandir.',
+      2: 'Kure uzerinde tam bir nokta sec ya da bir yer ara.',
+      3: 'Izin hemen mi gorunecek yoksa kapsul olarak mi acilacak buna karar ver.',
+      4: 'Sectigin iz ya da kapsul icin kaydedilecek mesaji yaz.',
+      5: 'Ozeti gozden gecir ve izini kureye birak.'
+    };
+  }
+  return {
+    1: 'Start with a display name so your mark has an identity.',
+    2: 'Pick an exact location on the globe or search for a place.',
+    3: 'Decide whether this should stay public now or open later as a capsule.',
+    4: 'Write the message that will be saved with this mark or future capsule.',
+    5: 'Review the summary and place your mark on the globe.'
+  };
+}
+
+function getOnboardingSteps() {
+  return getCurrentLanguage() === 'tr'
+    ? ['Gorunen ismini ekle', 'Tam yeri sec', 'Kapsul zamanini sec', 'Mesajini yaz', 'Izini kaydet ve paylas']
+    : ['Add your display name', 'Choose the exact place', 'Pick capsule timing', 'Write your message', 'Save and share your mark'];
+}
+
+function proceedFromCapsuleStep() {
+  var recipientInput = document.getElementById('iem');
+  var recipientEmail = recipientInput ? normalizeEmail(recipientInput.value) : '';
+  if (recipientInput) recipientInput.value = recipientEmail;
+
+  if (ST.capsuleDays > 0 && ST.rc === 'o') {
+    if (!recipientEmail) {
+      showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden once alici e-postasini gir.' : 'Please enter a recipient email before continuing.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+      showToast(getCurrentLanguage() === 'tr' ? 'Gecerli bir alici e-postasi gir.' : 'Please enter a valid recipient email.');
+      return;
+    }
+  }
+
+  goS(4);
+}
+
+function proceedFromMessageStep() {
+  var messageInput = document.getElementById('imsg');
+  var message = clampText(messageInput.value, MAX_MESSAGE_LENGTH);
+  messageInput.value = message;
+
+  if (ST.msgType === 'w' && !message) {
+    showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden once bir mesaj ekle.' : 'Please add a message before continuing.');
+    return;
+  }
+
+  if (ST.msgType === 'v' && !message) {
+    showToast(getCurrentLanguage() === 'tr' ? 'Ses onizlemesi henuz kaydedilmiyor. Devam etmek icin yazili mesaj ekle.' : 'Voice preview is not saved yet. Add a written message to continue.');
+    return;
+  }
+
+  bSmry();
+  goS(5);
+}
+
+function proceedToReview() {
+  proceedFromMessageStep();
+}

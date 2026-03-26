@@ -652,34 +652,6 @@ window.addEventListener('load', initCookieBanner);
     </div>
     <!-- Step 3 -->
     <div class="step" id="step3">
-      <h3 data-i18n="your_message">Your Message</h3>
-      <p class="sub3" data-i18n="your_message_sub">Write the message that will be saved with your mark. Voice stays preview-only for now.</p>
-      <div class="g2">
-        <div class="oc on" id="ow" onclick="sMT('w')" role="button" tabindex="0" aria-pressed="true" data-i18n="write"><span class="ic"></span>Write</div>
-        <div class="oc" id="ov" onclick="sMT('v')" role="button" tabindex="0" aria-pressed="false" data-i18n="voice"><span class="ic"></span>Voice</div>
-      </div>
-      <div id="written-area">
-        <label class="fl" data-i18n="message">Message</label>
-        <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..." maxlength="500" data-i18n-placeholder="message_placeholder"></textarea>
-      </div>
-      <div id="voice-area" style="display:none;">
-        <div class="note-box" data-i18n="voice_note">Voice recordings are kept for local preview on this device only. Add a written message if you want to save this mark today.</div>
-        <div style="background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
-          <button type="button" id="rec-btn" onclick="toggleRecord()" aria-label="Start or stop voice preview recording" style="width:48px;height:48px;border-radius:50%;background:rgba(200,169,110,.15);border:2px solid #c8a96e;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;cursor:pointer;font-size:18px;color:#c8a96e;transition:all .2s;">&#9679;</button>
-          <div id="rec-status" style="font-size:.78rem;color:var(--muted);" data-i18n="voice_ready">Ready to record locally</div>
-          <div id="rec-time" style="font-size:.68rem;color:rgba(200,169,110,.6);margin-top:2px;" data-i18n="voice_tap_start">Tap to start</div>
-          <div id="voice-upload-status" style="font-size:.68rem;color:rgba(240,237,232,.45);margin-top:6px;" data-i18n="voice_upload_pending">Upload-ready metadata will appear here when backend upload is connected.</div>
-          <div id="rec-wave" style="display:none;margin-top:10px;height:28px;display:flex;align-items:center;justify-content:center;gap:2px;" ><div id="rec-wave-inner" style="display:flex;gap:2px;align-items:flex-end;height:24px;"></div></div>
-          <div id="voice-preview" style="display:none;margin-top:12px;"><audio id="voice-audio" controls style="width:100%;height:32px;"></audio><button onclick="clearVoice()" style="margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 12px;font-size:.72rem;color:var(--muted);cursor:pointer;" data-i18n="clear_rerecord">Clear & re-record</button></div>
-        </div>
-        <div style="margin-top:10px;text-align:center;font-size:.72rem;color:var(--muted);"><span data-i18n="or">or</span> <label style="color:var(--gold);cursor:pointer;text-decoration:underline;" data-i18n="upload_audio_preview">upload audio file for preview<input type="file" accept="audio/*" onchange="hVoice(this)" style="display:none"></label></div>
-        <div id="voice-file-name" style="display:none;text-align:center;font-size:.72rem;color:var(--gold);margin-top:6px;"></div>
-      </div>
-      <button class="btn bp" id="btn3" onclick="proceedFromMessageStep()" style="margin-top:1rem;" data-i18n="continue_capsule">Continue to Capsule</button>
-      <button class="btn bs" onclick="goS(1)" data-i18n="back">Back</button>
-    </div>
-    <!-- Step 4 -->
-    <div class="step" id="step4">
       <h3 data-i18n="capsule_options">Capsule Options</h3>
       <p class="sub3" data-i18n="capsule_options_sub">Skip this if you only want a public mark right now.</p>
       <div class="note-box" id="capsule-note">Recipient email is only needed when you send a future capsule to someone else.</div>
@@ -716,7 +688,35 @@ window.addEventListener('load', initCookieBanner);
       </div>
       <div style="text-align:center;margin-bottom:.5rem;"><span style="font-size:.72rem;color:var(--muted);" data-i18n="or">or</span></div>
       <div class="oc" id="tq0" onclick="setQuick(0,'tq0')" role="button" tabindex="0" aria-pressed="false" style="margin-bottom:1rem;" data-i18n="no_capsule">No Capsule (public mark only)</div>
-      <button class="btn bp" id="btn4" onclick="proceedToReview()" data-i18n="continue_review">Continue to Review</button>
+      <button class="btn bp" id="btn3" onclick="proceedFromCapsuleStep()" data-i18n="continue_message">Continue to Message</button>
+      <button class="btn bs" onclick="goS(2)" data-i18n="back">Back</button>
+    </div>
+    <!-- Step 4 -->
+    <div class="step" id="step4">
+      <h3 data-i18n="message_for_memory">Message for This Memory</h3>
+      <p class="sub3" data-i18n="message_for_memory_sub">Now write the note that will be saved with this mark or revealed when the capsule opens.</p>
+      <div class="g2">
+        <div class="oc on" id="ow" onclick="sMT('w')" role="button" tabindex="0" aria-pressed="true" data-i18n="write"><span class="ic"></span>Write</div>
+        <div class="oc" id="ov" onclick="sMT('v')" role="button" tabindex="0" aria-pressed="false" data-i18n="voice"><span class="ic"></span>Voice</div>
+      </div>
+      <div id="written-area">
+        <label class="fl" data-i18n="message">Message</label>
+        <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..." maxlength="500" data-i18n-placeholder="message_placeholder"></textarea>
+      </div>
+      <div id="voice-area" style="display:none;">
+        <div class="note-box" data-i18n="voice_note">Voice recordings are kept for local preview on this device only. Add a written message if you want to save this mark today.</div>
+        <div style="background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
+          <button type="button" id="rec-btn" onclick="toggleRecord()" aria-label="Start or stop voice preview recording" style="width:48px;height:48px;border-radius:50%;background:rgba(200,169,110,.15);border:2px solid #c8a96e;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;cursor:pointer;font-size:18px;color:#c8a96e;transition:all .2s;">&#9679;</button>
+          <div id="rec-status" style="font-size:.78rem;color:var(--muted);" data-i18n="voice_ready">Ready to record locally</div>
+          <div id="rec-time" style="font-size:.68rem;color:rgba(200,169,110,.6);margin-top:2px;" data-i18n="voice_tap_start">Tap to start</div>
+          <div id="voice-upload-status" style="font-size:.68rem;color:rgba(240,237,232,.45);margin-top:6px;" data-i18n="voice_upload_pending">Upload-ready metadata will appear here when backend upload is connected.</div>
+          <div id="rec-wave" style="display:none;margin-top:10px;height:28px;display:flex;align-items:center;justify-content:center;gap:2px;" ><div id="rec-wave-inner" style="display:flex;gap:2px;align-items:flex-end;height:24px;"></div></div>
+          <div id="voice-preview" style="display:none;margin-top:12px;"><audio id="voice-audio" controls style="width:100%;height:32px;"></audio><button onclick="clearVoice()" style="margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 12px;font-size:.72rem;color:var(--muted);cursor:pointer;" data-i18n="clear_rerecord">Clear & re-record</button></div>
+        </div>
+        <div style="margin-top:10px;text-align:center;font-size:.72rem;color:var(--muted);"><span data-i18n="or">or</span> <label style="color:var(--gold);cursor:pointer;text-decoration:underline;" data-i18n="upload_audio_preview">upload audio file for preview<input type="file" accept="audio/*" onchange="hVoice(this)" style="display:none"></label></div>
+        <div id="voice-file-name" style="display:none;text-align:center;font-size:.72rem;color:var(--gold);margin-top:6px;"></div>
+      </div>
+      <button class="btn bp" id="btn4" onclick="proceedFromMessageStep()" style="margin-top:1rem;" data-i18n="continue_review">Continue to Review</button>
       <button class="btn bs" onclick="goS(3)" data-i18n="back">Back</button>
     </div>
     <!-- Step 5 -->
@@ -1341,7 +1341,9 @@ function updateCreateFlowUI() {
         fabLabel.innerHTML = '<strong>' + ltxt('Add Memory', 'Anı Ekle') + '</strong><span>' + ltxt('Guided 3-step flow', 'Yönlendirmeli 3 adım') + '</span>';
       } else if (activeStepId === 'step2') {
         fabLabel.innerHTML = '<strong>' + ltxt('Selecting Location', 'Konum Seçiliyor') + '</strong><span>' + ltxt('Preview before you place it', 'Bırakmadan önce önizle') + '</span>';
-      } else if (activeStepId === 'step3' || activeStepId === 'step4' || activeStepId === 'step5') {
+      } else if (activeStepId === 'step3') {
+        fabLabel.innerHTML = '<strong>' + ltxt('Setting the Capsule', 'Kapsül Ayarlanıyor') + '</strong><span>' + ltxt('Choose when this memory opens', 'Bu anının ne zaman açılacağını seç') + '</span>';
+      } else if (activeStepId === 'step4' || activeStepId === 'step5') {
         fabLabel.innerHTML = '<strong>' + ltxt('Writing the Memory', 'Anı Yazılıyor') + '</strong><span>' + ltxt('Finish the story in the panel', 'Panelde hikayeyi tamamla') + '</span>';
       } else {
         fabLabel.innerHTML = '<strong>' + ltxt('Add Memory', 'Anı Ekle') + '</strong><span>' + ltxt('Guided 3-step flow', 'Yönlendirmeli 3 adım') + '</span>';
