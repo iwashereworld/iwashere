@@ -1135,6 +1135,14 @@ function primeGlobeOpen() {
   warmCesiumToken();
   if (!_marksLoadedOnce && !_marksLoadPromise) loadMarks();
 }
+
+function shouldAggressivelyPreloadGlobe() {
+  try {
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return false;
+    if (window.innerWidth && window.innerWidth <= 900) return false;
+  } catch (err) {}
+  return true;
+}
 var _requestedMarkId = '';
 var _focusingRequestedMark = false;
 var _requestedMarkFetchPromise = null;
@@ -2386,9 +2394,12 @@ document.addEventListener('DOMContentLoaded', function() {
   initBgGlobe();
 
   document.querySelectorAll('[data-i18n="nav_open_globe"]').forEach(function(btn) {
-    btn.addEventListener('mouseenter', primeGlobeOpen, { passive: true });
-    btn.addEventListener('focus', primeGlobeOpen, { passive: true });
-    btn.addEventListener('touchstart', primeGlobeOpen, { passive: true });
+    btn.addEventListener('mouseenter', function() {
+      if (shouldAggressivelyPreloadGlobe()) primeGlobeOpen();
+    }, { passive: true });
+    btn.addEventListener('focus', function() {
+      if (shouldAggressivelyPreloadGlobe()) primeGlobeOpen();
+    });
   });
   
   // Load stats
@@ -2396,7 +2407,9 @@ document.addEventListener('DOMContentLoaded', function() {
     showToast('Runtime config is incomplete: ' + _runtimeConfigErrors.join(', '), 'error');
   } else {
     loadStats();
-    setTimeout(primeGlobeOpen, 120);
+    if (shouldAggressivelyPreloadGlobe()) {
+      setTimeout(primeGlobeOpen, 120);
+    }
   }
   if (_requestedMarkId) {
     showGlobe();
