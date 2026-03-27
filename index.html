@@ -505,9 +505,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   </div>
 </nav>
 <section id="hero">
-  <div class="ey" data-i18n="hero_eyebrow">A digital monument for humanity</div>
+  <div class="ey" data-i18n="hero_eyebrow">A living globe for meaningful memories</div>
   <h1 class="h1" data-i18n-html="hero_title_html">Leave your <em>mark</em><br>on the world</h1>
-  <p class="hs2" data-i18n="hero_subtitle">Pin your name to the globe, save a written memory, and optionally set a future opening date for your capsule.</p>
+  <p class="hs2" data-i18n="hero_subtitle">Save a meaningful place, write the memory behind it, and decide whether it stays visible now or opens later.</p>
   <div class="hbs">
     <button class="hb g" onclick="showGlobe()" data-i18n="nav_open_globe">Open Globe</button>
     <a href="#how" class="hb gh" data-i18n="hero_how">How It Works</a>
@@ -522,9 +522,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div class="secl reveal" data-i18n="how_label">The Journey</div>
   <h2 class="sect reveal" data-i18n-html="how_title_html">Three steps to leave a <em>memory</em></h2>
   <div class="steps reveal">
-    <div class="sc"><div class="sn2">01</div><div class="stit" data-i18n="how_step1_title">Choose Your Spot</div><p class="sdes" data-i18n="how_step1_body">Click anywhere on the 3D globe to place your pin. Zoom to street level for precise placement with satellite imagery.</p></div>
-    <div class="sc"><div class="sn2">02</div><div class="stit" data-i18n="how_step2_title">Write Your Message</div><p class="sdes" data-i18n="how_step2_body">Add the text that will be saved with your mark. Photos are optional and stay attached to the saved mark.</p></div>
-    <div class="sc"><div class="sn2">03</div><div class="stit" data-i18n="how_step3_title">Choose Visibility</div><p class="sdes" data-i18n="how_step3_body">Save it as a public mark today, or set a future opening date for a capsule experience.</p></div>
+    <div class="sc"><div class="sn2">01</div><div class="stit" data-i18n="how_step1_title">Choose Your Spot</div><p class="sdes" data-i18n="how_step1_body">Pick the exact place on the globe where this memory belongs.</p></div>
+    <div class="sc"><div class="sn2">02</div><div class="stit" data-i18n="how_step2_title">Write Your Message</div><p class="sdes" data-i18n="how_step2_body">Write the message that gives this place its meaning. A photo is optional.</p></div>
+    <div class="sc"><div class="sn2">03</div><div class="stit" data-i18n="how_step3_title">Show Now or Open Later</div><p class="sdes" data-i18n="how_step3_body">Keep it visible now as a public mark, or lock it until a future opening date.</p></div>
   </div>
 </section>
 <section id="quote">
@@ -532,14 +532,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <cite class="qa reveal">I Was Here Manifesto</cite>
 </section>
 <section class="sec">
-  <div class="secl reveal" data-i18n="pricing_label">Investment in Memory</div>
-  <h2 class="sect reveal" data-i18n-html="pricing_title_html">Simple pricing for what is <em>live now</em></h2>
+  <div class="secl reveal" data-i18n="pricing_label">What You Can Save</div>
+  <h2 class="sect reveal" data-i18n-html="pricing_title_html">Simple ways to <em>save a place</em></h2>
   <div class="pcards reveal">
     <div class="pc"><div class="pbg alt" data-i18n="pricing_now_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_public_name">Public Mark</div><div class="pam">$1 <span>one-time</span></div><p class="pds" data-i18n="pricing_public_desc">Save a public mark with your name, coordinates, and written message.</p><ul class="pft"><li data-i18n="pricing_public_feat1">Permanent globe placement</li><li data-i18n="pricing_public_feat2">Optional photo</li><li data-i18n="pricing_public_feat3">Country attribution</li></ul></div>
     <div class="pc ft"><div class="pbg" data-i18n="pricing_now_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_capsule_name">Mark + Capsule</div><div class="pam">$3 <span>one-time</span></div><p class="pds" data-i18n="pricing_capsule_desc">Save your mark now and choose a future opening date for the capsule view.</p><ul class="pft"><li data-i18n="pricing_capsule_feat1">Everything in Public Mark</li><li data-i18n="pricing_capsule_feat2">Text message support</li><li data-i18n="pricing_capsule_feat3">Future opening date</li></ul></div>
     <div class="pc"><div class="pbg alt" data-i18n="pricing_limited_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_gift_name">Gift Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds" data-i18n="pricing_gift_desc">Send a capsule with a recipient email and a scheduled opening date.</p><ul class="pft"><li data-i18n="pricing_gift_feat1">Recipient email field</li><li data-i18n="pricing_gift_feat2">Capsule timing options</li><li data-i18n="pricing_gift_feat3">Share card after save</li></ul></div>
   </div>
-  <p class="pricing-note reveal" data-i18n="pricing_note">Write your memory, add a photo if you want, and choose whether the mark stays public now or opens later as a capsule.</p>
+  <p class="pricing-note reveal" data-i18n="pricing_note">Every memory starts with a place and a written note. Add a photo if you want, then decide whether it stays public or opens later as a capsule.</p>
 </section>
 <footer>
   <span>&copy; 2026 IWASHEREWORLD &middot; I Was Here</span>
@@ -2422,9 +2422,9 @@ function searchSelect(resultOrLat, lon, code, name) {
   }
 
   if (result.type === 'country') {
-    showToast((getCurrentLanguage() === 'tr' ? 'Ulkeye gidildi: ' : 'Jumped to ') + result.name, 'success');
+    showToast(t('toast_jump_country') + ': ' + result.name, 'success');
   } else if (result.type === 'pin') {
-    showToast((getCurrentLanguage() === 'tr' ? 'Iz acildi: ' : 'Opened mark in ') + result.name, 'success');
+    showToast(t('toast_open_mark') + ': ' + result.name, 'success');
   }
 }
 
@@ -2457,12 +2457,12 @@ function sV(v) {
 
 async function submit() {
   if (!AUTH.user || !AUTH.user.id) {
-    showToast('Sign in before saving a mark.');
+    showToast(t('toast_sign_in_before_save'));
     openAuth('login');
     return;
   }
   if (!ST.locationConfirmed || ST.selLat == null || ST.selLon == null) {
-    showToast('Confirm a location before saving this memory.', 'error');
+    showToast(t('toast_confirm_location'), 'error');
     return;
   }
 
@@ -2495,7 +2495,7 @@ async function submit() {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Save My Mark';
     }
-    showToast('This memory could not be saved. Please try again.', 'error');
+    showToast(t('toast_save_failed'), 'error');
     return;
   }
 
@@ -2524,6 +2524,7 @@ async function submit() {
   
   renderLists();
   updateStats();
+  showToast(t('toast_saved_success'), 'success');
   
   var yr = ST.yr;
   var opens = typeof getCapsuleScheduleDateFromState === 'function' ? getCapsuleScheduleDateFromState() : null;
@@ -2857,12 +2858,12 @@ function populateDrop() {
 function doShr() {
   var pin = window._sharePin || window._lastPin;
   if (!pin) {
-    showToast('Choose a mark before sharing.', 'error');
+    showToast(t('toast_choose_mark_share'), 'error');
     return;
   }
   var payload = typeof buildSharePayload === 'function' ? buildSharePayload(pin) : null;
   if (!payload || !payload.url || !pin.id) {
-    showToast('This mark does not have a shareable link yet.', 'error');
+    showToast(t('toast_mark_link_missing'), 'error');
     return;
   }
 
@@ -2870,14 +2871,14 @@ function doShr() {
     navigator.share(payload).catch(function(err) {
       if (err && err.name === 'AbortError') return;
       copyTextWithFallback(payload.url).then(function() {
-        showToast('Share link copied.', 'success');
+        showToast(t('toast_share_copied'), 'success');
       }).catch(function() {
         showToast(payload.url, 'error');
       });
     });
   } else {
     copyTextWithFallback(payload.url).then(function() {
-      showToast('Share link copied.', 'success');
+      showToast(t('toast_share_copied'), 'success');
     }).catch(function() {
       showToast(payload.url, 'error');
     });
@@ -2887,16 +2888,16 @@ function doShr() {
 function copyShareLink() {
   var pin = window._sharePin || window._lastPin;
   if (!pin) {
-    showToast('Choose a mark before copying the link.', 'error');
+    showToast(t('toast_choose_mark_copy'), 'error');
     return;
   }
   var url = typeof buildMarkPermalink === 'function' ? buildMarkPermalink(pin) : '';
   if (!url || !pin.id) {
-    showToast('This mark does not have a shareable link yet.', 'error');
+    showToast(t('toast_mark_link_missing'), 'error');
     return;
   }
   copyTextWithFallback(url).then(function() {
-    showToast('Share link copied.', 'success');
+    showToast(t('toast_share_copied'), 'success');
   }).catch(function() {
     showToast(url, 'error');
   });

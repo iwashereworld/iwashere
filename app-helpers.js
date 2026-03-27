@@ -1056,7 +1056,7 @@ function renderCountriesJump(container) {
     name.textContent = group.name;
     var meta = document.createElement('div');
     meta.className = 'pct2';
-    meta.textContent = getMarkWord(group.count);
+    meta.textContent = getMarkWord(group.count) + ' • ' + t('discovery_jump_country');
     info.appendChild(name);
     info.appendChild(meta);
     item.appendChild(info);
@@ -1088,9 +1088,7 @@ function renderLists() {
   if (CURRENT_QUICK_JUMP === 'friends') {
     var friendsEmpty = document.createElement('div');
     friendsEmpty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
-    friendsEmpty.textContent = getCurrentLanguage() === 'tr'
-      ? 'Arkadaş akışı henüz bağlı değil. Şimdilik Yeni veya İzlerim görünümünü kullan.'
-      : 'Friends feed is not connected yet. Use Recent or My Marks for now.';
+    friendsEmpty.textContent = t('discovery_friends_placeholder');
     pl.appendChild(friendsEmpty);
     return;
   }
@@ -1117,7 +1115,7 @@ function renderLists() {
     name.textContent = p.name;
     var meta = document.createElement('div');
     meta.className = 'pct2';
-    meta.textContent = p.cname + (cd ? ' - ' + cd : '');
+    meta.textContent = p.cname + (cd ? ' - ' + cd : '') + ' • ' + t('discovery_open_mark');
     info.appendChild(name);
     info.appendChild(meta);
     item.appendChild(info);
@@ -1164,7 +1162,7 @@ async function deleteMark(pinId, buttonEl) {
   updateStats();
   renderLists();
   showMarks();
-  showToast(getCurrentLanguage() === 'tr' ? 'İz silindi.' : 'Mark deleted.', 'success');
+  showToast(t('toast_mark_deleted'), 'success');
 }
 
 function buildProfileBio(marks) {
