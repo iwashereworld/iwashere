@@ -1392,15 +1392,15 @@ function updateCreateFlowUI() {
   if (fabLabel) {
     if (_ctaPreviewEnabled) {
       if (!sidebar || sidebar.classList.contains('hidden')) {
-        fabLabel.innerHTML = '<strong>' + ltxt('Add Memory', 'Anı Ekle') + '</strong><span>' + ltxt('Guided 3-step flow', 'Yönlendirmeli 3 adım') + '</span>';
+        fabLabel.innerHTML = '<strong>' + ltxt('Add Memory', 'Anı Ekle') + '</strong><span>' + ltxt('Guided memory flow', 'Yonlendirmeli akis') + '</span>';
       } else if (activeStepId === 'step2') {
-        fabLabel.innerHTML = '<strong>' + ltxt('Selecting Location', 'Konum Seçiliyor') + '</strong><span>' + ltxt('Preview before you place it', 'Bırakmadan önce önizle') + '</span>';
+        fabLabel.innerHTML = '<strong>' + ltxt('Choosing Location', 'Konum Seciliyor') + '</strong><span>' + ltxt('Preview before you confirm it', 'Onaylamadan once onizle') + '</span>';
       } else if (activeStepId === 'step3') {
-        fabLabel.innerHTML = '<strong>' + ltxt('Setting the Capsule', 'Kapsül Ayarlanıyor') + '</strong><span>' + ltxt('Choose when this memory opens', 'Bu anının ne zaman açılacağını seç') + '</span>';
+        fabLabel.innerHTML = '<strong>' + ltxt('Setting the Capsule', 'Kapsul Ayarlaniyor') + '</strong><span>' + ltxt('Choose when this memory opens', 'Bu aninin ne zaman acilacagini sec') + '</span>';
       } else if (activeStepId === 'step4' || activeStepId === 'step5') {
-        fabLabel.innerHTML = '<strong>' + ltxt('Writing the Memory', 'Anı Yazılıyor') + '</strong><span>' + ltxt('Finish the story in the panel', 'Panelde hikayeyi tamamla') + '</span>';
+        fabLabel.innerHTML = '<strong>' + ltxt('Writing the Memory', 'Ani Yaziliyor') + '</strong><span>' + ltxt('Finish the memory in the panel', 'Panelde aniyi tamamla') + '</span>';
       } else {
-        fabLabel.innerHTML = '<strong>' + ltxt('Add Memory', 'Anı Ekle') + '</strong><span>' + ltxt('Guided 3-step flow', 'Yönlendirmeli 3 adım') + '</span>';
+        fabLabel.innerHTML = '<strong>' + ltxt('Add Memory', 'Anı Ekle') + '</strong><span>' + ltxt('Guided memory flow', 'Yonlendirmeli akis') + '</span>';
       }
     } else {
       fabLabel.textContent = ltxt('Add Memory', 'Anı Ekle');
@@ -2363,12 +2363,12 @@ function sV(v) {
 
 async function submit() {
   if (!AUTH.user || !AUTH.user.id) {
-    showToast('Please sign in before placing a mark.');
+    showToast('Sign in before saving a mark.');
     openAuth('login');
     return;
   }
   if (!ST.locationConfirmed || ST.selLat == null || ST.selLon == null) {
-    showToast('Confirm a location before saving your memory.', 'error');
+    showToast('Confirm a location before saving this memory.', 'error');
     return;
   }
 
@@ -2401,7 +2401,7 @@ async function submit() {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Save My Mark';
     }
-    showToast('Could not save your mark. Please try again.', 'error');
+    showToast('This memory could not be saved. Please try again.', 'error');
     return;
   }
 
@@ -2436,7 +2436,7 @@ async function submit() {
   
   document.getElementById('ss4').textContent = yr > 0 ? 
     'Your mark is locked right now. It opens ' + (opens ? opens.toLocaleString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'soon') + '.' : 
-    'Your mark is now visible on the globe.';
+    'Your memory is now visible on the globe.';
   
   if (yr > 0 && opens) {
     document.getElementById('cbdg').style.display = 'block';
@@ -2530,7 +2530,7 @@ function loadMarks() {
   function attemptLoad(index) {
     var fields = fieldCandidates[index];
     if (!fields) {
-      showToast('Could not load public marks right now.', 'error');
+      showToast('Public marks could not be loaded right now.', 'error');
       return;
     }
     _supabase.from('marks').select(fields).order('created_at', { ascending: false }).limit(500).then(function(res) {
@@ -2541,7 +2541,7 @@ function loadMarks() {
           return;
         }
         console.error('[IWH] Load error:', res.error);
-        showToast('Could not load public marks right now.', 'error');
+        showToast('Public marks could not be loaded right now.', 'error');
         return;
       }
       applyMarks(res);
@@ -2763,12 +2763,12 @@ function populateDrop() {
 function doShr() {
   var pin = window._sharePin || window._lastPin;
   if (!pin) {
-    showToast('Choose a mark to share first.', 'error');
+    showToast('Choose a mark before sharing.', 'error');
     return;
   }
   var payload = typeof buildSharePayload === 'function' ? buildSharePayload(pin) : null;
   if (!payload || !payload.url || !pin.id) {
-    showToast('This mark is missing a shareable link.', 'error');
+    showToast('This mark does not have a shareable link yet.', 'error');
     return;
   }
 
@@ -2776,14 +2776,14 @@ function doShr() {
     navigator.share(payload).catch(function(err) {
       if (err && err.name === 'AbortError') return;
       copyTextWithFallback(payload.url).then(function() {
-        showToast('Share link copied to clipboard.', 'success');
+        showToast('Share link copied.', 'success');
       }).catch(function() {
         showToast(payload.url, 'error');
       });
     });
   } else {
     copyTextWithFallback(payload.url).then(function() {
-      showToast('Share link copied to clipboard.', 'success');
+      showToast('Share link copied.', 'success');
     }).catch(function() {
       showToast(payload.url, 'error');
     });
@@ -2793,12 +2793,12 @@ function doShr() {
 function copyShareLink() {
   var pin = window._sharePin || window._lastPin;
   if (!pin) {
-    showToast('Choose a mark to share first.', 'error');
+    showToast('Choose a mark before copying the link.', 'error');
     return;
   }
   var url = typeof buildMarkPermalink === 'function' ? buildMarkPermalink(pin) : '';
   if (!url || !pin.id) {
-    showToast('This mark is missing a shareable link.', 'error');
+    showToast('This mark does not have a shareable link yet.', 'error');
     return;
   }
   copyTextWithFallback(url).then(function() {

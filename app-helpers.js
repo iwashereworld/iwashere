@@ -554,11 +554,11 @@ async function deleteMark(pinId, buttonEl) {
 
   var pin = ST.pins.find(function(item) { return item.id === pinId; });
   if (!pin || pin.owner !== AUTH.user.id) {
-    showToast('You can only delete your own marks.', 'error');
+    showToast('You can only delete marks you created.', 'error');
     return;
   }
 
-  if (!window.confirm('Delete this mark? This cannot be undone.')) return;
+  if (!window.confirm('Delete this mark? This action cannot be undone.')) return;
 
   if (buttonEl) {
     buttonEl.disabled = true;
@@ -572,7 +572,7 @@ async function deleteMark(pinId, buttonEl) {
       buttonEl.disabled = false;
       buttonEl.textContent = 'Delete';
     }
-    showToast(result.error.message || 'Could not delete your mark.', 'error');
+    showToast(result.error.message || 'This mark could not be deleted.', 'error');
     return;
   }
 
@@ -582,7 +582,7 @@ async function deleteMark(pinId, buttonEl) {
   updateStats();
   renderLists();
   showMarks();
-  showToast('Mark deleted.', 'success');
+  showToast('Mark deleted successfully.', 'success');
 }
 
 function buildProfileBio(marks) {
@@ -974,12 +974,12 @@ function renderCountrySummary() {
     var text = document.createElement('div');
     text.textContent = getCurrentLanguage() === 'tr'
       ? 'Henüz iz yok. Ülke sayacını başlatmak için ilk izini bırak.'
-      : 'No marks yet. Place the first mark to start your country tally.';
+      : 'No marks on the globe yet. Save the first one to start your country list.';
     body.appendChild(text);
     var cta = document.createElement('button');
     cta.type = 'button';
     cta.textContent = AUTH.user
-      ? (getCurrentLanguage() === 'tr' ? 'İlk izini bırak' : 'Place first mark')
+      ? (getCurrentLanguage() === 'tr' ? 'İlk izini bırak' : 'Save first mark')
       : (getCurrentLanguage() === 'tr' ? 'Başlamak için giriş yap' : 'Sign in to start');
     cta.style.cssText = 'margin-top:10px;background:#c8a96e;color:#020408;border:none;border-radius:999px;padding:8px 14px;font-size:.72rem;cursor:pointer;font-family:inherit;';
     cta.onclick = function() { AUTH.user ? (showGlobe(), openSb()) : openAuth('login'); };
@@ -1025,7 +1025,7 @@ function bSmry() {
   summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Küre izi - ' : 'Globe mark - ') + (ST.selName || '-'), '$1.00'));
   summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'İsim: ' : 'Name: ') + ST.name, '-'));
   summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Koordinatlar' : 'Coordinates', ST.selLat ? ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) : '-'));
-  if (cap) summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Kapsül - açılır ' : 'Capsule - opens ') + oy, '$2.00'));
+  if (cap) summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Kapsül - açılır ' : 'Capsule - opens on ') + oy, '$2.00'));
   summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Toplam' : 'Total', '$' + tot.toFixed(2), true));
 }
 
