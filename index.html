@@ -2503,32 +2503,52 @@ function loadMarks() {
     return;
   }
   debugLog('[IWH] Loading marks from Supabase...');
-  _supabase.from('marks').select(MARK_SELECT_FIELDS).order('created_at', { ascending: false }).limit(500).then(function(res) {
+  var fieldCandidates = typeof getMarkSelectFieldCandidates === 'function'
+    ? getMarkSelectFieldCandidates()
+    : [MARK_SELECT_FIELDS];
+
+  function applyMarks(res) {
     debugLog('[IWH] Marks response:', res);
-    if (res.error) {
-      console.error('[IWH] Load error:', res.error);
+    ST.pins = [];
+    pinEntities = [];
+    if (pinDataSource) pinDataSource.entities.removeAll();
+    (res.data || []).forEach(function(m) {
+      var pin = normalizeMarkRecord(m);
+      if (!pin) return;
+      ST.pins.push(pin);
+      if (viewer) addPinToGlobe(pin);
+    });
+    debugLog('[IWH] Loaded ' + ST.pins.length + ' marks');
+    updateStats();
+    renderLists();
+    syncPinLOD(true);
+    syncDueOwnerCapsules();
+    resolveRequestedMark();
+    focusRequestedMarkIfNeeded();
+  }
+
+  function attemptLoad(index) {
+    var fields = fieldCandidates[index];
+    if (!fields) {
       showToast('Could not load public marks right now.', 'error');
       return;
     }
-    if (res.data) {
-      ST.pins = [];
-      pinEntities = [];
-      if (pinDataSource) pinDataSource.entities.removeAll();
-      res.data.forEach(function(m) {
-        var pin = normalizeMarkRecord(m);
-        if (!pin) return;
-        ST.pins.push(pin);
-        if (viewer) addPinToGlobe(pin);
-      });
-      debugLog('[IWH] Loaded ' + ST.pins.length + ' marks');
-      updateStats();
-      renderLists();
-      syncPinLOD(true);
-      syncDueOwnerCapsules();
-      resolveRequestedMark();
-      focusRequestedMarkIfNeeded();
-    }
-  });
+    _supabase.from('marks').select(fields).order('created_at', { ascending: false }).limit(500).then(function(res) {
+      if (res.error) {
+        debugLog('[IWH] Load error for fields:', fields, res.error);
+        if (typeof isLegacySchemaError === 'function' && isLegacySchemaError(res.error) && index < fieldCandidates.length - 1) {
+          attemptLoad(index + 1);
+          return;
+        }
+        console.error('[IWH] Load error:', res.error);
+        showToast('Could not load public marks right now.', 'error');
+        return;
+      }
+      applyMarks(res);
+    });
+  }
+
+  attemptLoad(0);
 }
 
 function mergeRequestedMarkIntoState(pin) {
@@ -2552,35 +2572,57 @@ function fetchRequestedMarkById(markId) {
   if (!markId) return Promise.resolve(null);
   if (!_supabase) return Promise.resolve(null);
   if (_requestedMarkFetchPromise) return _requestedMarkFetchPromise;
-  _requestedMarkFetchPromise = _supabase
-    .from('marks')
-    .select(MARK_SELECT_FIELDS)
-    .eq('id', markId)
-    .maybeSingle()
-    .then(function(res) {
-      _requestedMarkFetchPromise = null;
-      if (res.error) {
-        console.error('[IWH] Requested mark fetch failed:', res.error);
-        _requestedMarkState = 'missing';
-        return null;
-      }
-      if (!res.data) {
-        _requestedMarkState = 'missing';
-        return null;
-      }
-      var pin = normalizeMarkRecord(res.data);
-      if (!pin) {
-        _requestedMarkState = 'missing';
-        return null;
-      }
-      _requestedMarkState = 'ready';
-      return mergeRequestedMarkIntoState(pin);
-    })
+  var fieldCandidates = typeof getMarkSelectFieldCandidates === 'function'
+    ? getMarkSelectFieldCandidates()
+    : [MARK_SELECT_FIELDS];
+
+  function finalizeRequestedMark(res) {
+    if (!res.data) {
+      _requestedMarkState = 'missing';
+      return null;
+    }
+    var pin = normalizeMarkRecord(res.data);
+    if (!pin) {
+      _requestedMarkState = 'missing';
+      return null;
+    }
+    _requestedMarkState = 'ready';
+    return mergeRequestedMarkIntoState(pin);
+  }
+
+  function attemptFetch(index) {
+    var fields = fieldCandidates[index];
+    if (!fields) {
+      _requestedMarkState = 'missing';
+      return Promise.resolve(null);
+    }
+    return _supabase
+      .from('marks')
+      .select(fields)
+      .eq('id', markId)
+      .maybeSingle()
+      .then(function(res) {
+        if (res.error) {
+          debugLog('[IWH] Requested mark fetch failed for fields:', fields, res.error);
+          if (typeof isLegacySchemaError === 'function' && isLegacySchemaError(res.error) && index < fieldCandidates.length - 1) {
+            return attemptFetch(index + 1);
+          }
+          console.error('[IWH] Requested mark fetch failed:', res.error);
+          _requestedMarkState = 'missing';
+          return null;
+        }
+        return finalizeRequestedMark(res);
+      });
+  }
+
+  _requestedMarkFetchPromise = attemptFetch(0)
     .catch(function(err) {
-      _requestedMarkFetchPromise = null;
       console.error('[IWH] Requested mark fetch failed:', err);
       _requestedMarkState = 'missing';
       return null;
+    })
+    .finally(function() {
+      _requestedMarkFetchPromise = null;
     });
   return _requestedMarkFetchPromise;
 }

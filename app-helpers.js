@@ -1,4 +1,7 @@
 ﻿var MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id';
+var LEGACY_MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id';
+var CAPSULE_MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,capsule_date,capsule_for,is_public,capsule_status,capsule_release_at,capsule_opened_at,created_at,user_id';
+var MARK_SELECT_FIELDS = LEGACY_MARK_SELECT_FIELDS;
 var MAX_NAME_LENGTH = 80;
 var MAX_MESSAGE_LENGTH = 500;
 var MAX_RECIPIENT_EMAIL_LENGTH = 254;
@@ -86,7 +89,18 @@ function countdown(added, years) {
   return days + 'd';
 }
 
-MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,capsule_date,capsule_for,is_public,capsule_status,capsule_release_at,capsule_opened_at,created_at,user_id';
+MARK_SELECT_FIELDS = LEGACY_MARK_SELECT_FIELDS;
+
+function isLegacySchemaError(error) {
+  if (!error) return false;
+  return String(error.code || '') === '42703' ||
+    /column\s+marks\./i.test(String(error.message || '')) ||
+    /schema cache/i.test(String(error.message || ''));
+}
+
+function getMarkSelectFieldCandidates() {
+  return [CAPSULE_MARK_SELECT_FIELDS, LEGACY_MARK_SELECT_FIELDS];
+}
 
 function getValidDate(value) {
   if (!value) return null;
