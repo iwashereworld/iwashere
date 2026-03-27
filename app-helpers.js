@@ -16,7 +16,7 @@ function getAppBaseUrl() {
   var configured = window.IWH_CONFIG && window.IWH_CONFIG.PUBLIC_APP_URL;
   if (configured) return String(configured).replace(/\/+$/, '');
   if (window.location && window.location.origin) {
-    return String(window.location.origin + (window.location.pathname || '/')).replace(/\/+$/, '');
+    return String(window.location.origin).replace(/\/+$/, '');
   }
   return 'https://iwashere-seven.vercel.app';
 }

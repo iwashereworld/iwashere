@@ -64,3 +64,13 @@ supabase functions deploy capsule-dispatch
 - release check passes locally
 - GitHub Actions quality workflow passes
 - rollout checklist items are completed
+
+## 8. Rollback
+
+If staging breaks after a rollout:
+
+- disable the scheduled `capsule-dispatch` workflow first
+- redeploy the previously known-good app commit
+- redeploy the previously known-good `capsule-dispatch` function if the issue is function-only
+- if the new migration caused the issue, stop and restore from the latest staging backup or reset the staging project before retrying
+- rerun `smoke-check`, `release-check`, and `staging-readiness` before reopening staging

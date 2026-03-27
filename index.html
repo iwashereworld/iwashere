@@ -507,7 +507,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div class="pcards reveal">
     <div class="pc"><div class="pbg alt" data-i18n="pricing_now_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_public_name">Public Mark</div><div class="pam">$1 <span>one-time</span></div><p class="pds" data-i18n="pricing_public_desc">Save a public mark with your name, coordinates, and written message.</p><ul class="pft"><li data-i18n="pricing_public_feat1">Permanent globe placement</li><li data-i18n="pricing_public_feat2">Optional photo</li><li data-i18n="pricing_public_feat3">Country attribution</li></ul></div>
     <div class="pc ft"><div class="pbg" data-i18n="pricing_now_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_capsule_name">Mark + Capsule</div><div class="pam">$3 <span>one-time</span></div><p class="pds" data-i18n="pricing_capsule_desc">Save your mark now and choose a future opening date for the capsule view.</p><ul class="pft"><li data-i18n="pricing_capsule_feat1">Everything in Public Mark</li><li data-i18n="pricing_capsule_feat2">Text message support</li><li data-i18n="pricing_capsule_feat3">Future opening date</li></ul></div>
-    <div class="pc"><div class="pbg alt" data-i18n="pricing_limited_badge">Limited Today</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_gift_name">Gift Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds" data-i18n="pricing_gift_desc">Recipient flow is available in the UI while downstream delivery features continue to evolve.</p><ul class="pft"><li data-i18n="pricing_gift_feat1">Recipient email field</li><li data-i18n="pricing_gift_feat2">Capsule timing options</li><li data-i18n="pricing_gift_feat3">Share card after save</li></ul></div>
+    <div class="pc"><div class="pbg alt" data-i18n="pricing_limited_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_gift_name">Gift Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds" data-i18n="pricing_gift_desc">Send a capsule to a recipient with a scheduled reveal date.</p><ul class="pft"><li data-i18n="pricing_gift_feat1">Recipient email field</li><li data-i18n="pricing_gift_feat2">Capsule timing options</li><li data-i18n="pricing_gift_feat3">Share card after save</li></ul></div>
   </div>
   <p class="pricing-note reveal" data-i18n="pricing_note">Write your memory, add a photo if you want, and choose whether the mark stays public now or opens later as a capsule.</p>
 </section>
@@ -2685,17 +2685,26 @@ function doShr() {
     return;
   }
 
-  if (navigator.share) {
-    navigator.share(payload).catch(function() {});
-  } else if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(payload.url).then(function() {
-      showToast('Share link copied to clipboard.', 'success');
-    }).catch(function() {
-      showToast(payload.url, 'error');
-    });
-  } else {
+  function fallbackCopy() {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(payload.url).then(function() {
+        showToast('Share link copied to clipboard.', 'success');
+      }).catch(function() {
+        showToast(payload.url, 'error');
+      });
+      return;
+    }
     showToast(payload.url, 'error');
   }
+
+  if (navigator.share) {
+    navigator.share(payload).catch(function(err) {
+      if (err && err.name === 'AbortError') return;
+      fallbackCopy();
+    });
+    return;
+  }
+  fallbackCopy();
 }
 
 function copyShareLink() {

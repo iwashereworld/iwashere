@@ -11,8 +11,8 @@ Static frontend for a globe-based memory capsule product.
 
 ## Current State
 
-The project is functional as a frontend prototype and early product surface.
-Some product areas are intentionally simplified or not fully implemented yet.
+The project is a working globe-based memory product surface backed by Supabase.
+The launch-critical frontend, auth, permalink, and capsule groundwork live in this repo.
 
 ### Implemented
 
@@ -23,10 +23,11 @@ Some product areas are intentionally simplified or not fully implemented yet.
 - Share card modal
 - Privacy Policy and Terms pages
 
-### Partially Implemented / Limited
+### Operational Notes
 
-- Capsule recipient and timing UI exist, but downstream delivery flows may be limited
-- Pricing and product copy are being aligned with actual behavior
+- Staging and production environment wiring is documented in `supabase/vercel-env-map.md`
+- Capsule rollout and rollout checks live under `supabase/` and `scripts/`
+- Delivery secrets are still required outside the repo for recipient email sends
 
 ## Deployment
 

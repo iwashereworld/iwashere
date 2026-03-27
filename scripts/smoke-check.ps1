@@ -9,6 +9,7 @@ $runtimeConfigPath = Join-Path $root 'api\runtime-config.js'
 $helpersPath = Join-Path $root 'app-helpers.js'
 $uiPath = Join-Path $root 'app-ui.js'
 $i18nPath = Join-Path $root 'app-i18n.js'
+$readmePath = Join-Path $root 'README.md'
 $supabaseReadmePath = Join-Path $root 'supabase\README.md'
 $supabaseSchemaPath = Join-Path $root 'supabase\schema.sql'
 $supabasePoliciesPath = Join-Path $root 'supabase\policies.sql'
@@ -20,6 +21,7 @@ $capsuleDeliveryPath = Join-Path $root 'supabase\capsule-delivery.sql'
 $capsuleDispatchReadmePath = Join-Path $root 'supabase\functions\capsule-dispatch\README.md'
 $capsuleDispatchIndexPath = Join-Path $root 'supabase\functions\capsule-dispatch\index.ts'
 $capsuleReadinessPath = Join-Path $root 'scripts\capsule-readiness.ps1'
+$voiceMigrationPath = Join-Path $root 'supabase\migrations\20260324170300_voice_storage.sql'
 
 function Assert-Contains {
   param(
@@ -53,6 +55,7 @@ $runtimeConfig = Get-Content -Raw $runtimeConfigPath
 $helpers = Get-Content -Raw $helpersPath
 $ui = Get-Content -Raw $uiPath
 $i18n = Get-Content -Raw $i18nPath
+$readme = Get-Content -Raw $readmePath
 $supabaseReadme = Get-Content -Raw $supabaseReadmePath
 $supabaseSchema = Get-Content -Raw $supabaseSchemaPath
 $supabasePolicies = Get-Content -Raw $supabasePoliciesPath
@@ -64,6 +67,10 @@ $capsuleDelivery = Get-Content -Raw $capsuleDeliveryPath
 $capsuleDispatchReadme = Get-Content -Raw $capsuleDispatchReadmePath
 $capsuleDispatchIndex = Get-Content -Raw $capsuleDispatchIndexPath
 $capsuleReadiness = Get-Content -Raw $capsuleReadinessPath
+
+if (Test-Path $voiceMigrationPath) {
+  throw 'Deprecated voice storage migration should not remain in the repo.'
+}
 
 Assert-Contains $index '<script src="/api/runtime-config.js"></script>' 'index.html must load the runtime config endpoint.'
 Assert-Contains $index '<script src="app-config.js"></script>' 'index.html must load app-config.js.'
@@ -79,6 +86,10 @@ Assert-Contains $runtimeConfig 'process.env.SUPABASE_URL' 'api/runtime-config.js
 Assert-Contains $runtimeConfig 'process.env.PUBLIC_APP_URL' 'api/runtime-config.js must read PUBLIC_APP_URL from env.'
 Assert-Contains $runtimeConfig 'window.IWH_CONFIG = Object.assign' 'api/runtime-config.js must emit browser config.'
 Assert-Contains $index 'function getRuntimeConfigErrors()' 'index.html must guard against missing runtime config.'
+Assert-Contains $helpers 'function buildMarkPermalink(mark)' 'app-helpers.js must define buildMarkPermalink(mark).'
+Assert-Contains $helpers '#/m/' 'app-helpers.js must use hash-based mark permalinks.'
+Assert-Contains $helpers 'function parseRequestedMarkIdFromLocation()' 'app-helpers.js must parse deep links.'
+Assert-Contains $helpers 'function buildSharePayload(pin)' 'app-helpers.js must define buildSharePayload(pin).'
 Assert-Contains $helpers 'function renderLists()' 'app-helpers.js must contain renderLists().'
 Assert-Contains $helpers 'function showMarks()' 'app-helpers.js must contain showMarks().'
 Assert-Contains $helpers 'function showShareCard(pin)' 'app-helpers.js must contain showShareCard().'
@@ -88,6 +99,12 @@ Assert-Contains $ui 'function resetForm()' 'app-ui.js must contain resetForm().'
 Assert-Contains $ui 'function openAuth(tab)' 'app-ui.js must contain openAuth(tab).'
 Assert-Contains $ui 'function showToast(msg, tone)' 'app-ui.js must contain showToast(msg, tone).'
 Assert-Contains $i18n 'message_for_memory' 'app-i18n.js must localize the text-only message step.'
+Assert-Contains $index "window.addEventListener('hashchange'" 'index.html must react to deep-link hash changes.'
+Assert-Contains $index 'function copyShareLink()' 'index.html must expose copyShareLink().'
+Assert-Contains $index 'function doShr()' 'index.html must expose native share flow.'
+Assert-Contains $index 'mailto:sametbasinli@gmail.com' 'index.html must expose a support email link.'
+Assert-Contains $privacy 'mailto:sametbasinli@gmail.com' 'privacy-policy.html must expose support email.'
+Assert-Contains $terms 'mailto:sametbasinli@gmail.com' 'terms.html must expose support email.'
 Assert-NotContains $index 'voice-area' 'index.html must not render the voice area.'
 Assert-NotContains $index 'prepareVoiceUpload' 'index.html must not contain prepareVoiceUpload().'
 Assert-NotContains $index 'attachVoiceToMark' 'index.html must not contain attachVoiceToMark().'
@@ -98,6 +115,11 @@ Assert-NotContains $config 'ENABLE_VOICE_UPLOAD' 'app-config.js must not expose 
 Assert-NotContains $config 'ctjgxonismqdxprlohcz.supabase.co' 'app-config.js must not hardcode production Supabase.'
 Assert-NotContains $runtimeConfig 'ENABLE_VOICE_UPLOAD' 'api/runtime-config.js must not expose voice upload config.'
 Assert-NotContains $i18n 'voice_note' 'app-i18n.js must not expose voice copy.'
+Assert-NotContains $readme 'downstream delivery flows may be limited' 'README.md must not describe launch copy as limited.'
+Assert-NotContains $privacy 'audio files or recordings' 'privacy-policy.html must not mention removed voice content.'
+Assert-NotContains $terms 'experimental, limited, or changed over time' 'terms.html must not leave transitional product copy.'
+Assert-NotContains $i18n 'Limited Today' 'app-i18n.js must not keep limited availability pricing copy.'
+Assert-NotContains $i18n 'continue to evolve' 'app-i18n.js must not keep transitional pricing copy.'
 Assert-NotContains $privacy 'ÃƒÂ¢' 'privacy-policy.html still contains mojibake.'
 Assert-NotContains $terms 'ÃƒÂ¢' 'terms.html still contains mojibake.'
 Assert-Contains $supabaseReadme 'Supabase Hardening' 'supabase/README.md must exist.'
@@ -111,6 +133,8 @@ Assert-Contains $capsuleDelivery 'create table if not exists public.capsule_deli
 Assert-Contains $capsuleDispatchReadme 'Capsule Dispatch Function' 'capsule-dispatch README must exist.'
 Assert-Contains $capsuleDispatchIndex 'Deno.serve' 'capsule-dispatch function must define a handler.'
 Assert-Contains $capsuleDispatchIndex 'Email delivery configuration is incomplete.' 'capsule-dispatch must guard against missing email configuration.'
+Assert-Contains $capsuleDispatchIndex 'capsule-dispatch:start' 'capsule-dispatch must log function start.'
+Assert-Contains $capsuleDispatchIndex 'capsule-dispatch:job-failed' 'capsule-dispatch must log failed jobs.'
 Assert-Contains $capsuleReadiness 'Capsule readiness incomplete.' 'scripts/capsule-readiness.ps1 must validate delivery secrets.'
 
 Write-Output 'Smoke check passed.'
