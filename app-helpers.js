@@ -971,6 +971,20 @@ function renderCountrySummary() {
   var body = document.getElementById('country-summary-body');
   if (!body) return;
   clearChildren(body);
+  if (window._marksLoading && !ST.pins.length) {
+    body.className = 'cs-empty';
+    var loading = document.createElement('div');
+    loading.textContent = t('loading_country_summary');
+    body.appendChild(loading);
+    for (var i = 0; i < 3; i++) {
+      var ghost = document.createElement('div');
+      ghost.className = 'cs-item';
+      ghost.style.opacity = '.65';
+      ghost.innerHTML = '<div class="cs-name" style="width:52%;height:12px;background:rgba(255,255,255,.08);border-radius:999px"></div><div class="cs-count" style="width:48px;height:12px;background:rgba(200,169,110,.12);border-radius:999px"></div>';
+      body.appendChild(ghost);
+    }
+    return;
+  }
   var groups = getCountryMarkGroups();
   if (!groups.length) {
     body.className = 'cs-empty';
@@ -1068,6 +1082,20 @@ function renderLists() {
   var pl = document.getElementById('plist');
   if (!pl) return;
   clearChildren(pl);
+  if (window._marksLoading && !ST.pins.length) {
+    var loading = document.createElement('div');
+    loading.style.cssText = 'padding:.25rem 0 .6rem;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.5)';
+    loading.textContent = t('loading_marks');
+    pl.appendChild(loading);
+    for (var i = 0; i < 3; i++) {
+      var row = document.createElement('div');
+      row.className = 'pitem';
+      row.style.opacity = '.65';
+      row.innerHTML = '<div class="piav"></div><div style="flex:1;min-width:0"><div class="pnm2" style="width:58%;height:12px;background:rgba(255,255,255,.08);border-radius:999px"></div><div class="pct2" style="width:42%;height:10px;background:rgba(255,255,255,.05);border-radius:999px;margin-top:8px"></div></div>';
+      pl.appendChild(row);
+    }
+    return;
+  }
   if (!ST.pins.length) {
     var empty = document.createElement('div');
     empty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';

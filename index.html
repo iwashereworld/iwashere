@@ -1075,11 +1075,20 @@ var _targetZoomLevel = null;
 var _globeBootPromise = null;
 var _cesiumTokenWarmPromise = null;
 var _imageryUpgradePromise = null;
+var _marksLoadPromise = null;
+var _marksLoadedOnce = false;
+window._marksLoading = false;
 
 function setGlobeLoading(active) {
   var overlay = document.getElementById('globe-loading');
   if (!overlay) return;
   overlay.classList.toggle('show', !!active);
+}
+
+function setMarksLoading(active) {
+  window._marksLoading = !!active;
+  if (typeof renderLists === 'function') renderLists();
+  if (typeof renderCountrySummary === 'function') renderCountrySummary();
 }
 
 function warmCesiumToken() {
@@ -1120,6 +1129,11 @@ function upgradeGlobeImageryAsync() {
     return null;
   });
   return _imageryUpgradePromise;
+}
+
+function primeGlobeOpen() {
+  warmCesiumToken();
+  if (!_marksLoadedOnce && !_marksLoadPromise) loadMarks();
 }
 var _requestedMarkId = '';
 var _focusingRequestedMark = false;
@@ -2258,6 +2272,7 @@ async function showGlobe() {
   updateStats();
   updatePinFilterUI();
   renderLists();
+  if (typeof renderCountrySummary === 'function') renderCountrySummary();
   revealStartHint();
   if (shouldShowStartHint()) startCreateFlow();
 }
@@ -2322,7 +2337,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var searchInput = document.getElementById('si');
     var searchResults = document.getElementById('sres');
     
-    if (searchInput) {
+  if (searchInput) {
       searchInput.addEventListener('focus', function() {
         if (String(this.value || '').trim().length < 2) {
           _searchResults = buildDiscoverySuggestions();
@@ -2369,12 +2384,19 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Init landing globe
   initBgGlobe();
+
+  document.querySelectorAll('[data-i18n="nav_open_globe"]').forEach(function(btn) {
+    btn.addEventListener('mouseenter', primeGlobeOpen, { passive: true });
+    btn.addEventListener('focus', primeGlobeOpen, { passive: true });
+    btn.addEventListener('touchstart', primeGlobeOpen, { passive: true });
+  });
   
   // Load stats
   if (_runtimeConfigErrors.length) {
     showToast('Runtime config is incomplete: ' + _runtimeConfigErrors.join(', '), 'error');
   } else {
     loadStats();
+    setTimeout(primeGlobeOpen, 120);
   }
   if (_requestedMarkId) {
     showGlobe();
@@ -2651,12 +2673,14 @@ function saveMarkToDB(pin) {
 function loadMarks() {
   if (!_supabase) {
     console.error('[IWH] loadMarks skipped. Missing runtime config:', _runtimeConfigErrors.join(', '));
-    return;
+    return Promise.resolve();
   }
+  if (_marksLoadPromise) return _marksLoadPromise;
   debugLog('[IWH] Loading marks from Supabase...');
   var fieldCandidates = typeof getMarkSelectFieldCandidates === 'function'
     ? getMarkSelectFieldCandidates()
     : [MARK_SELECT_FIELDS];
+  setMarksLoading(true);
 
   function applyMarks(res) {
     debugLog('[IWH] Marks response:', res);
@@ -2670,8 +2694,10 @@ function loadMarks() {
       if (viewer) addPinToGlobe(pin);
     });
     debugLog('[IWH] Loaded ' + ST.pins.length + ' marks');
+    _marksLoadedOnce = true;
     updateStats();
     renderLists();
+    if (typeof renderCountrySummary === 'function') renderCountrySummary();
     syncPinLOD(true);
     syncDueOwnerCapsules();
     resolveRequestedMark();
@@ -2681,25 +2707,35 @@ function loadMarks() {
   function attemptLoad(index) {
     var fields = fieldCandidates[index];
     if (!fields) {
+      setMarksLoading(false);
       showToast('Public marks could not be loaded right now.', 'error');
-      return;
+      return Promise.resolve();
     }
-    _supabase.from('marks').select(fields).order('created_at', { ascending: false }).limit(500).then(function(res) {
+    return _supabase.from('marks').select(fields).order('created_at', { ascending: false }).limit(500).then(function(res) {
       if (res.error) {
         debugLog('[IWH] Load error for fields:', fields, res.error);
         if (typeof isLegacySchemaError === 'function' && isLegacySchemaError(res.error) && index < fieldCandidates.length - 1) {
-          attemptLoad(index + 1);
-          return;
+          return attemptLoad(index + 1);
         }
         console.error('[IWH] Load error:', res.error);
+        setMarksLoading(false);
         showToast('Public marks could not be loaded right now.', 'error');
         return;
       }
       applyMarks(res);
+      setMarksLoading(false);
+    }).catch(function(err) {
+      console.error('[IWH] Load error:', err);
+      setMarksLoading(false);
+      showToast('Public marks could not be loaded right now.', 'error');
     });
   }
 
-  attemptLoad(0);
+  _marksLoadPromise = attemptLoad(0).finally(function() {
+    _marksLoadPromise = null;
+    setMarksLoading(false);
+  });
+  return _marksLoadPromise;
 }
 
 function mergeRequestedMarkIntoState(pin) {
