@@ -86,7 +86,14 @@ function Get-RuntimeConfigText {
     $deployment = $uri.GetLeftPart([System.UriPartial]::Authority)
     $path = $uri.PathAndQuery
     $vercelCommand = Get-VercelCommand
-    return (& $vercelCommand.Binary @($vercelCommand.Args) curl $path --deployment $deployment)
+    $result = (& $vercelCommand.Binary @($vercelCommand.Args) curl $path --deployment $deployment 2>&1 | Out-String)
+    if (-not $result.Trim()) {
+      throw 'Staging runtime config could not be read from the Vercel preview deployment.'
+    }
+    if ($result -match 'Erişim engellendi|Access denied|Authentication required') {
+      throw 'Staging preview is protected by Vercel Authentication, so runtime config could not be verified from this environment.'
+    }
+    return $result
   }
 
   return Invoke-RestMethod -Method Get -Uri $TargetUrl
