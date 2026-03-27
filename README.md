@@ -23,10 +23,10 @@ Some product areas are intentionally simplified or not fully implemented yet.
 - Share card modal
 - Privacy Policy and Terms pages
 
-### Partially Implemented / Limited
+### Product Notes
 
-- Capsule recipient and timing UI exist, but downstream delivery flows may be limited
-- Pricing and product copy are being aligned with actual behavior
+- Public marks, photo attachments, and capsule scheduling are available in the current product
+- Capsule delivery depends on the Supabase and email configuration used in the target environment
 
 ## Deployment
 
