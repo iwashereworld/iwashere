@@ -12,6 +12,45 @@ function normalizeEmail(value) {
   return String(value == null ? '' : value).trim().toLowerCase().slice(0, MAX_RECIPIENT_EMAIL_LENGTH);
 }
 
+function getAppBaseUrl() {
+  var configured = window.IWH_CONFIG && window.IWH_CONFIG.PUBLIC_APP_URL;
+  if (configured) return String(configured).replace(/\/+$/, '');
+  if (window.location && window.location.origin) {
+    return String(window.location.origin + (window.location.pathname || '/')).replace(/\/+$/, '');
+  }
+  return 'https://iwashere-seven.vercel.app';
+}
+
+function buildMarkPermalink(mark) {
+  var markId = mark && typeof mark === 'object' ? mark.id : mark;
+  if (!markId) return getAppBaseUrl();
+  return getAppBaseUrl() + '#/m/' + encodeURIComponent(String(markId));
+}
+
+function parseRequestedMarkIdFromLocation() {
+  try {
+    var hash = String(window.location.hash || '');
+    var hashMatch = hash.match(/^#\/m\/([^/?#]+)/);
+    if (hashMatch && hashMatch[1]) return decodeURIComponent(hashMatch[1]);
+    var searchValue = new URLSearchParams(window.location.search).get('mark') || '';
+    return searchValue ? decodeURIComponent(searchValue) : '';
+  } catch (err) {
+    return '';
+  }
+}
+
+function buildSharePayload(pin) {
+  if (!pin || !pin.id) return null;
+  var title = 'I Was Here in ' + (pin.cname || 'this place');
+  var text = (pin.name || 'Someone') + ' left a mark in ' + (pin.cname || 'this place') + ' on I Was Here.';
+  if (pin.msg) text += ' "' + pin.msg + '"';
+  return {
+    title: title,
+    text: text,
+    url: buildMarkPermalink(pin)
+  };
+}
+
 function normalizeMarkRecord(m) {
   if (!m) return null;
 

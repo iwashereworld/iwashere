@@ -839,6 +839,7 @@ _supabase.auth.getSession().then(function(r) {
   if (r.data && r.data.session) {
     var u = r.data.session.user;
     AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id, meta: u.user_metadata || {} };
+    if (_requestedMarkId) _requestedMarkState = 'idle';
     updateUserUI();
   }
 });
@@ -846,6 +847,7 @@ _supabase.auth.onAuthStateChange(function(event, session) {
   if (session) {
     var u = session.user;
     AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id, meta: u.user_metadata || {} };
+    if (_requestedMarkId) _requestedMarkState = 'idle';
     updateUserUI();
     if (viewer) loadMarks();
   } else {
@@ -959,6 +961,8 @@ var _borderLoadQueued = false;
 var _targetZoomLevel = null;
 var _requestedMarkId = '';
 var _focusingRequestedMark = false;
+var _requestedMarkFetchPromise = null;
+var _requestedMarkState = 'idle';
 function createPinSvg(fill, inner, stroke, dashed, glow) {
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="38" viewBox="0 0 28 38">' +
@@ -2130,7 +2134,7 @@ function hPh(inp) {
 // Name input
 document.addEventListener('DOMContentLoaded', function() {
   try {
-    _requestedMarkId = new URLSearchParams(window.location.search).get('mark') || '';
+    _requestedMarkId = typeof parseRequestedMarkIdFromLocation === 'function' ? parseRequestedMarkIdFromLocation() : '';
   } catch (err) {
     _requestedMarkId = '';
   }
@@ -2196,6 +2200,18 @@ document.addEventListener('DOMContentLoaded', function() {
   if (_requestedMarkId) {
     showGlobe();
   }
+});
+
+window.addEventListener('hashchange', function() {
+  var nextRequested = typeof parseRequestedMarkIdFromLocation === 'function' ? parseRequestedMarkIdFromLocation() : '';
+  if (!nextRequested) return;
+  _requestedMarkId = nextRequested;
+  _requestedMarkState = 'idle';
+  if (!viewer) {
+    showGlobe();
+    return;
+  }
+  resolveRequestedMark();
 });
 
 function renderSearchResults() {
@@ -2437,7 +2453,82 @@ function loadMarks() {
       renderLists();
       syncPinLOD(true);
       syncDueOwnerCapsules();
+      resolveRequestedMark();
       focusRequestedMarkIfNeeded();
+    }
+  });
+}
+
+function mergeRequestedMarkIntoState(pin) {
+  if (!pin || !pin.id) return null;
+  var existing = getPinById(pin.id);
+  if (existing) {
+    Object.keys(pin).forEach(function(key) {
+      existing[key] = pin[key];
+    });
+    return existing;
+  }
+  ST.pins.unshift(pin);
+  if (viewer) addPinToGlobe(pin);
+  updateStats();
+  renderLists();
+  syncPinLOD(true);
+  return pin;
+}
+
+function fetchRequestedMarkById(markId) {
+  if (!markId) return Promise.resolve(null);
+  if (_requestedMarkFetchPromise) return _requestedMarkFetchPromise;
+  _requestedMarkFetchPromise = _supabase
+    .from('marks')
+    .select(MARK_SELECT_FIELDS)
+    .eq('id', markId)
+    .maybeSingle()
+    .then(function(res) {
+      _requestedMarkFetchPromise = null;
+      if (res.error) {
+        console.error('[IWH] Requested mark fetch failed:', res.error);
+        _requestedMarkState = 'missing';
+        return null;
+      }
+      if (!res.data) {
+        _requestedMarkState = 'missing';
+        return null;
+      }
+      var pin = normalizeMarkRecord(res.data);
+      if (!pin) {
+        _requestedMarkState = 'missing';
+        return null;
+      }
+      _requestedMarkState = 'ready';
+      return mergeRequestedMarkIntoState(pin);
+    })
+    .catch(function(err) {
+      _requestedMarkFetchPromise = null;
+      console.error('[IWH] Requested mark fetch failed:', err);
+      _requestedMarkState = 'missing';
+      return null;
+    });
+  return _requestedMarkFetchPromise;
+}
+
+function resolveRequestedMark() {
+  if (!_requestedMarkId || _focusingRequestedMark) return;
+  var existing = getPinById(_requestedMarkId);
+  if (existing) {
+    _requestedMarkState = 'ready';
+    focusRequestedMarkIfNeeded();
+    return;
+  }
+  if (_requestedMarkState === 'missing' || _requestedMarkFetchPromise) return;
+  _requestedMarkState = 'loading';
+  fetchRequestedMarkById(_requestedMarkId).then(function(pin) {
+    if (pin) {
+      focusRequestedMarkIfNeeded();
+      return;
+    }
+    if (_requestedMarkId) {
+      showToast(getCurrentLanguage() === 'tr' ? 'Bu paylaşım bağlantısı bulunamadı veya artık herkese açık değil.' : 'This shared mark could not be found or is no longer public.', 'error');
     }
   });
 }
@@ -2483,6 +2574,7 @@ function focusRequestedMarkIfNeeded() {
   setTimeout(function() {
     showShareCard(pin);
     _requestedMarkId = '';
+    _requestedMarkState = 'idle';
     _focusingRequestedMark = false;
     if (window.history && window.history.replaceState) {
       window.history.replaceState({}, '', window.location.pathname);
@@ -2555,22 +2647,22 @@ function doShr() {
     showToast('Choose a mark to share first.', 'error');
     return;
   }
-
-  var title = 'I Was Here in ' + pin.cname;
-  var text = pin.name + ' left a mark in ' + pin.cname + ' on I Was Here.';
-  if (pin.msg) text += ' "' + pin.msg + '"';
-  var url = 'https://iwashere-seven.vercel.app/';
+  var payload = typeof buildSharePayload === 'function' ? buildSharePayload(pin) : null;
+  if (!payload || !payload.url || !pin.id) {
+    showToast('This mark is missing a shareable link.', 'error');
+    return;
+  }
 
   if (navigator.share) {
-    navigator.share({ title: title, text: text, url: url }).catch(function() {});
+    navigator.share(payload).catch(function() {});
   } else if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(title + '\n' + text + '\n' + url).then(function() {
-      showToast('Share text copied to clipboard.', 'success');
+    navigator.clipboard.writeText(payload.url).then(function() {
+      showToast('Share link copied to clipboard.', 'success');
     }).catch(function() {
-      showToast(url);
+      showToast(payload.url, 'error');
     });
   } else {
-    showToast(url);
+    showToast(payload.url, 'error');
   }
 }
 
@@ -2580,17 +2672,20 @@ function copyShareLink() {
     showToast('Choose a mark to share first.', 'error');
     return;
   }
-  var url = 'https://iwashere-seven.vercel.app/';
-  var text = 'I Was Here in ' + pin.cname + ' by ' + pin.name + ' - ' + url;
+  var url = typeof buildMarkPermalink === 'function' ? buildMarkPermalink(pin) : '';
+  if (!url || !pin.id) {
+    showToast('This mark is missing a shareable link.', 'error');
+    return;
+  }
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(function() {
+    navigator.clipboard.writeText(url).then(function() {
       showToast('Share link copied.', 'success');
     }).catch(function() {
-      showToast(url);
+      showToast(url, 'error');
     });
     return;
   }
-  showToast(url);
+  showToast(url, 'error');
 }
 
 // Landing BG Globe (keep Globe.gl for landing page - lightweight)
