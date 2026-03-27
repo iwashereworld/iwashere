@@ -370,6 +370,50 @@ function buildSearchResults(query) {
   }).slice(0, 8);
 }
 
+function buildDiscoverySuggestions() {
+  var results = [];
+  var seen = {};
+
+  getCountryMarkGroups().slice(0, 4).forEach(function(group) {
+    var country = COUNTRIES.find(function(entry) { return entry.code === group.key || entry.name === group.name; });
+    if (!country) return;
+    var key = 'country:' + (country.code || group.name);
+    if (seen[key]) return;
+    seen[key] = true;
+    results.push({
+      type: 'country',
+      key: key,
+      name: country.name,
+      sub: t('search_suggestion_country') + ' • ' + getMarkWord(group.count),
+      lat: country.lat,
+      lon: country.lon,
+      code: country.code || '',
+      score: 100
+    });
+  });
+
+  ST.pins.slice().sort(function(a, b) {
+    return new Date(b.added || 0) - new Date(a.added || 0);
+  }).slice(0, 4).forEach(function(pin) {
+    if (!pin || !pin.id) return;
+    var key = 'pin:' + pin.id;
+    if (seen[key]) return;
+    seen[key] = true;
+    results.push({
+      type: 'pin',
+      key: key,
+      name: pin.cname,
+      sub: t('search_suggestion_recent') + ' • ' + pin.name,
+      lat: pin.lat,
+      lon: pin.lon,
+      pinId: pin.id,
+      score: 90
+    });
+  });
+
+  return results.slice(0, 8);
+}
+
 function positionTooltip(el, x, y) {
   if (!el) return;
   var width = el.offsetWidth || 240;

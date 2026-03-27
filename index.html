@@ -232,6 +232,10 @@ footer a{color:var(--muted);text-decoration:none;}
 .sri{padding:9px 16px;font-size:.8rem;cursor:pointer;color:rgba(240,237,232,.8);transition:background .15s;border-bottom:1px solid rgba(255,255,255,.04);}
 .sri:hover{background:rgba(200,169,110,.1);color:var(--gold);}
 .sri span{font-size:.68rem;color:var(--muted);margin-left:5px;}
+.sri-main{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.sri-badge{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(200,169,110,.22);background:rgba(200,169,110,.08);border-radius:999px;padding:4px 7px;flex-shrink:0;}
+.sri-sub{display:block;font-size:.68rem;color:var(--muted);margin-top:3px;line-height:1.45;}
+.sri-empty{padding:11px 16px;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.52);}
 #cpanel{position:fixed;top:70px;right:0;z-index:99;display:none;}
 #cpanel .ci{background:rgba(6,10,18,.94);border:1px solid rgba(200,169,110,.28);border-left:none;border-radius:0 0 0 12px;padding:10px 14px;min-width:200px;backdrop-filter:blur(16px);}
 #sb{position:fixed;top:56px;right:0;width:330px;height:calc(100vh - 56px);background:var(--surface);border-left:1px solid var(--border);backdrop-filter:blur(24px);overflow-y:auto;z-index:150;display:flex;flex-direction:column;transition:transform .35s cubic-bezier(.4,0,.2,1);-webkit-overflow-scrolling:touch;}
@@ -2263,8 +2267,17 @@ document.addEventListener('DOMContentLoaded', function() {
     var searchResults = document.getElementById('sres');
     
     if (searchInput) {
+      searchInput.addEventListener('focus', function() {
+        if (String(this.value || '').trim().length < 2) {
+          _searchResults = buildDiscoverySuggestions();
+          _searchActiveIndex = _searchResults.length ? 0 : -1;
+          renderSearchResults();
+        }
+      });
+
       searchInput.addEventListener('input', function() {
-        _searchResults = buildSearchResults(this.value);
+        var query = String(this.value || '').trim();
+        _searchResults = query.length >= 2 ? buildSearchResults(query) : buildDiscoverySuggestions();
         _searchActiveIndex = _searchResults.length ? 0 : -1;
         renderSearchResults();
       });
@@ -2326,11 +2339,21 @@ window.addEventListener('hashchange', function() {
 
 function renderSearchResults() {
   var searchResults = document.getElementById('sres');
+  var searchInput = document.getElementById('si');
   if (!searchResults) return;
 
   clearChildren(searchResults);
-  if (!_searchResults.length) {
+  var query = searchInput ? String(searchInput.value || '').trim() : '';
+  if (!_searchResults.length && query.length < 2) {
     searchResults.style.display = 'none';
+    return;
+  }
+  if (!_searchResults.length) {
+    var empty = document.createElement('div');
+    empty.className = 'sri-empty';
+    empty.textContent = t('search_no_results');
+    searchResults.appendChild(empty);
+    searchResults.style.display = 'block';
     return;
   }
 
@@ -2345,9 +2368,29 @@ function renderSearchResults() {
       _searchActiveIndex = index;
     };
     item.onclick = function() { searchSelect(r); };
-    item.appendChild(document.createTextNode(r.name));
+
+    var main = document.createElement('div');
+    main.className = 'sri-main';
+
+    var label = document.createElement('div');
+    label.textContent = r.name;
+    main.appendChild(label);
+
+    var badge = document.createElement('div');
+    badge.className = 'sri-badge';
+    badge.textContent = r.type === 'country'
+      ? t('search_suggestion_country')
+      : (r.type === 'city'
+        ? t('search_suggestion_city')
+        : (r.type === 'coords'
+          ? t('search_suggestion_coords')
+          : t('search_suggestion_mark')));
+    main.appendChild(badge);
+    item.appendChild(main);
+
     if (r.sub) {
-      var sub = document.createElement('span');
+      var sub = document.createElement('div');
+      sub.className = 'sri-sub';
       sub.textContent = r.sub;
       item.appendChild(sub);
     }
@@ -2376,6 +2419,12 @@ function searchSelect(resultOrLat, lon, code, name) {
   if (result.pinId) {
     var pin = getPinById(result.pinId);
     if (pin) showPinTooltip(pin, window.innerWidth / 2, 130);
+  }
+
+  if (result.type === 'country') {
+    showToast((getCurrentLanguage() === 'tr' ? 'Ulkeye gidildi: ' : 'Jumped to ') + result.name, 'success');
+  } else if (result.type === 'pin') {
+    showToast((getCurrentLanguage() === 'tr' ? 'Iz acildi: ' : 'Opened mark in ') + result.name, 'success');
   }
 }
 
