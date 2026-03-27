@@ -756,9 +756,7 @@ function renderProfileRecent(container, marks) {
   if (!marks.length) {
     var empty = document.createElement('div');
     empty.className = 'pempty';
-    empty.textContent = getCurrentLanguage() === 'tr'
-      ? 'Henüz kişisel hareket yok. Kaydedilen izlerin burada görünecek.'
-      : 'No personal activity yet. Your saved marks will appear here.';
+    empty.textContent = t('empty_profile_activity');
     var cta = document.createElement('button');
     cta.type = 'button';
     cta.textContent = getCurrentLanguage() === 'tr' ? 'İlk izini bırak' : 'Place your first mark';
@@ -861,12 +859,12 @@ function showMarks() {
   if (!marks.length) {
     var empty = document.createElement('div');
     empty.style.cssText = 'text-align:center;padding:3rem 1rem;font-size:.85rem;color:rgba(240,237,232,.35)';
-    empty.appendChild(document.createTextNode(getCurrentLanguage() === 'tr' ? 'Henüz iz yok.' : 'No marks yet.'));
+    empty.appendChild(document.createTextNode(t('empty_my_marks')));
     empty.appendChild(document.createElement('br'));
     empty.appendChild(document.createElement('br'));
 
     var cta = document.createElement('button');
-    cta.textContent = getCurrentLanguage() === 'tr' ? 'İlk izimi bırak' : 'Place my first mark';
+    cta.textContent = t('empty_my_marks_cta');
     cta.onclick = function() { closeMarks(); showGlobe(); };
     cta.style.cssText = 'background:#c8a96e;color:#020408;border:none;border-radius:20px;padding:9px 22px;cursor:pointer;font-size:.82rem;font-family:sans-serif';
     empty.appendChild(cta);
@@ -972,15 +970,11 @@ function renderCountrySummary() {
   if (!groups.length) {
     body.className = 'cs-empty';
     var text = document.createElement('div');
-    text.textContent = getCurrentLanguage() === 'tr'
-      ? 'Henüz iz yok. Ülke sayacını başlatmak için ilk izini bırak.'
-      : 'No marks on the globe yet. Save the first one to start your country list.';
+    text.textContent = t('country_summary_empty');
     body.appendChild(text);
     var cta = document.createElement('button');
     cta.type = 'button';
-    cta.textContent = AUTH.user
-      ? (getCurrentLanguage() === 'tr' ? 'İlk izini bırak' : 'Save first mark')
-      : (getCurrentLanguage() === 'tr' ? 'Başlamak için giriş yap' : 'Sign in to start');
+    cta.textContent = AUTH.user ? t('empty_country_summary_cta_signed_in') : t('empty_country_summary_cta_signed_out');
     cta.style.cssText = 'margin-top:10px;background:#c8a96e;color:#020408;border:none;border-radius:999px;padding:8px 14px;font-size:.72rem;cursor:pointer;font-family:inherit;';
     cta.onclick = function() { AUTH.user ? (showGlobe(), openSb()) : openAuth('login'); };
     body.appendChild(cta);
@@ -1039,7 +1033,7 @@ function renderCountriesJump(container) {
   if (!groups.length) {
     var empty = document.createElement('div');
     empty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
-    empty.textContent = getCurrentLanguage() === 'tr' ? 'Henüz ülke yok.' : 'No countries yet.';
+    empty.textContent = t('empty_countries_jump');
     container.appendChild(empty);
     return;
   }
@@ -1072,15 +1066,11 @@ function renderLists() {
   if (!ST.pins.length) {
     var empty = document.createElement('div');
     empty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
-    empty.textContent = getCurrentLanguage() === 'tr'
-      ? 'Henüz herkese açık iz yok. İlk kaydın burada görünecek.'
-      : 'No public marks yet. Your first saved mark will appear here.';
+    empty.textContent = t('empty_public_list');
     pl.appendChild(empty);
     var cta = document.createElement('button');
     cta.type = 'button';
-    cta.textContent = AUTH.user
-      ? (getCurrentLanguage() === 'tr' ? 'İlk izi oluştur' : 'Create the first mark')
-      : (getCurrentLanguage() === 'tr' ? 'İz bırakmak için giriş yap' : 'Sign in to create a mark');
+    cta.textContent = AUTH.user ? t('empty_public_list_cta_signed_in') : t('empty_public_list_cta_signed_out');
     cta.style.cssText = 'margin-top:10px;background:rgba(200,169,110,.14);border:1px solid rgba(200,169,110,.28);color:#c8a96e;border-radius:999px;padding:8px 12px;font-size:.72rem;cursor:pointer;font-family:inherit;';
     cta.onclick = function() { AUTH.user ? (showGlobe(), openSb()) : openAuth('login'); };
     pl.appendChild(cta);
@@ -1104,8 +1094,8 @@ function renderLists() {
     var modeEmpty = document.createElement('div');
     modeEmpty.style.cssText = 'padding:.25rem 0;font-size:.76rem;line-height:1.6;color:rgba(240,237,232,.45)';
     modeEmpty.textContent = CURRENT_QUICK_JUMP === 'my'
-      ? (getCurrentLanguage() === 'tr' ? 'Henüz hiç izin yok.' : 'You do not have any marks yet.')
-      : (getCurrentLanguage() === 'tr' ? 'Bu görünüm için iz bulunamadı.' : 'No marks found for this view.');
+      ? t('empty_view_my')
+      : t('empty_view_other');
     pl.appendChild(modeEmpty);
     return;
   }
