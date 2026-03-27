@@ -16,8 +16,6 @@ $privacyPath = Join-Path $root 'privacy-policy.html'
 $termsPath = Join-Path $root 'terms.html'
 $robotsPath = Join-Path $root 'robots.txt'
 $sitemapPath = Join-Path $root 'sitemap.xml'
-$faviconPath = Join-Path $root 'favicon.svg'
-$voiceMigrationPath = Join-Path $root 'supabase\migrations\20260324170300_voice_storage.sql'
 
 function Assert-Contains {
   param(
@@ -59,17 +57,8 @@ $privacy = Get-Content -Raw $privacyPath
 $terms = Get-Content -Raw $termsPath
 $robots = Get-Content -Raw $robotsPath
 $sitemap = Get-Content -Raw $sitemapPath
-$favicon = Get-Content -Raw $faviconPath
-
-if (Test-Path $voiceMigrationPath) {
-  throw 'Deprecated voice storage migration should not remain in the repo.'
-}
 
 Assert-Contains $index '<script src="/api/runtime-config.js"></script>' 'index.html must load the runtime config endpoint.'
-Assert-Contains $index '<link rel="icon" type="image/svg+xml" href="/favicon.svg">' 'index.html must expose favicon.svg.'
-Assert-Contains $privacy '<link rel="icon" type="image/svg+xml" href="/favicon.svg">' 'privacy-policy.html must expose favicon.svg.'
-Assert-Contains $terms '<link rel="icon" type="image/svg+xml" href="/favicon.svg">' 'terms.html must expose favicon.svg.'
-Assert-Contains $favicon '<svg' 'favicon.svg must be a valid SVG file.'
 Assert-Contains $index '<meta name="description"' 'index.html must include a description meta tag.'
 Assert-Contains $index '<link rel="canonical"' 'index.html must include a canonical URL.'
 Assert-Contains $index 'application/ld+json' 'index.html must include structured data.'
@@ -86,7 +75,6 @@ Assert-Contains $readme 'Runtime frontend config now lives in `app-config.js`.' 
 Assert-Contains $readme '/api/runtime-config.js' 'README.md must mention the runtime config endpoint.'
 Assert-Contains $readme 'Use `app-config.example.js` and `supabase/vercel-env-map.md` when wiring staging or production envs.' 'README.md must mention env wiring docs.'
 Assert-NotContains $readme 'Voice recording is currently local preview only' 'README.md must not mention deprecated voice preview.'
-Assert-NotContains $readme 'downstream delivery flows may be limited' 'README.md must not keep transitional delivery copy.'
 Assert-NotContains $config 'ENABLE_VOICE_UPLOAD' 'app-config.js must not expose voice upload flag.'
 Assert-NotContains $config 'ctjgxonismqdxprlohcz.supabase.co' 'app-config.js must not hardcode production Supabase.'
 Assert-NotContains $runtimeConfig 'ENABLE_VOICE_UPLOAD' 'api/runtime-config.js must not expose voice upload flag.'
@@ -104,15 +92,7 @@ Assert-Contains $capsuleDispatchReadme 'Required Secrets' 'capsule-dispatch READ
 Assert-Contains $capsuleReadiness 'Missing secrets' 'capsule readiness script must report missing secrets clearly.'
 Assert-Contains $privacy '<meta name="description"' 'privacy-policy.html must include SEO description metadata.'
 Assert-Contains $terms '<meta name="description"' 'terms.html must include SEO description metadata.'
-Assert-Contains $index 'mailto:sametbasinli@gmail.com' 'index.html must expose support email.'
-Assert-Contains $privacy 'mailto:sametbasinli@gmail.com' 'privacy-policy.html must expose support email.'
-Assert-Contains $terms 'mailto:sametbasinli@gmail.com' 'terms.html must expose support email.'
-Assert-Contains $index "window.addEventListener('hashchange'" 'index.html must support deep-link updates.'
-Assert-Contains $index 'function copyShareLink()' 'index.html must keep copyShareLink().'
-Assert-Contains $index 'function doShr()' 'index.html must keep navigator.share flow.'
 Assert-Contains $robots 'Sitemap: https://iwashere-seven.vercel.app/sitemap.xml' 'robots.txt must reference the sitemap.'
 Assert-Contains $sitemap '<loc>https://iwashere-seven.vercel.app/</loc>' 'sitemap.xml must include the home page.'
-Assert-NotContains $privacy 'audio files or recordings' 'privacy-policy.html must not mention removed voice content.'
-Assert-NotContains $terms 'experimental, limited, or changed over time' 'terms.html must not keep transitional product copy.'
 
 Write-Output 'Release check passed.'

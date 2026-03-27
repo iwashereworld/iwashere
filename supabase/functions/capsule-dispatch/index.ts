@@ -98,21 +98,18 @@ async function sendGiftEmail(job: Record<string, unknown>) {
 
 Deno.serve(async () => {
   const now = new Date().toISOString();
-  console.info("capsule-dispatch:start", { now, emailConfigured: hasEmailConfig() });
 
   const { data: jobs, error } = await supabase.rpc("claim_due_capsule_deliveries", {
     batch_size: 20,
   });
 
   if (error) {
-    console.error("capsule-dispatch:claim-error", { message: error.message });
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  console.info("capsule-dispatch:claimed", { count: jobs?.length ?? 0 });
   const results: Array<Record<string, unknown>> = [];
 
   for (const job of jobs ?? []) {
@@ -120,7 +117,6 @@ Deno.serve(async () => {
     const markId = String(job.mark_id);
     const deliveryKind = String(job.delivery_kind ?? "gift_delivery");
     const attemptCount = Number(job.attempts ?? 0) + 1;
-    console.info("capsule-dispatch:job-start", { jobId, markId, deliveryKind, attemptCount });
 
     try {
       if (deliveryKind === "self_reveal") {
@@ -131,14 +127,12 @@ Deno.serve(async () => {
           attempts: attemptCount,
           last_error: null,
         });
-        console.info("capsule-dispatch:job-revealed", { jobId, markId });
         results.push({ id: jobId, status: "revealed" });
         continue;
       }
 
       if (!hasEmailConfig()) {
         await moveJobBackToPending(jobId);
-        console.warn("capsule-dispatch:job-skipped-missing-email-config", { jobId, markId });
         results.push({
           id: jobId,
           status: "pending",
@@ -155,7 +149,6 @@ Deno.serve(async () => {
         attempts: attemptCount,
         last_error: null,
       });
-      console.info("capsule-dispatch:job-sent", { jobId, markId });
       results.push({ id: jobId, status: "sent" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown dispatch error";
@@ -164,12 +157,10 @@ Deno.serve(async () => {
         attempts: attemptCount,
         last_error: message,
       });
-      console.error("capsule-dispatch:job-failed", { jobId, markId, deliveryKind, message });
       results.push({ id: jobId, status: "failed", error: message });
     }
   }
 
-  console.info("capsule-dispatch:complete", { processed: results.length });
   return new Response(JSON.stringify({
     processed: results.length,
     emailConfigured: hasEmailConfig(),
