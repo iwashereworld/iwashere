@@ -7,6 +7,8 @@ $configPath = Join-Path $root 'app-config.js'
 $runtimeConfigPath = Join-Path $root 'api\runtime-config.js'
 $healthPath = Join-Path $root 'api\health.js'
 $configExamplePath = Join-Path $root 'app-config.example.js'
+$i18nOverridesPath = Join-Path $root 'app-i18n-overrides.js'
+$uiOverridesPath = Join-Path $root 'app-ui-overrides.js'
 $smokePath = Join-Path $PSScriptRoot 'smoke-check.ps1'
 $rolloutChecklistPath = Join-Path $root 'supabase\rollout-checklist.md'
 $stagingRunbookPath = Join-Path $root 'supabase\staging-runbook.md'
@@ -54,6 +56,8 @@ $config = Get-Content -Raw $configPath
 $runtimeConfig = Get-Content -Raw $runtimeConfigPath
 $health = Get-Content -Raw $healthPath
 $configExample = Get-Content -Raw $configExamplePath
+$i18nOverrides = Get-Content -Raw $i18nOverridesPath
+$uiOverrides = Get-Content -Raw $uiOverridesPath
 $rolloutChecklist = Get-Content -Raw $rolloutChecklistPath
 $stagingRunbook = Get-Content -Raw $stagingRunbookPath
 $vercelEnvMap = Get-Content -Raw $vercelEnvMapPath
@@ -74,6 +78,8 @@ Assert-Contains $index 'application/ld+json' 'index.html must include structured
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
 Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
 Assert-Contains $index '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>' 'index.html must load Supabase SDK.'
+Assert-Contains $index '<script src="app-i18n-overrides.js"></script>' 'index.html must load app-i18n-overrides.js.'
+Assert-Contains $index '<script src="app-ui-overrides.js"></script>' 'index.html must load app-ui-overrides.js.'
 Assert-Contains $packageJson '"build"' 'package.json must expose a build script.'
 Assert-Contains $packageJson '"dev"' 'package.json must expose a dev script.'
 Assert-Contains $packageJson '"staging:readiness"' 'package.json must expose a staging readiness script.'
@@ -95,6 +101,8 @@ Assert-NotContains $config 'ctjgxonismqdxprlohcz.supabase.co' 'app-config.js mus
 Assert-NotContains $runtimeConfig 'ENABLE_VOICE_UPLOAD' 'api/runtime-config.js must not expose voice upload flag.'
 Assert-Contains $runtimeConfig 'PUBLIC_APP_URL' 'api/runtime-config.js must expose PUBLIC_APP_URL.'
 Assert-Contains $health 'publicAppUrl' 'api/health.js must expose runtime health metadata.'
+Assert-Contains $i18nOverrides 'hero_eyebrow' 'app-i18n-overrides.js must provide Turkish copy overrides.'
+Assert-Contains $uiOverrides 'function getStepCopy()' 'app-ui-overrides.js must override onboarding copy safely.'
 Assert-Contains $configExample 'window.IWH_CONFIG' 'app-config.example.js must define example config.'
 Assert-Contains $configExample 'PUBLIC_APP_URL' 'app-config.example.js must document PUBLIC_APP_URL.'
 Assert-NotContains $configExample 'ENABLE_VOICE_UPLOAD' 'app-config.example.js must not expose voice upload flag.'

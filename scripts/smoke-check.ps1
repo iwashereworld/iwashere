@@ -11,7 +11,9 @@ $runtimeConfigPath = Join-Path $root 'api\runtime-config.js'
 $healthPath = Join-Path $root 'api\health.js'
 $helpersPath = Join-Path $root 'app-helpers.js'
 $uiPath = Join-Path $root 'app-ui.js'
+$uiOverridesPath = Join-Path $root 'app-ui-overrides.js'
 $i18nPath = Join-Path $root 'app-i18n.js'
+$i18nOverridesPath = Join-Path $root 'app-i18n-overrides.js'
 $supabaseReadmePath = Join-Path $root 'supabase\README.md'
 $supabaseSchemaPath = Join-Path $root 'supabase\schema.sql'
 $supabasePoliciesPath = Join-Path $root 'supabase\policies.sql'
@@ -59,7 +61,9 @@ $runtimeConfig = Get-Content -Raw $runtimeConfigPath
 $health = Get-Content -Raw $healthPath
 $helpers = Get-Content -Raw $helpersPath
 $ui = Get-Content -Raw $uiPath
+$uiOverrides = Get-Content -Raw $uiOverridesPath
 $i18n = Get-Content -Raw $i18nPath
+$i18nOverrides = Get-Content -Raw $i18nOverridesPath
 $supabaseReadme = Get-Content -Raw $supabaseReadmePath
 $supabaseSchema = Get-Content -Raw $supabaseSchemaPath
 $supabasePolicies = Get-Content -Raw $supabasePoliciesPath
@@ -76,6 +80,8 @@ Assert-Contains $index '<script src="/api/runtime-config.js"></script>' 'index.h
 Assert-Contains $index '<script src="app-config.js"></script>' 'index.html must load app-config.js.'
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
 Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
+Assert-Contains $index '<script src="app-i18n-overrides.js"></script>' 'index.html must load app-i18n-overrides.js.'
+Assert-Contains $index '<script src="app-ui-overrides.js"></script>' 'index.html must load app-ui-overrides.js.'
 Assert-Contains $index 'Message for This Memory' 'index.html must keep the text-based memory step.'
 Assert-Contains $packageJson '"smoke"' 'package.json must expose a smoke script.'
 Assert-Contains $packageJson '"release:check"' 'package.json must expose a release check script.'
@@ -104,6 +110,8 @@ Assert-Contains $ui 'function resetForm()' 'app-ui.js must contain resetForm().'
 Assert-Contains $ui 'function openAuth(tab)' 'app-ui.js must contain openAuth(tab).'
 Assert-Contains $ui 'function showToast(msg, tone)' 'app-ui.js must contain showToast(msg, tone).'
 Assert-Contains $i18n 'message_for_memory' 'app-i18n.js must localize the text-only message step.'
+Assert-Contains $uiOverrides 'function updateStepMeta(step)' 'app-ui-overrides.js must override Turkish step copy safely.'
+Assert-Contains $i18nOverrides 'Object.assign(window.I18N_MESSAGES.tr' 'app-i18n-overrides.js must override Turkish copy safely.'
 Assert-NotContains $index 'voice-area' 'index.html must not render the voice area.'
 Assert-NotContains $index 'prepareVoiceUpload' 'index.html must not contain prepareVoiceUpload().'
 Assert-NotContains $index 'attachVoiceToMark' 'index.html must not contain attachVoiceToMark().'
