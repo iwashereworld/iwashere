@@ -9,31 +9,32 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
-      - name: Skip until delivery infrastructure is ready
+      - name: Gate dispatch
+        id: gate
         env:
           ENABLE_CAPSULE_DISPATCH: ${{ secrets.ENABLE_CAPSULE_DISPATCH }}
         run: |
           if [ "$ENABLE_CAPSULE_DISPATCH" != "true" ]; then
             echo "Capsule dispatch is disabled until production delivery secrets are ready."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
 
       - name: Validate required secrets
         env:
-          ENABLE_CAPSULE_DISPATCH: ${{ secrets.ENABLE_CAPSULE_DISPATCH }}
           CAPSULE_DISPATCH_URL: ${{ secrets.CAPSULE_DISPATCH_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        if: ${{ secrets.ENABLE_CAPSULE_DISPATCH == 'true' }}
+        if: ${{ steps.gate.outputs.enabled == 'true' }}
         run: |
           test -n "$CAPSULE_DISPATCH_URL"
           test -n "$SUPABASE_ANON_KEY"
 
       - name: Invoke capsule dispatch
         env:
-          ENABLE_CAPSULE_DISPATCH: ${{ secrets.ENABLE_CAPSULE_DISPATCH }}
           CAPSULE_DISPATCH_URL: ${{ secrets.CAPSULE_DISPATCH_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        if: ${{ secrets.ENABLE_CAPSULE_DISPATCH == 'true' }}
+        if: ${{ steps.gate.outputs.enabled == 'true' }}
         run: |
           curl --fail-with-body --silent --show-error \
             -X POST "$CAPSULE_DISPATCH_URL" \
