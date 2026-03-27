@@ -1,26 +1,26 @@
 function getStepCopy() {
   if (getCurrentLanguage() === 'tr') {
     return {
-      1: 'İzine kimlik kazandırmak için görünen bir isimle başla.',
-      2: 'Küre üzerinde tam bir nokta seç ya da bir yer ara.',
-      3: 'İzinle birlikte görünecek mesajı yaz.',
-      4: 'Ne zaman açılacağını ve kime ait olacağını seç.',
-      5: 'Özeti gözden geçir ve izini küreye bırak.'
+      1: 'Gorunen bir isimle basla ve izine kimlik kazandir.',
+      2: 'Kure uzerinde tam bir nokta sec ya da bir yer ara.',
+      3: 'Bu aninin simdi mi gorunecegine yoksa kapsul olarak sonra mi acilacagina karar ver.',
+      4: 'Bu yerle birlikte kaydedilecek mesaji yaz.',
+      5: 'Ozeti gozden gecir ve izini kureye birak.'
     };
   }
   return {
     1: 'Start with a display name so your mark has an identity.',
     2: 'Pick an exact location on the globe or search for a place.',
-    3: 'Write the message that will appear with your mark.',
-    4: 'Choose when the mark opens and who it belongs to.',
+    3: 'Choose whether this memory stays visible now or opens later as a capsule.',
+    4: 'Write the message that will be saved with this place.',
     5: 'Review the summary and place your mark on the globe.'
   };
 }
 
 function getOnboardingSteps() {
   return getCurrentLanguage() === 'tr'
-    ? ['Görünen ismini ekle', 'Tam yeri seç', 'Mesajını yaz', 'Kapsül zamanını seç', 'İzini kaydet ve paylaş']
-    : ['Add your display name', 'Choose the exact place', 'Write the message', 'Pick capsule timing', 'Save and share your mark'];
+    ? ['Gorunen ismini ekle', 'Tam yeri sec', 'Kapsul zamanini sec', 'Mesajini yaz', 'Izini kaydet ve paylas']
+    : ['Add your display name', 'Choose the place', 'Choose capsule timing', 'Write your message', 'Save and share your mark'];
 }
 
 function renderOnboardingChecklist(step) {
@@ -37,7 +37,7 @@ function renderOnboardingChecklist(step) {
 
     var dot = document.createElement('div');
     dot.className = 'onboard-dot';
-    dot.textContent = step > itemStep ? '✓' : String(itemStep);
+    dot.textContent = step > itemStep ? 'OK' : String(itemStep);
     item.appendChild(dot);
 
     var copy = document.createElement('div');
@@ -125,12 +125,12 @@ function updateStepMeta(step) {
   if (!meta || !tip) return;
 
   if (step >= 1 && step <= 5) {
-    meta.textContent = getCurrentLanguage() === 'tr' ? step + ' / 5. Adım' : 'Step ' + step + ' of 5';
+    meta.textContent = getCurrentLanguage() === 'tr' ? step + ' / 5. Adim' : 'Step ' + step + ' of 5';
     tip.textContent = getStepCopy()[step] || '';
   } else {
-    meta.textContent = getCurrentLanguage() === 'tr' ? 'Tamamlandı' : 'Finished';
+    meta.textContent = getCurrentLanguage() === 'tr' ? 'Tamamlandi' : 'Finished';
     tip.textContent = getCurrentLanguage() === 'tr'
-      ? 'İzin kaydedildi. Paylaşabilir ya da yeni bir tane bırakabilirsin.'
+      ? 'Izin kaydedildi. Paylasabilir ya da yeni bir tane birakabilirsin.'
       : 'Your mark has been saved. Share it or place another one.';
   }
   renderOnboardingChecklist(step >= 1 && step <= 5 ? step : 5);
@@ -154,17 +154,65 @@ function goS(n) {
   updateStepMeta(n);
 }
 
+function getCapsuleScheduleDateFromState() {
+  if (!(ST.capsuleDays > 0 || ST.capsuleDate)) return null;
+  if (ST.capsuleDate) {
+    var customDate = new Date(ST.capsuleDate);
+    return isFinite(customDate.getTime()) ? customDate : null;
+  }
+  var quickDate = new Date();
+  quickDate.setSeconds(0, 0);
+  return new Date(quickDate.getTime() + ((ST.capsuleDays || 0) * 86400000));
+}
+
+function proceedFromCapsuleStep() {
+  var recipientInput = document.getElementById('iem');
+  var recipientEmail = recipientInput ? normalizeEmail(recipientInput.value) : '';
+  if (recipientInput) recipientInput.value = recipientEmail;
+
+  if (ST.capsuleDays > 0) {
+    var releaseDate = getCapsuleScheduleDateFromState();
+    if (!releaseDate) {
+      showToast(getCurrentLanguage() === 'tr' ? 'Lutfen gecerli bir kapsul zamani sec.' : 'Please choose a valid capsule time.', 'error');
+      return;
+    }
+    if (releaseDate.getTime() <= Date.now()) {
+      showToast(getCurrentLanguage() === 'tr' ? 'Kapsul zamani gelecekte olmali.' : 'Capsule time must be in the future.', 'error');
+      return;
+    }
+  }
+
+  if (ST.capsuleDays > 0 && ST.rc === 'o') {
+    if (!recipientEmail) {
+      showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden once alici e-postasini gir.' : 'Add a recipient email before continuing.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+      showToast(getCurrentLanguage() === 'tr' ? 'Gecerli bir alici e-postasi gir.' : 'Enter a valid recipient email.');
+      return;
+    }
+  }
+
+  goS(4);
+}
+
 function proceedFromMessageStep() {
   var messageInput = document.getElementById('imsg');
   var message = clampText(messageInput.value, MAX_MESSAGE_LENGTH);
   messageInput.value = message;
 
   if (!message) {
-    showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden önce bir mesaj ekle.' : 'Please add a message before continuing.');
+    showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden once bir mesaj ekle.' : 'Add a message before continuing.');
     return;
   }
 
-  goS(4);
+  bSmry();
+  goS(5);
+}
+
+function proceedToReview() {
+  proceedFromMessageStep();
 }
 
 function sRC(r) {
@@ -176,40 +224,21 @@ function sRC(r) {
   document.getElementById('re').style.display = r === 'o' ? 'block' : 'none';
 }
 
-function proceedToReview() {
-  var recipientInput = document.getElementById('iem');
-  var recipientEmail = recipientInput ? normalizeEmail(recipientInput.value) : '';
-  if (recipientInput) recipientInput.value = recipientEmail;
-
-  if (ST.capsuleDays > 0 && ST.rc === 'o') {
-    if (!recipientEmail) {
-      showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden önce alıcı e-postasını gir.' : 'Please enter a recipient email before continuing.');
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
-      showToast(getCurrentLanguage() === 'tr' ? 'Geçerli bir alıcı e-postası gir.' : 'Please enter a valid recipient email.');
-      return;
-    }
-  }
-
-  bSmry();
-  goS(5);
-}
-
 function updateCapsuleUI() {
   var hasCapsule = ST.capsuleDays > 0;
   var recipientBlock = document.getElementById('recipient-block');
   var note = document.getElementById('capsule-note');
   var preview = document.getElementById('opens-preview');
   if (recipientBlock) recipientBlock.classList.toggle('section-hidden', !hasCapsule);
-  if (note) note.textContent = hasCapsule
-    ? (getCurrentLanguage() === 'tr'
-      ? 'Alıcı e-postası yalnızca gelecekte açılacak kapsülü başka birine gönderdiğinde gerekir.'
-      : 'Recipient email is only needed when you send a future capsule to someone else.')
-    : (getCurrentLanguage() === 'tr'
-      ? 'Kapsül seçilmedi. Bu iz hemen herkese açık olarak kaydedilecek.'
-      : 'No capsule selected. This will be saved as a public mark right away.');
+  if (note) {
+    note.textContent = hasCapsule
+      ? (getCurrentLanguage() === 'tr'
+        ? 'Alici e-postasi yalnizca gelecekte acilacak kapsulu baska birine gonderdiginde gerekir.'
+        : 'Recipient email is only needed when you send a future capsule to someone else.')
+      : (getCurrentLanguage() === 'tr'
+        ? 'Kapsul secilmedi. Bu iz hemen herkese acik olarak kaydedilecek.'
+        : 'No capsule selected. This will be saved as a public mark right away.');
+  }
   if (preview) preview.classList.toggle('section-hidden', !hasCapsule);
 }
 
@@ -225,14 +254,16 @@ function setQuick(days, id) {
       el.setAttribute('aria-pressed', 'false');
     }
   });
-  var el = document.getElementById(id);
-  if (el) {
-    el.classList.add('on');
-    el.setAttribute('aria-pressed', 'true');
+  var active = document.getElementById(id);
+  if (active) {
+    active.classList.add('on');
+    active.setAttribute('aria-pressed', 'true');
   }
 
-  var cda = document.getElementById('custom-date-area');
-  if (cda) cda.style.display = 'none';
+  var customArea = document.getElementById('custom-date-area');
+  if (customArea) customArea.style.display = 'none';
+  var datePreview = document.getElementById('date-preview');
+  if (datePreview) datePreview.style.display = 'none';
 
   updateOpensPreview();
   updateCapsuleUI();
@@ -252,35 +283,45 @@ function toggleCustomDate() {
     btn.setAttribute('aria-pressed', 'true');
   }
 
-  var cda = document.getElementById('custom-date-area');
-  if (cda) cda.style.display = 'block';
+  var customArea = document.getElementById('custom-date-area');
+  if (customArea) customArea.style.display = 'block';
   updateCapsuleUI();
 
-  var cd = document.getElementById('capsule-date');
-  if (cd) {
-    var now = new Date();
-    now.setSeconds(0, 0);
-    cd.min = now.toISOString().slice(0, 16);
-    if (!cd.value) {
-      var def = new Date();
-      def.setSeconds(0, 0);
-      cd.value = def.toISOString().slice(0, 16);
-      setCustomDate(cd.value);
-    }
+  var input = document.getElementById('capsule-date');
+  if (!input) return;
+  var now = new Date();
+  now.setSeconds(0, 0);
+  var localMin = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+  input.min = localMin;
+  if (!input.value) {
+    input.value = localMin;
   }
+  setCustomDate(input.value);
 }
 
 function setCustomDate(val) {
   if (!val) return;
-  ST.capsuleDate = val;
-  ST.capsuleDays = Math.round((new Date(val) - new Date()) / 86400000);
+  var selected = new Date(val);
+  if (!isFinite(selected.getTime())) return;
+  if (selected.getTime() <= Date.now()) {
+    showToast(getCurrentLanguage() === 'tr' ? 'Kapsul zamani gelecekte olmali.' : 'Capsule time must be in the future.', 'error');
+    return;
+  }
+  ST.capsuleDate = selected.toISOString();
+  ST.capsuleDays = Math.max(1, Math.ceil((selected.getTime() - Date.now()) / 86400000));
   ST.yr = Math.max(1, Math.round(ST.capsuleDays / 365));
   updateOpensPreview();
 
   var dp = document.getElementById('date-preview');
   if (dp) {
-    var d = new Date(val);
-    dp.textContent = (getCurrentLanguage() === 'tr' ? 'Açılır: ' : 'Opens ') + d.toLocaleString(getCurrentLocale(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    dp.textContent = (getCurrentLanguage() === 'tr' ? 'Acilir: ' : 'Opens ') + selected.toLocaleString(getCurrentLocale(), {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
     dp.style.display = 'block';
   }
 }
@@ -293,24 +334,22 @@ function updateOpensPreview() {
   if (!ST.capsuleDays && ST.capsuleDays !== 0) ST.capsuleDays = 365;
 
   if (ST.capsuleDays === 0) {
-    el.textContent = getCurrentLanguage() === 'tr' ? 'Kapsül yok - sadece iz' : 'No capsule - mark only';
+    el.textContent = getCurrentLanguage() === 'tr' ? 'Kapsul yok - sadece iz' : 'No capsule - mark only';
     if (preview) preview.style.opacity = '.4';
     return;
   }
 
   if (preview) preview.style.opacity = '1';
-
-  var opens;
-  if (ST.capsuleDate) {
-    opens = new Date(ST.capsuleDate);
-  } else {
-    opens = new Date();
-    opens.setDate(opens.getDate() + ST.capsuleDays);
-  }
-
-  var days = ST.capsuleDays;
-  var timeStr = formatRelativeDurationDays(days);
-  el.textContent = timeStr + ' - ' + opens.toLocaleString(getCurrentLocale(), { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  var opens = getCapsuleScheduleDateFromState();
+  if (!opens) return;
+  var days = Math.max(1, Math.ceil((opens.getTime() - Date.now()) / 86400000));
+  el.textContent = formatRelativeDurationDays(days) + ' - ' + opens.toLocaleString(getCurrentLocale(), {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 }
 
 function updateUserUI() {
@@ -341,7 +380,7 @@ function openAuth(tab) {
 
 function signInWithGoogle() {
   if (!_supabase) {
-    showToast(getCurrentLanguage() === 'tr' ? 'Servis kullanılamıyor.' : 'Service unavailable.');
+    showToast(getCurrentLanguage() === 'tr' ? 'Servis kullanilamiyor.' : 'Service unavailable.');
     return;
   }
   _supabase.auth.signInWithOAuth({
@@ -365,7 +404,7 @@ function switchTab(tab) {
   document.getElementById('asub').textContent = isLogin
     ? t('auth_sign_in_sub')
     : (isRegister ? t('auth_register_sub') : t('auth_forgot_sub'));
-  document.getElementById('auth-btn').textContent = isLogin ? t('nav_sign_in') : (isRegister ? t('auth_create_account') : (getCurrentLanguage() === 'tr' ? 'Sıfırlama bağlantısı gönder' : 'Send reset link'));
+  document.getElementById('auth-btn').textContent = isLogin ? t('nav_sign_in') : (isRegister ? t('auth_create_account') : t('auth_send_reset'));
   document.getElementById('name-f').style.display = isRegister ? 'block' : 'none';
   document.getElementById('terms-check').style.display = isRegister ? 'block' : 'none';
   document.getElementById('password-field').style.display = isForgot ? 'none' : 'block';
@@ -385,7 +424,7 @@ function submitAuth() {
   var name = nameEl ? nameEl.value.trim() : '';
   var btn = document.getElementById('auth-btn');
   if (tab === 'register' && !document.getElementById('terms-agree').checked) {
-    showToast(getCurrentLanguage() === 'tr' ? 'Lütfen Hizmet Şartları ve Gizlilik Politikasını kabul et.' : 'Please accept the Terms of Service and Privacy Policy.');
+    showToast(getCurrentLanguage() === 'tr' ? 'Lutfen Hizmet Sartlari ve Gizlilik Politikasini kabul et.' : 'Please accept the Terms of Service and Privacy Policy.');
     return;
   }
   if (!email || (tab !== 'forgot' && !pw)) {
@@ -404,10 +443,10 @@ function submitAuth() {
     promise = _supabase.auth.signInWithPassword({ email: email, password: pw });
   }
   promise.then(function(result) {
-    btn.textContent = tab === 'login' ? t('nav_sign_in') : (tab === 'register' ? t('auth_create_account') : (getCurrentLanguage() === 'tr' ? 'Sıfırlama bağlantısı gönder' : 'Send reset link'));
+    btn.textContent = tab === 'login' ? t('nav_sign_in') : (tab === 'register' ? t('auth_create_account') : t('auth_send_reset'));
     btn.disabled = false;
     if (result.error) {
-      showToast(result.error.message || (getCurrentLanguage() === 'tr' ? 'Bir hata oluştu. Tekrar dene.' : 'Error. Please try again.'), 'error');
+      showToast(result.error.message || (getCurrentLanguage() === 'tr' ? 'Bir hata olustu. Tekrar dene.' : 'Error. Please try again.'), 'error');
       var pwEl = document.getElementById('apw');
       if (pwEl && tab !== 'forgot') {
         pwEl.style.borderColor = 'rgba(220,60,60,.6)';
@@ -416,18 +455,18 @@ function submitAuth() {
       return;
     }
     if (tab === 'forgot') {
-      showToast(getCurrentLanguage() === 'tr' ? 'Şifre sıfırlama bağlantısı gönderildi. E-postanı kontrol et.' : 'Password reset link sent. Check your email.', 'success');
+      showToast(getCurrentLanguage() === 'tr' ? 'Sifre sifirlama baglantisi gonderildi. E-postani kontrol et.' : 'Password reset link sent. Check your email.', 'success');
       switchTab('login');
       return;
     }
     showToast(tab === 'register'
-      ? (getCurrentLanguage() === 'tr' ? 'Hesap oluşturuldu. Artık giriş yapabilirsin.' : 'Account created! You can now sign in.')
-      : (getCurrentLanguage() === 'tr' ? 'Tekrar hoş geldin!' : 'Welcome back!'), 'success');
+      ? (getCurrentLanguage() === 'tr' ? 'Hesap olusturuldu. Artik giris yapabilirsin.' : 'Account created! You can now sign in.')
+      : (getCurrentLanguage() === 'tr' ? 'Tekrar hos geldin!' : 'Welcome back!'), 'success');
     closeAuth();
   }).catch(function(err) {
-    btn.textContent = tab === 'login' ? t('nav_sign_in') : (tab === 'register' ? t('auth_create_account') : (getCurrentLanguage() === 'tr' ? 'Sıfırlama bağlantısı gönder' : 'Send reset link'));
+    btn.textContent = tab === 'login' ? t('nav_sign_in') : (tab === 'register' ? t('auth_create_account') : t('auth_send_reset'));
     btn.disabled = false;
-    showToast(err.message || (getCurrentLanguage() === 'tr' ? 'Bir hata oluştu. Tekrar dene.' : 'Error. Please try again.'), 'error');
+    showToast(err.message || (getCurrentLanguage() === 'tr' ? 'Bir hata olustu. Tekrar dene.' : 'Error. Please try again.'), 'error');
   });
 }
 
@@ -435,7 +474,7 @@ function signOut() {
   _supabase.auth.signOut().then(function() {
     AUTH.user = null;
     updateUserUI();
-    showToast(getCurrentLanguage() === 'tr' ? 'Çıkış yapıldı.' : 'Signed out.', 'success');
+    showToast(getCurrentLanguage() === 'tr' ? 'Cikis yapildi.' : 'Signed out.', 'success');
   });
 }
 
@@ -476,18 +515,18 @@ function syncOverlayState() {
 function showToast(msg, tone) {
   var old = document.getElementById('iwh-toast');
   if (old) old.remove();
-  var t = document.createElement('div');
-  t.id = 'iwh-toast';
-  t.textContent = msg;
-  t.setAttribute('role', tone === 'error' ? 'alert' : 'status');
-  t.setAttribute('aria-live', tone === 'error' ? 'assertive' : 'polite');
-  t.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:rgba(8,14,24,.97);border:1px solid rgba(200,169,110,.35);border-radius:24px;padding:11px 24px;font-size:.82rem;color:#f0ede8;z-index:1000;white-space:normal;text-align:center;max-width:min(92vw,420px);backdrop-filter:blur(16px);font-family:sans-serif;transition:opacity .3s';
-  if (tone === 'success') t.style.borderColor = 'rgba(70,190,120,.45)';
-  if (tone === 'error') t.style.borderColor = 'rgba(220,90,90,.45)';
-  document.body.appendChild(t);
+  var toast = document.createElement('div');
+  toast.id = 'iwh-toast';
+  toast.textContent = msg;
+  toast.setAttribute('role', tone === 'error' ? 'alert' : 'status');
+  toast.setAttribute('aria-live', tone === 'error' ? 'assertive' : 'polite');
+  toast.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:rgba(8,14,24,.97);border:1px solid rgba(200,169,110,.35);border-radius:24px;padding:11px 24px;font-size:.82rem;color:#f0ede8;z-index:1000;white-space:normal;text-align:center;max-width:min(92vw,420px);backdrop-filter:blur(16px);font-family:sans-serif;transition:opacity .3s';
+  if (tone === 'success') toast.style.borderColor = 'rgba(70,190,120,.45)';
+  if (tone === 'error') toast.style.borderColor = 'rgba(220,90,90,.45)';
+  document.body.appendChild(toast);
   setTimeout(function() {
-    t.style.opacity = '0';
-    setTimeout(function() { t.remove(); }, 300);
+    toast.style.opacity = '0';
+    setTimeout(function() { toast.remove(); }, 300);
   }, 2500);
 }
 
@@ -503,218 +542,3 @@ function syncMemoryMessage(value, source) {
     mainInput.value = next;
   }
 }
-
-function getStepCopy() {
-  if (getCurrentLanguage() === 'tr') {
-    return {
-      1: 'Gorunen bir isimle basla ve izine kimlik kazandir.',
-      2: 'Kure uzerinde tam bir nokta sec ya da bir yer ara.',
-      3: 'Izin hemen mi gorunecek yoksa kapsul olarak mi acilacak buna karar ver.',
-      4: 'Sectigin iz ya da kapsul icin kaydedilecek mesaji yaz.',
-      5: 'Ozeti gozden gecir ve izini kureye birak.'
-    };
-  }
-  return {
-    1: 'Start with a display name so your mark has an identity.',
-    2: 'Pick an exact location on the globe or search for a place.',
-    3: 'Choose whether this memory stays visible now or opens later as a capsule.',
-    4: 'Write the message that will be saved with this place.',
-    5: 'Review the summary and place your mark on the globe.'
-  };
-}
-
-function getOnboardingSteps() {
-  return getCurrentLanguage() === 'tr'
-    ? ['Gorunen ismini ekle', 'Tam yeri sec', 'Kapsul zamanini sec', 'Mesajini yaz', 'Izini kaydet ve paylas']
-    : ['Add your display name', 'Choose the place', 'Choose capsule timing', 'Write your message', 'Save and share your mark'];
-}
-
-function proceedFromCapsuleStep() {
-  var recipientInput = document.getElementById('iem');
-  var recipientEmail = recipientInput ? normalizeEmail(recipientInput.value) : '';
-  if (recipientInput) recipientInput.value = recipientEmail;
-
-  if (ST.capsuleDays > 0 && ST.rc === 'o') {
-    if (!recipientEmail) {
-      showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden once alici e-postasini gir.' : 'Add a recipient email before continuing.');
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
-      showToast(getCurrentLanguage() === 'tr' ? 'Gecerli bir alici e-postasi gir.' : 'Enter a valid recipient email.');
-      return;
-    }
-  }
-
-  goS(4);
-}
-
-function proceedFromMessageStep() {
-  var messageInput = document.getElementById('imsg');
-  var message = clampText(messageInput.value, MAX_MESSAGE_LENGTH);
-  messageInput.value = message;
-
-  if (!message) {
-    showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden once bir mesaj ekle.' : 'Add a message before continuing.');
-    return;
-  }
-
-  bSmry();
-  goS(5);
-}
-
-function proceedToReview() {
-  proceedFromMessageStep();
-}
-
-function getCapsuleScheduleDateFromState() {
-  if (!(ST.capsuleDays > 0 || ST.capsuleDate)) return null;
-  if (ST.capsuleDate) {
-    var customDate = new Date(ST.capsuleDate);
-    return isFinite(customDate.getTime()) ? customDate : null;
-  }
-  var quickDate = new Date();
-  quickDate.setSeconds(0, 0);
-  return new Date(quickDate.getTime() + ((ST.capsuleDays || 0) * 86400000));
-}
-
-setQuick = function(days, id) {
-  ST.capsuleDays = days;
-  ST.capsuleDate = null;
-  ST.yr = days > 0 ? Math.max(1, Math.round(days / 365)) : 0;
-
-  ['tq7', 'tq30', 'tq90', 'tq180', 'tq365', 'tq730', 'tq1825', 'tq9125', 'tq0', 'tqcustom'].forEach(function(i) {
-    var el = document.getElementById(i);
-    if (el) {
-      el.classList.remove('on');
-      el.setAttribute('aria-pressed', 'false');
-    }
-  });
-  var active = document.getElementById(id);
-  if (active) {
-    active.classList.add('on');
-    active.setAttribute('aria-pressed', 'true');
-  }
-
-  var customArea = document.getElementById('custom-date-area');
-  if (customArea) customArea.style.display = 'none';
-  var datePreview = document.getElementById('date-preview');
-  if (datePreview) datePreview.style.display = 'none';
-
-  updateOpensPreview();
-  updateCapsuleUI();
-};
-
-toggleCustomDate = function() {
-  ['tq7', 'tq30', 'tq90', 'tq180', 'tq365', 'tq730', 'tq1825', 'tq9125', 'tq0'].forEach(function(i) {
-    var el = document.getElementById(i);
-    if (el) {
-      el.classList.remove('on');
-      el.setAttribute('aria-pressed', 'false');
-    }
-  });
-  var btn = document.getElementById('tqcustom');
-  if (btn) {
-    btn.classList.add('on');
-    btn.setAttribute('aria-pressed', 'true');
-  }
-
-  var customArea = document.getElementById('custom-date-area');
-  if (customArea) customArea.style.display = 'block';
-  updateCapsuleUI();
-
-  var input = document.getElementById('capsule-date');
-  if (!input) return;
-  var now = new Date();
-  now.setSeconds(0, 0);
-  var localMin = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-  input.min = localMin;
-  if (!input.value) {
-    input.value = localMin;
-  }
-  setCustomDate(input.value);
-};
-
-setCustomDate = function(val) {
-  if (!val) return;
-  var selected = new Date(val);
-  if (!isFinite(selected.getTime())) return;
-  if (selected.getTime() <= Date.now()) {
-    showToast(getCurrentLanguage() === 'tr' ? 'Kapsül zamanı gelecekte olmalı.' : 'Capsule time must be in the future.', 'error');
-    return;
-  }
-  ST.capsuleDate = selected.toISOString();
-  ST.capsuleDays = Math.max(1, Math.ceil((selected.getTime() - Date.now()) / 86400000));
-  ST.yr = Math.max(1, Math.round(ST.capsuleDays / 365));
-  updateOpensPreview();
-
-  var dp = document.getElementById('date-preview');
-  if (dp) {
-    dp.textContent = (getCurrentLanguage() === 'tr' ? 'Açılır: ' : 'Opens ') + selected.toLocaleString(getCurrentLocale(), {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    dp.style.display = 'block';
-  }
-};
-
-updateOpensPreview = function() {
-  var el = document.getElementById('opens-date-text');
-  var preview = document.getElementById('opens-preview');
-  if (!el) return;
-
-  if (!ST.capsuleDays && ST.capsuleDays !== 0) ST.capsuleDays = 365;
-
-  if (ST.capsuleDays === 0) {
-    el.textContent = getCurrentLanguage() === 'tr' ? 'Kapsül yok - sadece iz' : 'No capsule - mark only';
-    if (preview) preview.style.opacity = '.4';
-    return;
-  }
-
-  if (preview) preview.style.opacity = '1';
-  var opens = getCapsuleScheduleDateFromState();
-  if (!opens) return;
-  var days = Math.max(1, Math.ceil((opens.getTime() - Date.now()) / 86400000));
-  el.textContent = formatRelativeDurationDays(days) + ' - ' + opens.toLocaleString(getCurrentLocale(), {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
-
-proceedFromCapsuleStep = function() {
-  var recipientInput = document.getElementById('iem');
-  var recipientEmail = recipientInput ? normalizeEmail(recipientInput.value) : '';
-  if (recipientInput) recipientInput.value = recipientEmail;
-
-  if (ST.capsuleDays > 0) {
-    var releaseDate = getCapsuleScheduleDateFromState();
-    if (!releaseDate) {
-      showToast(getCurrentLanguage() === 'tr' ? 'Lütfen geçerli bir kapsül zamanı seç.' : 'Please choose a valid capsule time.', 'error');
-      return;
-    }
-    if (releaseDate.getTime() <= Date.now()) {
-      showToast(getCurrentLanguage() === 'tr' ? 'Kapsül zamanı gelecekte olmalı.' : 'Capsule time must be in the future.', 'error');
-      return;
-    }
-  }
-
-  if (ST.capsuleDays > 0 && ST.rc === 'o') {
-    if (!recipientEmail) {
-      showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden önce alıcı e-postasını gir.' : 'Please enter a recipient email before continuing.');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
-      showToast(getCurrentLanguage() === 'tr' ? 'Geçerli bir alıcı e-postası gir.' : 'Please enter a valid recipient email.');
-      return;
-    }
-  }
-
-  goS(4);
-};

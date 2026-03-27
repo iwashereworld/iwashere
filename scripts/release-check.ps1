@@ -7,8 +7,6 @@ $configPath = Join-Path $root 'app-config.js'
 $runtimeConfigPath = Join-Path $root 'api\runtime-config.js'
 $healthPath = Join-Path $root 'api\health.js'
 $configExamplePath = Join-Path $root 'app-config.example.js'
-$i18nOverridesPath = Join-Path $root 'app-i18n-overrides.js'
-$uiOverridesPath = Join-Path $root 'app-ui-overrides.js'
 $smokePath = Join-Path $PSScriptRoot 'smoke-check.ps1'
 $rolloutChecklistPath = Join-Path $root 'supabase\rollout-checklist.md'
 $stagingRunbookPath = Join-Path $root 'supabase\staging-runbook.md'
@@ -56,8 +54,6 @@ $config = Get-Content -Raw $configPath
 $runtimeConfig = Get-Content -Raw $runtimeConfigPath
 $health = Get-Content -Raw $healthPath
 $configExample = Get-Content -Raw $configExamplePath
-$i18nOverrides = Get-Content -Raw $i18nOverridesPath
-$uiOverrides = Get-Content -Raw $uiOverridesPath
 $rolloutChecklist = Get-Content -Raw $rolloutChecklistPath
 $stagingRunbook = Get-Content -Raw $stagingRunbookPath
 $vercelEnvMap = Get-Content -Raw $vercelEnvMapPath
@@ -78,8 +74,8 @@ Assert-Contains $index 'application/ld+json' 'index.html must include structured
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
 Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
 Assert-Contains $index '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>' 'index.html must load Supabase SDK.'
-Assert-Contains $index '<script src="app-i18n-overrides.js"></script>' 'index.html must load app-i18n-overrides.js.'
-Assert-Contains $index '<script src="app-ui-overrides.js"></script>' 'index.html must load app-ui-overrides.js.'
+Assert-NotContains $index 'app-i18n-overrides.js' 'index.html must not load app-i18n-overrides.js anymore.'
+Assert-NotContains $index 'app-ui-overrides.js' 'index.html must not load app-ui-overrides.js anymore.'
 Assert-Contains $packageJson '"build"' 'package.json must expose a build script.'
 Assert-Contains $packageJson '"dev"' 'package.json must expose a dev script.'
 Assert-Contains $packageJson '"staging:readiness"' 'package.json must expose a staging readiness script.'
@@ -101,13 +97,14 @@ Assert-NotContains $config 'ctjgxonismqdxprlohcz.supabase.co' 'app-config.js mus
 Assert-NotContains $runtimeConfig 'ENABLE_VOICE_UPLOAD' 'api/runtime-config.js must not expose voice upload flag.'
 Assert-Contains $runtimeConfig 'PUBLIC_APP_URL' 'api/runtime-config.js must expose PUBLIC_APP_URL.'
 Assert-Contains $health 'publicAppUrl' 'api/health.js must expose runtime health metadata.'
-Assert-Contains $i18nOverrides 'hero_eyebrow' 'app-i18n-overrides.js must provide Turkish copy overrides.'
-Assert-Contains $uiOverrides 'function getStepCopy()' 'app-ui-overrides.js must override onboarding copy safely.'
-if (([regex]::Matches($uiOverrides, 'function getStepCopy\(')).Count -ne 1) {
-  throw 'app-ui-overrides.js must keep a single getStepCopy() override.'
-}
-if (([regex]::Matches($i18nOverrides, 'Object\.assign\(window\.I18N_MESSAGES\.tr')).Count -ne 1) {
-  throw 'app-i18n-overrides.js must keep a single Turkish override block.'
+Assert-Contains $index '<script src="app-i18n.js"></script>' 'index.html must load app-i18n.js.'
+Assert-Contains $index "window.addEventListener('error'" 'index.html must register a global error handler.'
+Assert-Contains $index "window.addEventListener('unhandledrejection'" 'index.html must register a global rejection handler.'
+Assert-Contains $index 'copyTextWithFallback' 'index.html must keep the clipboard fallback helper.'
+Assert-Contains (Get-Content -Raw (Join-Path $root 'app-i18n.js')) "hero_eyebrow: 'Anlamli anilar icin dunya haritasi'" 'app-i18n.js must keep the cleaned Turkish copy in the base file.'
+Assert-Contains (Get-Content -Raw (Join-Path $root 'app-ui.js')) "function getStepCopy()" 'app-ui.js must define onboarding copy in the base file.'
+if (([regex]::Matches((Get-Content -Raw (Join-Path $root 'app-ui.js')), 'function getStepCopy\(')).Count -ne 1) {
+  throw 'app-ui.js must keep a single getStepCopy() definition.'
 }
 Assert-Contains $configExample 'window.IWH_CONFIG' 'app-config.example.js must define example config.'
 Assert-Contains $configExample 'PUBLIC_APP_URL' 'app-config.example.js must document PUBLIC_APP_URL.'
@@ -124,8 +121,6 @@ Assert-Contains $stagingReadiness 'STAGING_RUNTIME_CONFIG_URL is required.' 'sta
 Assert-Contains $stagingReadiness 'STAGING_SUPABASE_URL is required.' 'staging-readiness must require the expected staging Supabase URL.'
 Assert-Contains $stagingReadiness 'STAGING_FUNCTIONS_BASE_URL is required.' 'staging-readiness must require the expected functions base URL.'
 Assert-Contains $stagingReadiness 'Invoke-RestMethod' 'staging-readiness must perform a real runtime config request.'
-Assert-Contains $index "window.addEventListener('error'" 'index.html must register a global error handler.'
-Assert-Contains $index "window.addEventListener('unhandledrejection'" 'index.html must register a global rejection handler.'
 Assert-Contains $privacy '<meta name="description"' 'privacy-policy.html must include SEO description metadata.'
 Assert-Contains $terms '<meta name="description"' 'terms.html must include SEO description metadata.'
 Assert-Contains $robots 'Sitemap: https://iwashere-seven.vercel.app/sitemap.xml' 'robots.txt must reference the sitemap.'
