@@ -7,14 +7,12 @@ Use this map when wiring the frontend deployment to the Supabase environments.
 - `SUPABASE_URL` -> staging Supabase project URL
 - `SUPABASE_ANON_KEY` -> staging Supabase anon key
 - `FUNCTIONS_BASE_URL` -> `https://<staging-project-ref>.supabase.co/functions/v1`
-- `ENABLE_VOICE_UPLOAD` -> `false` until staging upload flow is verified
 
 ## Vercel Production
 
 - `SUPABASE_URL` -> production Supabase project URL
 - `SUPABASE_ANON_KEY` -> production Supabase anon key
 - `FUNCTIONS_BASE_URL` -> `https://<production-project-ref>.supabase.co/functions/v1`
-- `ENABLE_VOICE_UPLOAD` -> `true` only after storage and policy validation is complete
 
 ## Frontend Wiring
 

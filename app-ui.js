@@ -87,7 +87,6 @@ function resetForm() {
   ST.capsuleDate = null;
   ST.rc = 's';
   ST.vis = 'pub';
-  ST.voice = null;
   document.getElementById('iname').value = '';
   var prev = document.getElementById('prev');
   if (prev) prev.style.display = 'none';
@@ -96,7 +95,6 @@ function resetForm() {
   var quickMessageInput = document.getElementById('quick-imsg');
   if (quickMessageInput) quickMessageInput.value = '';
   document.getElementById('imsg').value = '';
-  if (typeof clearVoice === 'function') clearVoice();
   var submitBtn = document.getElementById('btn-submit-mark');
   if (submitBtn) {
     submitBtn.disabled = false;
@@ -156,28 +154,13 @@ function goS(n) {
   updateStepMeta(n);
 }
 
-function sMT(t) {
-  ST.msgType = t;
-  document.getElementById('ow').classList.toggle('on', t === 'w');
-  document.getElementById('ov').classList.toggle('on', t === 'v');
-  document.getElementById('ow').setAttribute('aria-pressed', t === 'w' ? 'true' : 'false');
-  document.getElementById('ov').setAttribute('aria-pressed', t === 'v' ? 'true' : 'false');
-  document.getElementById('written-area').style.display = t === 'w' ? 'block' : 'none';
-  document.getElementById('voice-area').style.display = t === 'v' ? 'block' : 'none';
-}
-
 function proceedFromMessageStep() {
   var messageInput = document.getElementById('imsg');
   var message = clampText(messageInput.value, MAX_MESSAGE_LENGTH);
   messageInput.value = message;
 
-  if (ST.msgType === 'w' && !message) {
+  if (!message) {
     showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden önce bir mesaj ekle.' : 'Please add a message before continuing.');
-    return;
-  }
-
-  if (ST.msgType === 'v' && !message) {
-    showToast(getCurrentLanguage() === 'tr' ? 'Ses önizlemesi henüz kaydedilmiyor. Devam etmek için yazılı mesaj ekle.' : 'Voice preview is not saved yet. Add a written message to continue.');
     return;
   }
 
@@ -571,13 +554,8 @@ function proceedFromMessageStep() {
   var message = clampText(messageInput.value, MAX_MESSAGE_LENGTH);
   messageInput.value = message;
 
-  if (ST.msgType === 'w' && !message) {
+  if (!message) {
     showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden once bir mesaj ekle.' : 'Please add a message before continuing.');
-    return;
-  }
-
-  if (ST.msgType === 'v' && !message) {
-    showToast(getCurrentLanguage() === 'tr' ? 'Ses onizlemesi henuz kaydedilmiyor. Devam etmek icin yazili mesaj ekle.' : 'Voice preview is not saved yet. Add a written message to continue.');
     return;
   }
 

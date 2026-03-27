@@ -8,13 +8,11 @@ the current frontend toward a production-ready Supabase setup.
 - `schema.sql`: recommended `marks` table shape and constraints
 - `policies.sql`: row-level security policies for read/write boundaries
 - `capsule-delivery.sql`: queue table and trigger for future capsule delivery jobs
-- `voice-storage.sql`: private bucket, metadata table, and storage policies for voice files
 - `rollout-checklist.md`: safe rollout order for production
 - `env.example.md`: required secret inventory for functions
 - `staging-runbook.md`: end-to-end staging rollout sequence
 - `production-runbook.md`: guarded production rollout sequence
 - `functions/capsule-dispatch/`: Edge Function scaffold for due capsule sends
-- `functions/voice-upload/`: Edge Function scaffold for controlled voice upload metadata
 
 ## Intent
 
@@ -33,13 +31,12 @@ is not a security boundary. The database must enforce:
 3. Apply `schema.sql`
 4. Apply `policies.sql`
 5. Apply `capsule-delivery.sql`
-6. Apply `voice-storage.sql`
-7. Verify with `rollout-checklist.md` and `staging-runbook.md`
-8. Update the frontend to target any new public/private split if needed
+6. Verify with `rollout-checklist.md` and `staging-runbook.md`
+7. Update the frontend to target any new public/private split if needed
 
 ## Important
 
 These SQL files are intentionally conservative and designed around the current
 frontend behavior. If you later introduce real delivery flows, notifications, or
-storage buckets for voice/media, extend the schema instead of overloading the
-current table.
+additional media storage, extend the schema instead of overloading the current
+table.

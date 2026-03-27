@@ -6,13 +6,11 @@ $readmePath = Join-Path $root 'README.md'
 $configPath = Join-Path $root 'app-config.js'
 $runtimeConfigPath = Join-Path $root 'api\runtime-config.js'
 $configExamplePath = Join-Path $root 'app-config.example.js'
-$supabaseConfigPath = Join-Path $root 'supabase\config.toml'
 $smokePath = Join-Path $PSScriptRoot 'smoke-check.ps1'
 $rolloutChecklistPath = Join-Path $root 'supabase\rollout-checklist.md'
 $stagingRunbookPath = Join-Path $root 'supabase\staging-runbook.md'
 $vercelEnvMapPath = Join-Path $root 'supabase\vercel-env-map.md'
 $capsuleDispatchReadmePath = Join-Path $root 'supabase\functions\capsule-dispatch\README.md'
-$voiceUploadReadmePath = Join-Path $root 'supabase\functions\voice-upload\README.md'
 $capsuleReadinessPath = Join-Path $root 'scripts\capsule-readiness.ps1'
 $privacyPath = Join-Path $root 'privacy-policy.html'
 $termsPath = Join-Path $root 'terms.html'
@@ -50,12 +48,10 @@ $readme = Get-Content -Raw $readmePath
 $config = Get-Content -Raw $configPath
 $runtimeConfig = Get-Content -Raw $runtimeConfigPath
 $configExample = Get-Content -Raw $configExamplePath
-$supabaseConfig = Get-Content -Raw $supabaseConfigPath
 $rolloutChecklist = Get-Content -Raw $rolloutChecklistPath
 $stagingRunbook = Get-Content -Raw $stagingRunbookPath
 $vercelEnvMap = Get-Content -Raw $vercelEnvMapPath
 $capsuleDispatchReadme = Get-Content -Raw $capsuleDispatchReadmePath
-$voiceUploadReadme = Get-Content -Raw $voiceUploadReadmePath
 $capsuleReadiness = Get-Content -Raw $capsuleReadinessPath
 $privacy = Get-Content -Raw $privacyPath
 $terms = Get-Content -Raw $termsPath
@@ -72,20 +68,24 @@ Assert-Contains $index '<script src="https://cdn.jsdelivr.net/npm/@supabase/supa
 Assert-NotContains $index 'function resetForm()' 'UI helpers should not remain inline in index.html.'
 Assert-NotContains $index 'function openAuth(tab)' 'Auth helpers should not remain inline in index.html.'
 Assert-NotContains $index 'function showToast(msg, tone)' 'Toast helper should not remain inline in index.html.'
+Assert-NotContains $index 'voice-area' 'index.html must not retain voice-specific markup.'
 Assert-Contains $readme 'Production rollout artifacts for Supabase now live in `supabase/`.' 'README.md must mention Supabase rollout artifacts.'
 Assert-Contains $readme 'Use `supabase/staging-runbook.md` before applying anything to production.' 'README.md must point to the staging runbook.'
 Assert-Contains $readme 'Runtime frontend config now lives in `app-config.js`.' 'README.md must mention runtime config.'
 Assert-Contains $readme '/api/runtime-config.js' 'README.md must mention the runtime config endpoint.'
 Assert-Contains $readme 'Use `app-config.example.js` and `supabase/vercel-env-map.md` when wiring staging or production envs.' 'README.md must mention env wiring docs.'
-Assert-Contains $config 'ENABLE_VOICE_UPLOAD' 'app-config.js must expose the voice upload flag.'
-Assert-Contains $runtimeConfig 'ENABLE_VOICE_UPLOAD' 'api/runtime-config.js must expose the voice upload flag.'
+Assert-NotContains $readme 'Voice recording is currently local preview only' 'README.md must not mention deprecated voice preview.'
+Assert-NotContains $config 'ENABLE_VOICE_UPLOAD' 'app-config.js must not expose voice upload flag.'
+Assert-NotContains $runtimeConfig 'ENABLE_VOICE_UPLOAD' 'api/runtime-config.js must not expose voice upload flag.'
 Assert-Contains $configExample 'window.IWH_CONFIG' 'app-config.example.js must define example config.'
+Assert-NotContains $configExample 'ENABLE_VOICE_UPLOAD' 'app-config.example.js must not expose voice upload flag.'
 Assert-Contains $rolloutChecklist 'RLS Validation' 'Supabase rollout checklist must contain RLS validation.'
+Assert-NotContains $rolloutChecklist 'Voice Validation' 'Supabase rollout checklist must not contain voice validation.'
 Assert-Contains $stagingRunbook 'Exit Criteria' 'staging runbook must define exit criteria.'
+Assert-NotContains $stagingRunbook 'voice-upload' 'staging runbook must not reference voice-upload.'
 Assert-Contains $vercelEnvMap 'Safe Rollout Rule' 'vercel env map must define a safe rollout rule.'
-Assert-Contains $supabaseConfig 'verify_jwt = false' 'supabase/config.toml must keep voice-upload on internal auth verification.'
+Assert-NotContains $vercelEnvMap 'ENABLE_VOICE_UPLOAD' 'vercel env map must not mention deprecated voice flag.'
 Assert-Contains $capsuleDispatchReadme 'Required Secrets' 'capsule-dispatch README must document required secrets.'
-Assert-Contains $voiceUploadReadme 'Expected Request' 'voice-upload README must document expected request.'
 Assert-Contains $capsuleReadiness 'Missing secrets' 'capsule readiness script must report missing secrets clearly.'
 Assert-Contains $privacy '<meta name="description"' 'privacy-policy.html must include SEO description metadata.'
 Assert-Contains $terms '<meta name="description"' 'terms.html must include SEO description metadata.'

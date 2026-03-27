@@ -493,7 +493,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <h2 class="sect reveal" data-i18n-html="how_title_html">Three steps to leave a <em>memory</em></h2>
   <div class="steps reveal">
     <div class="sc"><div class="sn2">01</div><div class="stit" data-i18n="how_step1_title">Choose Your Spot</div><p class="sdes" data-i18n="how_step1_body">Click anywhere on the 3D globe to place your pin. Zoom to street level for precise placement with satellite imagery.</p></div>
-    <div class="sc"><div class="sn2">02</div><div class="stit" data-i18n="how_step2_title">Write Your Message</div><p class="sdes" data-i18n="how_step2_body">Add the text that will be saved with your mark. Photos are optional, and voice is currently on-device preview only.</p></div>
+    <div class="sc"><div class="sn2">02</div><div class="stit" data-i18n="how_step2_title">Write Your Message</div><p class="sdes" data-i18n="how_step2_body">Add the text that will be saved with your mark. Photos are optional and stay attached to the saved mark.</p></div>
     <div class="sc"><div class="sn2">03</div><div class="stit" data-i18n="how_step3_title">Choose Visibility</div><p class="sdes" data-i18n="how_step3_body">Save it as a public mark today, or set a future opening date for a capsule experience.</p></div>
   </div>
 </section>
@@ -509,7 +509,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
     <div class="pc ft"><div class="pbg" data-i18n="pricing_now_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_capsule_name">Mark + Capsule</div><div class="pam">$3 <span>one-time</span></div><p class="pds" data-i18n="pricing_capsule_desc">Save your mark now and choose a future opening date for the capsule view.</p><ul class="pft"><li data-i18n="pricing_capsule_feat1">Everything in Public Mark</li><li data-i18n="pricing_capsule_feat2">Text message support</li><li data-i18n="pricing_capsule_feat3">Future opening date</li></ul></div>
     <div class="pc"><div class="pbg alt" data-i18n="pricing_limited_badge">Limited Today</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_gift_name">Gift Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds" data-i18n="pricing_gift_desc">Recipient flow is available in the UI while downstream delivery features continue to evolve.</p><ul class="pft"><li data-i18n="pricing_gift_feat1">Recipient email field</li><li data-i18n="pricing_gift_feat2">Capsule timing options</li><li data-i18n="pricing_gift_feat3">Share card after save</li></ul></div>
   </div>
-  <p class="pricing-note reveal" data-i18n="pricing_note">Voice recording is currently local preview only. Delivery, notification, and reveal flows may continue to evolve as the product backend expands.</p>
+  <p class="pricing-note reveal" data-i18n="pricing_note">Write your memory, add a photo if you want, and choose whether the mark stays public now or opens later as a capsule.</p>
 </section>
 <footer>
   <span>Â© 2026 IWASHEREWORLD Â· I Was Here</span>
@@ -699,27 +699,8 @@ window.addEventListener('load', initCookieBanner);
     <div class="step" id="step4">
       <h3 data-i18n="message_for_memory">Message for This Memory</h3>
       <p class="sub3" data-i18n="message_for_memory_sub">Now write the note that will be saved with this mark or revealed when the capsule opens.</p>
-      <div class="g2">
-        <div class="oc on" id="ow" onclick="sMT('w')" role="button" tabindex="0" aria-pressed="true" data-i18n="write"><span class="ic"></span>Write</div>
-        <div class="oc" id="ov" onclick="sMT('v')" role="button" tabindex="0" aria-pressed="false" data-i18n="voice"><span class="ic"></span>Voice</div>
-      </div>
-      <div id="written-area">
-        <label class="fl" data-i18n="message">Message</label>
-        <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..." maxlength="500" data-i18n-placeholder="message_placeholder" oninput="syncMemoryMessage(this.value,'main')"></textarea>
-      </div>
-      <div id="voice-area" style="display:none;">
-        <div class="note-box" data-i18n="voice_note">Voice recordings are kept for local preview on this device only. Add a written message if you want to save this mark today.</div>
-        <div style="background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
-          <button type="button" id="rec-btn" onclick="toggleRecord()" aria-label="Start or stop voice preview recording" style="width:48px;height:48px;border-radius:50%;background:rgba(200,169,110,.15);border:2px solid #c8a96e;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;cursor:pointer;font-size:18px;color:#c8a96e;transition:all .2s;">&#9679;</button>
-          <div id="rec-status" style="font-size:.78rem;color:var(--muted);" data-i18n="voice_ready">Ready to record locally</div>
-          <div id="rec-time" style="font-size:.68rem;color:rgba(200,169,110,.6);margin-top:2px;" data-i18n="voice_tap_start">Tap to start</div>
-          <div id="voice-upload-status" style="font-size:.68rem;color:rgba(240,237,232,.45);margin-top:6px;" data-i18n="voice_upload_pending">Upload-ready metadata will appear here when backend upload is connected.</div>
-          <div id="rec-wave" style="display:none;margin-top:10px;height:28px;display:flex;align-items:center;justify-content:center;gap:2px;" ><div id="rec-wave-inner" style="display:flex;gap:2px;align-items:flex-end;height:24px;"></div></div>
-          <div id="voice-preview" style="display:none;margin-top:12px;"><audio id="voice-audio" controls style="width:100%;height:32px;"></audio><button onclick="clearVoice()" style="margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 12px;font-size:.72rem;color:var(--muted);cursor:pointer;" data-i18n="clear_rerecord">Clear & re-record</button></div>
-        </div>
-        <div style="margin-top:10px;text-align:center;font-size:.72rem;color:var(--muted);"><span data-i18n="or">or</span> <label style="color:var(--gold);cursor:pointer;text-decoration:underline;" data-i18n="upload_audio_preview">upload audio file for preview<input type="file" accept="audio/*" onchange="hVoice(this)" style="display:none"></label></div>
-        <div id="voice-file-name" style="display:none;text-align:center;font-size:.72rem;color:var(--gold);margin-top:6px;"></div>
-      </div>
+      <label class="fl" data-i18n="message">Message</label>
+      <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..." maxlength="500" data-i18n-placeholder="message_placeholder" oninput="syncMemoryMessage(this.value,'main')"></textarea>
       <button class="btn bp" id="btn4" onclick="proceedFromMessageStep()" style="margin-top:1rem;" data-i18n="continue_review">Continue to Review</button>
       <button class="btn bs" onclick="goS(3)" data-i18n="back">Back</button>
     </div>
@@ -936,8 +917,7 @@ var CITIES = [
 var ST = {
   pins: [],
   name: '', photo: null, selCode: '', selName: '', selLat: null, selLon: null,
-  yr: 1, capsuleDays: 365, capsuleDate: null, rc: 's', vis: 'pub', msgType: 'w',
-  voice: null,
+  yr: 1, capsuleDays: 365, capsuleDate: null, rc: 's', vis: 'pub',
   createMode: false,
   createStep: 0,
   locationConfirmed: false,
@@ -2324,17 +2304,6 @@ async function submit() {
     owner: AUTH.user ? AUTH.user.email : null
   };
 
-  try {
-    await prepareVoiceUpload();
-  } catch (err) {
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Save My Mark';
-    }
-    showToast((err && err.message) || 'Could not prepare voice upload.', 'error');
-    return;
-  }
-  
   var saveResult = await saveMarkToDB(newPin);
   if (!saveResult || saveResult.error) {
     if (submitBtn) {
@@ -2347,13 +2316,6 @@ async function submit() {
 
   if (saveResult.data && saveResult.data.id) {
     newPin.id = saveResult.data.id;
-  }
-
-  try {
-    await attachVoiceToMark(newPin.id);
-  } catch (err) {
-    console.error('Voice attach error:', err);
-    showToast('Mark saved, but voice attachment needs review.', 'error');
   }
 
   ST.pins.unshift(newPin);
@@ -2571,210 +2533,6 @@ function copyShareLink() {
     return;
   }
   showToast(url);
-}
-
-// Voice recording
-var _mediaRecorder = null;
-var _audioChunks = [];
-var _recTimer = null;
-var _recSeconds = 0;
-var _voiceBlob = null;
-var ENABLE_VOICE_UPLOAD = !!IWH_CONFIG.ENABLE_VOICE_UPLOAD;
-
-function updateVoiceUploadStatus() {
-  var el = document.getElementById('voice-upload-status');
-  if (!el) return;
-
-  if (!ST.voice) {
-    el.textContent = ENABLE_VOICE_UPLOAD
-      ? 'Upload-ready metadata will appear here as soon as you add a voice file.'
-      : 'Voice upload backend is scaffolded but not enabled in this environment.';
-    return;
-  }
-
-  var parts = [];
-  if (ST.voice.fileName) parts.push(ST.voice.fileName);
-  if (ST.voice.mimeType) parts.push(ST.voice.mimeType);
-  if (ST.voice.bytes) parts.push(Math.round(ST.voice.bytes / 1024) + ' KB');
-  if (ST.voice.durationSeconds) parts.push(ST.voice.durationSeconds + 's');
-  el.textContent = 'Prepared for upload: ' + parts.join(' | ');
-}
-
-function updateVoiceUploadStatusMessage(message) {
-  var el = document.getElementById('voice-upload-status');
-  if (el) el.textContent = message;
-}
-
-async function prepareVoiceUpload() {
-  if (!ENABLE_VOICE_UPLOAD || !_voiceBlob || !ST.voice || ST.voice.uploaded) {
-    return ST.voice || null;
-  }
-
-  updateVoiceUploadStatusMessage('Requesting voice upload slot...');
-
-  var fnResult = await _supabase.functions.invoke('voice-upload', {
-    body: {
-      mimeType: ST.voice.mimeType,
-      bytes: ST.voice.bytes,
-      durationSeconds: ST.voice.durationSeconds
-    }
-  });
-
-  if (fnResult.error || !fnResult.data || !fnResult.data.path || !fnResult.data.voiceMessageId) {
-    throw new Error((fnResult.error && fnResult.error.message) || 'Could not prepare voice upload.');
-  }
-
-  var uploadResult = await _supabase.storage.from('voice-messages').upload(fnResult.data.path, _voiceBlob, {
-    contentType: ST.voice.mimeType,
-    upsert: false
-  });
-
-  if (uploadResult.error) {
-    throw new Error(uploadResult.error.message || 'Could not upload voice file.');
-  }
-
-  ST.voice.voiceMessageId = fnResult.data.voiceMessageId;
-  ST.voice.storagePath = fnResult.data.path;
-  ST.voice.uploaded = true;
-  updateVoiceUploadStatusMessage('Voice uploaded and ready to attach.');
-  return ST.voice;
-}
-
-async function attachVoiceToMark(markId) {
-  if (!ENABLE_VOICE_UPLOAD || !ST.voice || !ST.voice.voiceMessageId || !markId) return;
-
-  var result = await _supabase
-    .from('voice_messages')
-    .update({ mark_id: markId })
-    .eq('id', ST.voice.voiceMessageId);
-
-  if (result.error) {
-    throw new Error(result.error.message || 'Could not attach voice to mark.');
-  }
-
-  updateVoiceUploadStatusMessage('Voice attached to this mark.');
-}
-
-function setVoiceState(blob, options) {
-  options = options || {};
-  _voiceBlob = blob;
-  ST.voice = blob ? {
-    source: options.source || 'local',
-    fileName: options.fileName || ('voice.' + ((options.mimeType || blob.type || 'audio/webm').split('/')[1] || 'webm')),
-    mimeType: options.mimeType || blob.type || 'audio/webm',
-    bytes: blob.size || 0,
-    durationSeconds: options.durationSeconds || null,
-    uploaded: false,
-    voiceMessageId: null,
-    storagePath: null
-  } : null;
-  updateVoiceUploadStatus();
-}
-
-function toggleRecord() {
-  if (_mediaRecorder && _mediaRecorder.state === 'recording') {
-    stopRecord();
-  } else {
-    startRecord();
-  }
-}
-
-function startRecord() {
-  if (!navigator.mediaDevices) {
-    showToast('Microphone not supported.', 'error');
-    return;
-  }
-  navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
-    _audioChunks = [];
-    _mediaRecorder = new MediaRecorder(stream);
-    _mediaRecorder.ondataavailable = function(e) {
-      if (e.data.size > 0) _audioChunks.push(e.data);
-    };
-    _mediaRecorder.onstop = function() {
-      var voiceBlob = new Blob(_audioChunks, { type: 'audio/webm' });
-      setVoiceState(voiceBlob, {
-        source: 'recording',
-        fileName: 'voice-recording.webm',
-        mimeType: 'audio/webm',
-        durationSeconds: _recSeconds
-      });
-      var url = URL.createObjectURL(_voiceBlob);
-      var audio = document.getElementById('voice-audio');
-      if (audio) audio.src = url;
-      document.getElementById('voice-preview').style.display = 'block';
-      document.getElementById('rec-wave').style.display = 'none';
-      document.getElementById('rec-status').textContent = 'Recording saved for local preview';
-      document.getElementById('rec-time').textContent = _recSeconds + 's recorded';
-      document.getElementById('rec-btn').innerHTML = '&#9679;';
-      document.getElementById('rec-btn').style.background = 'rgba(200,169,110,.15)';
-      stream.getTracks().forEach(function(t) { t.stop(); });
-      clearInterval(_recTimer);
-    };
-    _mediaRecorder.start();
-    _recSeconds = 0;
-    var btn = document.getElementById('rec-btn');
-    btn.innerHTML = '&#9632;';
-    btn.style.background = 'rgba(220,60,60,.3)';
-    btn.style.borderColor = '#ff6644';
-    btn.style.color = '#ff6644';
-    document.getElementById('rec-status').textContent = 'Recording...';
-    document.getElementById('rec-wave').style.display = 'block';
-    document.getElementById('voice-preview').style.display = 'none';
-    
-    var waveInner = document.getElementById('rec-wave-inner');
-    if (waveInner) {
-      waveInner.innerHTML = '';
-      for (var i = 0; i < 20; i++) {
-        var bar = document.createElement('div');
-        bar.style.cssText = 'width:4px;background:#c8a96e;border-radius:2px;transition:height .1s';
-        bar.style.height = Math.random() * 20 + 4 + 'px';
-        waveInner.appendChild(bar);
-      }
-    }
-    
-    _recTimer = setInterval(function() {
-      _recSeconds++;
-      document.getElementById('rec-time').textContent = _recSeconds + 's - tap to stop';
-      if (waveInner) Array.from(waveInner.children).forEach(function(b) { b.style.height = Math.random() * 24 + 4 + 'px'; });
-      if (_recSeconds >= 120) stopRecord();
-    }, 1000);
-  }).catch(function() { showToast('Could not access microphone.', 'error'); });
-}
-
-function stopRecord() {
-  if (_mediaRecorder && _mediaRecorder.state === 'recording') _mediaRecorder.stop();
-}
-
-function clearVoice() {
-  setVoiceState(null);
-  _audioChunks = [];
-  document.getElementById('voice-preview').style.display = 'none';
-  document.getElementById('rec-status').textContent = 'Ready to record locally';
-  document.getElementById('rec-time').textContent = 'Tap to start';
-  document.getElementById('rec-btn').innerHTML = '&#9679;';
-  document.getElementById('rec-btn').style.background = 'rgba(200,169,110,.15)';
-  document.getElementById('rec-btn').style.borderColor = '#c8a96e';
-  document.getElementById('rec-btn').style.color = '#c8a96e';
-}
-
-function hVoice(inp) {
-  var f = inp.files[0];
-  if (!f) return;
-  setVoiceState(f, {
-    source: 'file',
-    fileName: f.name,
-    mimeType: f.type || 'audio/mpeg'
-  });
-  var url = URL.createObjectURL(f);
-  var audio = document.getElementById('voice-audio');
-  if (audio) audio.src = url;
-  document.getElementById('voice-preview').style.display = 'block';
-  var fn = document.getElementById('voice-file-name');
-  if (fn) {
-    fn.textContent = f.name;
-    fn.style.display = 'block';
-  }
-  document.getElementById('rec-status').textContent = 'Audio file loaded for preview';
 }
 
 // Landing BG Globe (keep Globe.gl for landing page - lightweight)

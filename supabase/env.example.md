@@ -14,10 +14,6 @@ Set these secrets in Supabase before deploying the backend functions.
 - `RESEND_API_KEY`
 - `DELIVERY_FROM_EMAIL`
 
-## `voice-upload`
-
-No provider-specific secret is required beyond the shared Supabase keys.
-
 ## Notes
 
 - keep service role keys only in Supabase secrets, never in frontend code

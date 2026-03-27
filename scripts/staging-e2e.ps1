@@ -15,7 +15,6 @@ $email = 'staging-rollout-' + [Guid]::NewGuid().ToString('N').Substring(0, 12) +
 $password = 'TempIWH!2026#Pass9'
 $userId = $null
 $markId = $null
-$voiceId = $null
 
 function JsonHeaders($apikey, $token) {
   return @{
@@ -37,39 +36,6 @@ try {
   $accessToken = $session.access_token
   $userHeaders = @{ apikey = $AnonKey; Authorization = "Bearer $accessToken" }
   $authUser = Invoke-RestMethod -Method Get -Uri "$BaseUrl/auth/v1/user" -Headers $userHeaders
-
-  $voiceHeaders = @{
-    apikey = $AnonKey
-    Authorization = "Bearer $accessToken"
-    'Content-Type' = 'application/json'
-  }
-  $voiceBody = @{ mimeType = 'audio/webm'; bytes = 2048; durationSeconds = 3 } | ConvertTo-Json
-  try {
-    $voiceResponse = Invoke-RestMethod -Method Post -Uri "$BaseUrl/functions/v1/voice-upload" -Headers $voiceHeaders -Body $voiceBody
-  } catch {
-    $response = $_.Exception.Response
-    if ($response) {
-      $reader = New-Object System.IO.StreamReader($response.GetResponseStream())
-      $body = $reader.ReadToEnd()
-      throw "voice-upload failed after auth user $($authUser.id): $body"
-    }
-    throw
-  }
-  $voiceId = $voiceResponse.voiceMessageId
-  $voicePath = $voiceResponse.path
-
-  $audioBytes = [byte[]](1..32)
-  $tempVoiceFile = Join-Path $env:TEMP ('iwh-voice-' + [Guid]::NewGuid().ToString('N') + '.webm')
-  [System.IO.File]::WriteAllBytes($tempVoiceFile, $audioBytes)
-  & curl.exe --silent --show-error --fail `
-    -X POST `
-    -H "apikey: $AnonKey" `
-    -H "Authorization: Bearer $accessToken" `
-    -H "Content-Type: audio/webm" `
-    -H "x-upsert: false" `
-    --data-binary "@$tempVoiceFile" `
-    "$BaseUrl/storage/v1/object/voice-messages/$voicePath" | Out-Null
-  Remove-Item $tempVoiceFile -Force
 
   $markHeaders = @{
     apikey = $AnonKey
@@ -95,9 +61,6 @@ try {
   $markInsert = Invoke-RestMethod -Method Post -Uri "$BaseUrl/rest/v1/marks?select=id,user_id,capsule_for,recipient_email" -Headers $markHeaders -Body $markBody
   $markId = $markInsert[0].id
 
-  $attachBody = @{ mark_id = $markId } | ConvertTo-Json
-  Invoke-RestMethod -Method Patch -Uri "$BaseUrl/rest/v1/voice_messages?id=eq.$voiceId" -Headers $markHeaders -Body $attachBody | Out-Null
-
   Start-Sleep -Seconds 2
 
   $serviceJsonHeaders = JsonHeaders $ServiceRoleKey $ServiceRoleKey
@@ -121,8 +84,6 @@ try {
   $summary = [ordered]@{
     email = $email
     user_id = $userId
-    voice_message_id = $voiceId
-    voice_storage_path = $voicePath
     mark_id = $markId
     queue_id = $queueId
     dispatch_processed = $dispatch.processed
@@ -135,9 +96,6 @@ try {
 }
 finally {
   $cleanupHeaders = JsonHeaders $ServiceRoleKey $ServiceRoleKey
-  if ($voiceId) {
-    try { Invoke-RestMethod -Method Delete -Uri "$BaseUrl/rest/v1/voice_messages?id=eq.$voiceId" -Headers $cleanupHeaders | Out-Null } catch {}
-  }
   if ($markId) {
     try { Invoke-RestMethod -Method Delete -Uri "$BaseUrl/rest/v1/capsule_deliveries?mark_id=eq.$markId" -Headers $cleanupHeaders | Out-Null } catch {}
     try { Invoke-RestMethod -Method Delete -Uri "$BaseUrl/rest/v1/marks?id=eq.$markId" -Headers $cleanupHeaders | Out-Null } catch {}

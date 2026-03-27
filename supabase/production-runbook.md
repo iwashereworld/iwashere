@@ -21,7 +21,6 @@ Apply in this order:
 1. `schema.sql`
 2. `policies.sql`
 3. `capsule-delivery.sql`
-4. `voice-storage.sql`
 
 Validate each step before moving to the next.
 
@@ -33,7 +32,6 @@ Load the values listed in `env.example.md` for production.
 
 ```bash
 supabase functions deploy capsule-dispatch
-supabase functions deploy voice-upload
 ```
 
 ## 6. Functional Verification
@@ -42,7 +40,6 @@ supabase functions deploy voice-upload
 - create one capsule mark for `myself`
 - create one capsule mark for `other`
 - verify the queue row is created
-- verify voice-upload returns a valid path for an authenticated request
 
 ## 7. Monitor
 

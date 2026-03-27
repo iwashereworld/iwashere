@@ -25,7 +25,6 @@ Some product areas are intentionally simplified or not fully implemented yet.
 
 ### Partially Implemented / Limited
 
-- Voice recording is currently local preview only
 - Capsule recipient and timing UI exist, but downstream delivery flows may be limited
 - Pricing and product copy are being aligned with actual behavior
 
@@ -81,4 +80,4 @@ GitHub Actions now runs both checks on pushes to `main` and on pull requests.
 1. Apply and verify the Supabase schema/RLS package in staging, then production
 2. Reduce remaining frontend coupling in `index.html`
 3. Add stronger automated checks beyond the current smoke test
-4. Build real backend delivery flows for capsules, notifications, and media
+4. Build real backend delivery flows for capsules, notifications, and richer media

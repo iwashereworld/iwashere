@@ -8,8 +8,8 @@ $configPath = Join-Path $root 'app-config.js'
 $runtimeConfigPath = Join-Path $root 'api\runtime-config.js'
 $helpersPath = Join-Path $root 'app-helpers.js'
 $uiPath = Join-Path $root 'app-ui.js'
+$i18nPath = Join-Path $root 'app-i18n.js'
 $supabaseReadmePath = Join-Path $root 'supabase\README.md'
-$supabaseConfigPath = Join-Path $root 'supabase\config.toml'
 $supabaseSchemaPath = Join-Path $root 'supabase\schema.sql'
 $supabasePoliciesPath = Join-Path $root 'supabase\policies.sql'
 $supabaseEnvExamplePath = Join-Path $root 'supabase\env.example.md'
@@ -19,9 +19,6 @@ $supabaseVercelEnvMapPath = Join-Path $root 'supabase\vercel-env-map.md'
 $capsuleDeliveryPath = Join-Path $root 'supabase\capsule-delivery.sql'
 $capsuleDispatchReadmePath = Join-Path $root 'supabase\functions\capsule-dispatch\README.md'
 $capsuleDispatchIndexPath = Join-Path $root 'supabase\functions\capsule-dispatch\index.ts'
-$voiceStoragePath = Join-Path $root 'supabase\voice-storage.sql'
-$voiceUploadReadmePath = Join-Path $root 'supabase\functions\voice-upload\README.md'
-$voiceUploadIndexPath = Join-Path $root 'supabase\functions\voice-upload\index.ts'
 $capsuleReadinessPath = Join-Path $root 'scripts\capsule-readiness.ps1'
 
 function Assert-Contains {
@@ -55,8 +52,8 @@ $config = Get-Content -Raw $configPath
 $runtimeConfig = Get-Content -Raw $runtimeConfigPath
 $helpers = Get-Content -Raw $helpersPath
 $ui = Get-Content -Raw $uiPath
+$i18n = Get-Content -Raw $i18nPath
 $supabaseReadme = Get-Content -Raw $supabaseReadmePath
-$supabaseConfig = Get-Content -Raw $supabaseConfigPath
 $supabaseSchema = Get-Content -Raw $supabaseSchemaPath
 $supabasePolicies = Get-Content -Raw $supabasePoliciesPath
 $supabaseEnvExample = Get-Content -Raw $supabaseEnvExamplePath
@@ -66,17 +63,13 @@ $supabaseVercelEnvMap = Get-Content -Raw $supabaseVercelEnvMapPath
 $capsuleDelivery = Get-Content -Raw $capsuleDeliveryPath
 $capsuleDispatchReadme = Get-Content -Raw $capsuleDispatchReadmePath
 $capsuleDispatchIndex = Get-Content -Raw $capsuleDispatchIndexPath
-$voiceStorage = Get-Content -Raw $voiceStoragePath
-$voiceUploadReadme = Get-Content -Raw $voiceUploadReadmePath
-$voiceUploadIndex = Get-Content -Raw $voiceUploadIndexPath
 $capsuleReadiness = Get-Content -Raw $capsuleReadinessPath
 
 Assert-Contains $index '<script src="/api/runtime-config.js"></script>' 'index.html must load the runtime config endpoint.'
 Assert-Contains $index '<script src="app-config.js"></script>' 'index.html must load app-config.js.'
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
 Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
-Assert-Contains $index 'id="voice-upload-status"' 'index.html must include voice upload status UI.'
-Assert-Contains $index 'var ENABLE_VOICE_UPLOAD = !!IWH_CONFIG.ENABLE_VOICE_UPLOAD;' 'index.html must derive the voice upload feature flag from config.'
+Assert-Contains $index 'Message for This Memory' 'index.html must keep the text-based memory step.'
 Assert-Contains $config 'window.IWH_CONFIG' 'app-config.js must define IWH_CONFIG.'
 Assert-Contains $runtimeConfig 'process.env.SUPABASE_URL' 'api/runtime-config.js must read SUPABASE_URL from env.'
 Assert-Contains $runtimeConfig 'window.IWH_CONFIG = Object.assign' 'api/runtime-config.js must emit browser config.'
@@ -88,16 +81,19 @@ Assert-Contains $helpers 'var MAX_MESSAGE_LENGTH = 500;' 'app-helpers.js must de
 Assert-Contains $ui 'function resetForm()' 'app-ui.js must contain resetForm().'
 Assert-Contains $ui 'function openAuth(tab)' 'app-ui.js must contain openAuth(tab).'
 Assert-Contains $ui 'function showToast(msg, tone)' 'app-ui.js must contain showToast(msg, tone).'
-Assert-Contains $index 'function setVoiceState(blob, options)' 'index.html must normalize voice state.'
-Assert-Contains $index 'async function prepareVoiceUpload()' 'index.html must contain prepareVoiceUpload().'
-Assert-Contains $index 'async function attachVoiceToMark(markId)' 'index.html must contain attachVoiceToMark(markId).'
+Assert-Contains $i18n 'message_for_memory' 'app-i18n.js must localize the text-only message step.'
+Assert-NotContains $index 'voice-area' 'index.html must not render the voice area.'
+Assert-NotContains $index 'prepareVoiceUpload' 'index.html must not contain prepareVoiceUpload().'
+Assert-NotContains $index 'attachVoiceToMark' 'index.html must not contain attachVoiceToMark().'
+Assert-NotContains $index 'toggleRecord()' 'index.html must not contain recording controls.'
+Assert-NotContains $index 'voice-upload-status' 'index.html must not contain voice upload status UI.'
 Assert-NotContains $index "select('*')" "index.html must not use select('*') for marks."
-Assert-NotContains $index 'Confirm & Pay' 'Legacy misleading review copy is still present.'
-Assert-NotContains $privacy 'Ã¢' 'privacy-policy.html still contains mojibake.'
-Assert-NotContains $terms 'Ã¢' 'terms.html still contains mojibake.'
+Assert-NotContains $config 'ENABLE_VOICE_UPLOAD' 'app-config.js must not expose voice upload config.'
+Assert-NotContains $runtimeConfig 'ENABLE_VOICE_UPLOAD' 'api/runtime-config.js must not expose voice upload config.'
+Assert-NotContains $i18n 'voice_note' 'app-i18n.js must not expose voice copy.'
+Assert-NotContains $privacy 'ÃƒÂ¢' 'privacy-policy.html still contains mojibake.'
+Assert-NotContains $terms 'ÃƒÂ¢' 'terms.html still contains mojibake.'
 Assert-Contains $supabaseReadme 'Supabase Hardening' 'supabase/README.md must exist.'
-Assert-Contains $supabaseConfig '[functions.voice-upload]' 'supabase/config.toml must configure voice-upload.'
-Assert-Contains $supabaseConfig 'verify_jwt = false' 'supabase/config.toml must disable gateway JWT verification for voice-upload.'
 Assert-Contains $supabaseSchema 'create table if not exists public.marks' 'supabase/schema.sql must define marks table.'
 Assert-Contains $supabasePolicies 'enable row level security' 'supabase/policies.sql must enable RLS.'
 Assert-Contains $supabaseEnvExample 'SUPABASE_SERVICE_ROLE_KEY' 'supabase/env.example.md must mention service role key.'
@@ -108,10 +104,6 @@ Assert-Contains $capsuleDelivery 'create table if not exists public.capsule_deli
 Assert-Contains $capsuleDispatchReadme 'Capsule Dispatch Function' 'capsule-dispatch README must exist.'
 Assert-Contains $capsuleDispatchIndex 'Deno.serve' 'capsule-dispatch function must define a handler.'
 Assert-Contains $capsuleDispatchIndex 'Email delivery configuration is incomplete.' 'capsule-dispatch must guard against missing email configuration.'
-Assert-Contains $voiceStorage 'create table if not exists public.voice_messages' 'supabase/voice-storage.sql must define voice_messages.'
-Assert-Contains $voiceStorage 'create policy "voice_messages_owner_update"' 'supabase/voice-storage.sql must allow owner update.'
-Assert-Contains $voiceUploadReadme 'Voice Upload Function' 'voice-upload README must exist.'
-Assert-Contains $voiceUploadIndex 'Deno.serve' 'voice-upload function must define a handler.'
 Assert-Contains $capsuleReadiness 'Capsule readiness incomplete.' 'scripts/capsule-readiness.ps1 must validate delivery secrets.'
 
 Write-Output 'Smoke check passed.'

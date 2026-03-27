@@ -18,17 +18,12 @@ Apply in this order:
 1. `schema.sql`
 2. `policies.sql`
 3. `capsule-delivery.sql`
-4. `voice-storage.sql`
 
 ## 3. Deploy Functions
 
 ```bash
 supabase functions deploy capsule-dispatch
-supabase functions deploy voice-upload
 ```
-
-`voice-upload` should be deployed with JWT verification disabled, matching
-`supabase/config.toml`.
 
 ## 4. Verify Core Product
 
@@ -49,14 +44,7 @@ supabase functions deploy voice-upload
 - if email secrets are not configured yet, confirm the function returns `503`
   without mutating queued jobs
 
-## 6. Verify Voice Upload Prep
-
-- invoke `voice-upload` with an authenticated user
-- confirm a `voice_messages` row is created
-- upload a file to the returned storage path
-- confirm the row and object are readable only by the owner
-
-## 7. Exit Criteria
+## 6. Exit Criteria
 
 - smoke check passes locally
 - release check passes locally
