@@ -110,6 +110,12 @@ function dismissStartHint() {
 }
 
 function openSb(type) {
+  if ((type || 'mark') === 'capsule' && ST && ST.capsuleFeatureAvailable === false) {
+    showToast(typeof getCapsuleUnavailableMessage === 'function'
+      ? getCapsuleUnavailableMessage()
+      : 'Capsules are temporarily unavailable right now.', 'error');
+    return;
+  }
   if (typeof startCreateFlow === 'function') {
     startCreateFlow(type || 'mark');
     return;

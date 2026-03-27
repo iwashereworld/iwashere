@@ -38,6 +38,12 @@ function Get-VercelCommand {
   )
   foreach ($candidate in $commonPaths) {
     if ($candidate -and (Test-Path $candidate)) {
+      if ($candidate -like '*.cmd') {
+        return [pscustomobject]@{
+          Binary = 'cmd.exe'
+          Args = @('/c', $candidate)
+        }
+      }
       return [pscustomobject]@{
         Binary = $candidate
         Args = @()
@@ -47,6 +53,12 @@ function Get-VercelCommand {
 
   $vercel = Get-Command vercel -ErrorAction SilentlyContinue
   if ($vercel) {
+    if ($vercel.Source -like '*.cmd') {
+      return [pscustomobject]@{
+        Binary = 'cmd.exe'
+        Args = @('/c', $vercel.Source)
+      }
+    }
     return [pscustomobject]@{
       Binary = $vercel.Source
       Args = @()

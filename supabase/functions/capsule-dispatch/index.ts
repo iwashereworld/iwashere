@@ -216,11 +216,10 @@ Deno.serve(async () => {
 
     try {
       const capsule = await loadCapsule(capsuleId);
-      let publishedMarkId = await createPublishedMarkIfNeeded(capsule, now);
-
       if (!hasEmailConfig()) {
         throw new Error("Email delivery configuration is incomplete.");
       }
+      const publishedMarkId = await createPublishedMarkIfNeeded(capsule, now);
 
       if (capsule.recipient_type === "other") {
         if (!capsule.recipient_email) {

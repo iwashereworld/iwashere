@@ -641,7 +641,7 @@ window.addEventListener('load', initCookieBanner);
 </div>
 <div id="fab-dock">
   <button id="fab-mark" class="fab-action" onclick="openSb('mark')"><span class="fab-plus">+</span><span class="fab-label"><strong data-i18n="add_mark">Add Mark</strong><span data-i18n="add_mark_sub">Visible on the map right away</span></span></button>
-  <button id="fab-capsule" class="fab-action" onclick="openSb('capsule')"><span class="fab-plus">+</span><span class="fab-label"><strong data-i18n="create_capsule">Create Capsule</strong><span data-i18n="create_capsule_sub">Opens on a future date</span></span></button>
+  <button id="fab-capsule" class="fab-action" onclick="openSb('capsule')"><span class="fab-plus">+</span><span class="fab-label"><strong data-i18n="create_capsule">Create Capsule</strong><span id="fab-capsule-sub" data-i18n="create_capsule_sub">Opens on a future date</span></span></button>
 </div>
 <div id="create-flow" aria-live="polite">
   <div class="cf-kicker">Create Memory</div>
@@ -659,7 +659,7 @@ window.addEventListener('load', initCookieBanner);
   <div class="hint-t" id="start-hint-copy" data-i18n="start_hint">Choose whether you want to leave a mark now or plan a capsule for later.</div>
   <div class="hint-a">
     <button type="button" class="nbtn p" onclick="openSb('mark')" data-i18n="add_mark">Add Mark</button>
-    <button type="button" class="nbtn" onclick="openSb('capsule')" data-i18n="create_capsule">Create Capsule</button>
+    <button id="start-capsule-btn" type="button" class="nbtn" onclick="openSb('capsule')" data-i18n="create_capsule">Create Capsule</button>
     <button type="button" class="nbtn" onclick="dismissStartHint()" data-i18n="later">Later</button>
   </div>
 </div>
@@ -943,6 +943,62 @@ function copyTextWithFallback(text) {
   });
 }
 
+function updateCapsuleEntryAvailability() {
+  var unavailable = ST.capsuleFeatureAvailable === false;
+  var message = typeof getCapsuleUnavailableMessage === 'function'
+    ? getCapsuleUnavailableMessage()
+    : 'Capsules are temporarily unavailable right now.';
+  var fabCapsule = document.getElementById('fab-capsule');
+  var fabCapsuleSub = document.getElementById('fab-capsule-sub');
+  var startCapsuleBtn = document.getElementById('start-capsule-btn');
+  [fabCapsule, startCapsuleBtn].forEach(function(el) {
+    if (!el) return;
+    el.disabled = unavailable;
+    el.setAttribute('aria-disabled', unavailable ? 'true' : 'false');
+    if (unavailable) {
+      el.classList.add('disabled');
+      el.title = message;
+    } else {
+      el.classList.remove('disabled');
+      el.removeAttribute('title');
+    }
+  });
+  if (fabCapsuleSub && unavailable) {
+    fabCapsuleSub.textContent = getCurrentLanguage && getCurrentLanguage() === 'tr'
+      ? 'Rollout tamamlaninca yeniden acilacak'
+      : 'Returns as soon as rollout completes';
+  }
+}
+
+function markCapsuleFeatureUnavailable(error) {
+  ST.capsuleFeatureAvailable = false;
+  ST.capsuleFeatureChecked = true;
+  ST.capsules = [];
+  console.warn('[IWH] Capsules unavailable:', error);
+  updateCapsuleEntryAvailability();
+}
+
+function probeCapsuleFeatureAvailability() {
+  if (!_supabase || ST.capsuleFeatureChecked) return Promise.resolve(ST.capsuleFeatureAvailable);
+  ST.capsuleFeatureChecked = true;
+  return _supabase.from('capsules').select('id', { head: true, count: 'exact' }).then(function(res) {
+    if (res.error && typeof isCapsuleSchemaUnavailableError === 'function' && isCapsuleSchemaUnavailableError(res.error)) {
+      markCapsuleFeatureUnavailable(res.error);
+      return false;
+    }
+    ST.capsuleFeatureAvailable = true;
+    updateCapsuleEntryAvailability();
+    return true;
+  }).catch(function(err) {
+    if (typeof isCapsuleSchemaUnavailableError === 'function' && isCapsuleSchemaUnavailableError(err)) {
+      markCapsuleFeatureUnavailable(err);
+      return false;
+    }
+    updateCapsuleEntryAvailability();
+    return ST.capsuleFeatureAvailable;
+  });
+}
+
 // SUPABASE
 var _supabase = _runtimeConfigErrors.length ? null : supabase.createClient(
   IWH_CONFIG.SUPABASE_URL,
@@ -951,6 +1007,7 @@ var _supabase = _runtimeConfigErrors.length ? null : supabase.createClient(
 
 // AUTH STATE LISTENER
 if (_supabase) {
+  probeCapsuleFeatureAvailability();
   _supabase.auth.getSession().then(function(r) {
     if (r.data && r.data.session) {
       var u = r.data.session.user;
@@ -978,6 +1035,8 @@ if (_supabase) {
 } else {
   console.error('[IWH] Runtime config is incomplete. Missing:', _runtimeConfigErrors.join(', '));
 }
+
+updateCapsuleEntryAvailability();
 
 window.addEventListener('error', function(event) {
   console.error('[IWH] Unhandled error:', event.error || event.message || event);
@@ -1061,6 +1120,8 @@ var ST = {
   capsuleVisibility: 'private',
   capsuleOccasion: 'future_self',
   capsuleHasLocation: false,
+  capsuleFeatureAvailable: true,
+  capsuleFeatureChecked: false,
   composerType: 'mark',
   createMode: false,
   createStep: 0,
@@ -2861,6 +2922,9 @@ function saveCapsuleToDB(pin) {
   if (!_supabase) {
     return Promise.resolve({ error: new Error('Missing runtime config for Supabase client') });
   }
+  if (ST.capsuleFeatureAvailable === false) {
+    return Promise.resolve({ error: new Error(typeof getCapsuleUnavailableMessage === 'function' ? getCapsuleUnavailableMessage() : 'Capsules are temporarily unavailable right now.') });
+  }
   if (!AUTH.user || !AUTH.user.id) {
     return Promise.resolve({ error: new Error('Missing auth user') });
   }
@@ -2892,11 +2956,17 @@ function saveCapsuleToDB(pin) {
     photo: pin.photo || null
   }).select(CAPSULE_SELECT_FIELDS).single().then(function(r) {
     if (r.error) {
+      if (typeof isCapsuleSchemaUnavailableError === 'function' && isCapsuleSchemaUnavailableError(r.error)) {
+        markCapsuleFeatureUnavailable(r.error);
+      }
       console.error('Capsule save error:', r.error);
       return r;
     }
     return r;
   }).catch(function(err) {
+    if (typeof isCapsuleSchemaUnavailableError === 'function' && isCapsuleSchemaUnavailableError(err)) {
+      markCapsuleFeatureUnavailable(err);
+    }
     console.error('Capsule save error:', err);
     return { error: err };
   });
@@ -2975,12 +3045,20 @@ function loadCapsules() {
     ST.capsules = [];
     return Promise.resolve([]);
   }
+  if (ST.capsuleFeatureAvailable === false) {
+    ST.capsules = [];
+    return Promise.resolve([]);
+  }
   return _supabase.from('capsules')
     .select(CAPSULE_SELECT_FIELDS)
     .eq('user_id', AUTH.user.id)
     .order('created_at', { ascending: false })
     .then(function(res) {
       if (res.error) {
+        if (typeof isCapsuleSchemaUnavailableError === 'function' && isCapsuleSchemaUnavailableError(res.error)) {
+          markCapsuleFeatureUnavailable(res.error);
+          return [];
+        }
         console.error('[IWH] Capsules load error:', res.error);
         return [];
       }
@@ -2993,6 +3071,10 @@ function loadCapsules() {
       return ST.capsules;
     })
     .catch(function(err) {
+      if (typeof isCapsuleSchemaUnavailableError === 'function' && isCapsuleSchemaUnavailableError(err)) {
+        markCapsuleFeatureUnavailable(err);
+        return [];
+      }
       console.error('[IWH] Capsules load error:', err);
       return [];
     });

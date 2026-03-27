@@ -99,6 +99,22 @@ function isLegacySchemaError(error) {
     /schema cache/i.test(String(error.message || ''));
 }
 
+function isCapsuleSchemaUnavailableError(error) {
+  if (!error) return false;
+  var code = String(error.code || '');
+  var message = String(error.message || '');
+  return code === '42P01' ||
+    /relation .*capsules/i.test(message) ||
+    /table .*capsules/i.test(message) ||
+    /schema cache/i.test(message);
+}
+
+function getCapsuleUnavailableMessage() {
+  return getCurrentLanguage() === 'tr'
+    ? 'Kapsüller şu anda kullanılamıyor. Rollout tamamlanana kadar iz bırakmaya devam edebilirsin.'
+    : 'Capsules are temporarily unavailable right now. You can keep adding marks while the rollout finishes.';
+}
+
 function getMarkSelectFieldCandidates() {
   return [CAPSULE_MARK_SELECT_FIELDS, LEGACY_MARK_SELECT_FIELDS];
 }
