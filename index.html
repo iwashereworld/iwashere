@@ -672,9 +672,9 @@ window.addEventListener('load', initCookieBanner);
     </div>
     <!-- Step 3 -->
     <div class="step" id="step3">
-      <h3 data-i18n="capsule_options">Capsule Options</h3>
-      <p class="sub3" data-i18n="capsule_options_sub">Skip this if you only want a public mark right now.</p>
-      <div class="note-box" id="capsule-note">Recipient email is only needed when you send a future capsule to someone else.</div>
+      <h3 data-i18n="capsule_options">Show Now or Open Later</h3>
+      <p class="sub3" data-i18n="capsule_options_sub">Pick one clear mode: visible now as a public mark, or locked until a future date.</p>
+      <div class="note-box" id="capsule-note" data-i18n="visibility_note_public">Show this memory now as a public mark on the globe.</div>
       <div id="recipient-block">
       <label class="fl" data-i18n="recipient">Recipient</label>
       <div class="g2">
@@ -685,11 +685,11 @@ window.addEventListener('load', initCookieBanner);
       </div>
       <label class="fl" data-i18n="opens_in">Opens in</label>
       <div class="g3">
-        <div class="oc" id="tq7" onclick="setQuick(7,'tq7')" role="button" tabindex="0" aria-pressed="false">1 Week</div>
+      <div class="oc" id="tq7" onclick="setQuick(7,'tq7')" role="button" tabindex="0" aria-pressed="false">1 Week</div>
         <div class="oc" id="tq30" onclick="setQuick(30,'tq30')" role="button" tabindex="0" aria-pressed="false">1 Month</div>
         <div class="oc" id="tq90" onclick="setQuick(90,'tq90')" role="button" tabindex="0" aria-pressed="false">3 Months</div>
         <div class="oc" id="tq180" onclick="setQuick(180,'tq180')" role="button" tabindex="0" aria-pressed="false">6 Months</div>
-        <div class="oc on" id="tq365" onclick="setQuick(365,'tq365')" role="button" tabindex="0" aria-pressed="true">1 Year</div>
+        <div class="oc" id="tq365" onclick="setQuick(365,'tq365')" role="button" tabindex="0" aria-pressed="false">1 Year</div>
         <div class="oc" id="tq730" onclick="setQuick(730,'tq730')" role="button" tabindex="0" aria-pressed="false">2 Years</div>
       </div>
       <div class="g3" style="margin-top:0;">
@@ -707,7 +707,7 @@ window.addEventListener('load', initCookieBanner);
         <div id="opens-date-text" style="font-size:.9rem;color:var(--gold);margin-top:6px;font-family:'Cormorant Garamond',serif;line-height:1.5;">In 1 year - ...</div>
       </div>
       <div style="text-align:center;margin-bottom:.5rem;"><span style="font-size:.72rem;color:var(--muted);" data-i18n="or">or</span></div>
-      <div class="oc" id="tq0" onclick="setQuick(0,'tq0')" role="button" tabindex="0" aria-pressed="false" style="margin-bottom:1rem;" data-i18n="no_capsule">No Capsule (public mark only)</div>
+      <div class="oc on" id="tq0" onclick="setQuick(0,'tq0')" role="button" tabindex="0" aria-pressed="true" style="margin-bottom:1rem;" data-i18n="no_capsule">Show it now (public mark)</div>
       <button class="btn bp" id="btn3" onclick="proceedFromCapsuleStep()" data-i18n="continue_message">Continue to Message</button>
       <button class="btn bs" onclick="goS(2)" data-i18n="back">Back</button>
     </div>
@@ -994,7 +994,7 @@ var CITIES = [
 var ST = {
   pins: [],
   name: '', photo: null, selCode: '', selName: '', selLat: null, selLon: null,
-  yr: 1, capsuleDays: 365, capsuleDate: null, rc: 's', vis: 'pub',
+  yr: 0, capsuleDays: 0, capsuleDate: null, rc: 's', vis: 'pub',
   createMode: false,
   createStep: 0,
   locationConfirmed: false,

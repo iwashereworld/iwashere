@@ -82,8 +82,8 @@ function resetForm() {
   ST.selName = '';
   ST.selLat = null;
   ST.selLon = null;
-  ST.yr = 1;
-  ST.capsuleDays = 365;
+  ST.yr = 0;
+  ST.capsuleDays = 0;
   ST.capsuleDate = null;
   ST.rc = 's';
   ST.vis = 'pub';
@@ -100,6 +100,20 @@ function resetForm() {
     submitBtn.disabled = false;
     submitBtn.textContent = t('save_my_mark');
   }
+  var recipientEmail = document.getElementById('iem');
+  if (recipientEmail) recipientEmail.value = '';
+  var recipientSelf = document.getElementById('os');
+  var recipientOther = document.getElementById('oo');
+  if (recipientSelf) {
+    recipientSelf.classList.add('on');
+    recipientSelf.setAttribute('aria-pressed', 'true');
+  }
+  if (recipientOther) {
+    recipientOther.classList.remove('on');
+    recipientOther.setAttribute('aria-pressed', 'false');
+  }
+  var recipientWrap = document.getElementById('re');
+  if (recipientWrap) recipientWrap.style.display = 'none';
   document.getElementById('btn1').disabled = true;
   document.getElementById('btn2').disabled = true;
   var preciseCoords = document.getElementById('precise-coords');
@@ -114,7 +128,7 @@ function resetForm() {
   ST.createMode = false;
   ST.createStep = 0;
   if (typeof updateCreateFlowUI === 'function') updateCreateFlowUI();
-  updateCapsuleUI();
+  setQuick(0, 'tq0');
   goS(1);
   revealStartHint();
 }
@@ -233,11 +247,11 @@ function updateCapsuleUI() {
   if (note) {
     note.textContent = hasCapsule
       ? (getCurrentLanguage() === 'tr'
-        ? 'Alici e-postasi yalnizca gelecekte acilacak kapsulu baska birine gonderdiginde gerekir.'
-        : 'Recipient email is only needed when you send a future capsule to someone else.')
+        ? t('visibility_note_capsule')
+        : t('visibility_note_capsule'))
       : (getCurrentLanguage() === 'tr'
-        ? 'Kapsul secilmedi. Bu iz hemen herkese acik olarak kaydedilecek.'
-        : 'No capsule selected. This will be saved as a public mark right away.');
+        ? t('visibility_note_public')
+        : t('visibility_note_public'));
   }
   if (preview) preview.classList.toggle('section-hidden', !hasCapsule);
 }

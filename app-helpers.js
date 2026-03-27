@@ -1025,7 +1025,12 @@ function bSmry() {
   summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Küre izi - ' : 'Globe mark - ') + (ST.selName || '-'), '$1.00'));
   summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'İsim: ' : 'Name: ') + ST.name, '-'));
   summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Koordinatlar' : 'Coordinates', ST.selLat ? ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) : '-'));
-  if (cap) summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Kapsül - açılır ' : 'Capsule - opens on ') + oy, '$2.00'));
+  if (cap) {
+    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Gorunurluk' : 'Visibility'), getCurrentLanguage() === 'tr' ? 'Kapsul olarak sonra acilir' : 'Opens later as a capsule'));
+    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Kapsül - açılır ' : 'Capsule - opens on ') + oy, '$2.00'));
+  } else {
+    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Gorunurluk' : 'Visibility'), getCurrentLanguage() === 'tr' ? 'Simdi gorunur' : 'Visible now'));
+  }
   summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Toplam' : 'Total', '$' + tot.toFixed(2), true));
 }
 
