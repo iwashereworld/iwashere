@@ -1266,7 +1266,6 @@ function requestSceneRender() {
 
 function getPinZoomBucket(currentZoom) {
   if (currentZoom < 3) return 'hidden';
-  if (currentZoom <= 7) return 'cluster';
   if (currentZoom >= 18) return 'detail-close';
   return 'detail';
 }
@@ -1898,8 +1897,8 @@ function syncPinLOD(force) {
   _lastPinZoomBucket = nextBucket;
   _lastPinFilterKey = nextFilterKey;
   pinDataSource.show = currentZoom >= 3;
-  pinDataSource.clustering.enabled = currentZoom >= 3 && currentZoom <= 7;
-  _lastPinLodMode = currentZoom <= 7 ? 'cluster' : (currentZoom >= 18 ? 'detail-close' : 'detail');
+  pinDataSource.clustering.enabled = false;
+  _lastPinLodMode = currentZoom >= 18 ? 'detail-close' : 'detail';
   pinDataSource.entities.values.forEach(function(entity) {
     var pin = entity.iwhPinData || (entity.properties && entity.properties.getValue ? entity.properties.getValue(Cesium.JulianDate.now()) : null);
     var shouldShow = currentZoom >= 3 && matchesPinFilter(pin);
