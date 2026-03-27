@@ -5,6 +5,7 @@
 - confirm the current production table shape
 - back up the existing `marks` table
 - test in staging first
+- confirm `supabase db push --include-all --dry-run` shows only the intended capsule migration
 
 ## Schema Validation
 

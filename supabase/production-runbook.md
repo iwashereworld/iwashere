@@ -14,15 +14,15 @@ Use this only after staging has passed.
 - snapshot or export any existing storage bucket configuration
 - note the currently deployed function versions
 
-## 3. Apply SQL Carefully
+## 3. Apply Database Rollout Carefully
 
-Apply in this order:
+Apply the migration bundle instead of ad hoc SQL:
 
-1. `schema.sql`
-2. `policies.sql`
-3. `capsule-delivery.sql`
+```bash
+supabase db push --include-all --yes --workdir <repo>
+```
 
-Validate each step before moving to the next.
+Validate that remote migration `20260327183000_capsule_hardening.sql` is present before moving on.
 
 ## 4. Set Production Secrets
 

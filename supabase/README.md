@@ -27,15 +27,14 @@ is not a security boundary. The database must enforce:
 
 ## Apply Order
 
-1. Review `schema.sql`
-2. Create a staging Supabase project or staging branch
-3. Apply `schema.sql`
-4. Apply `policies.sql`
-5. Apply `capsule-delivery.sql`
-6. Deploy `functions/capsule-dispatch`
-7. Configure the GitHub Actions schedule
-8. Verify with `rollout-checklist.md` and `staging-runbook.md`
-9. Update the frontend to target any new public/private split if needed
+1. Review `schema.sql`, `policies.sql`, and `capsule-delivery.sql`
+2. Create or link the staging Supabase project
+3. Run `supabase db push --include-all --yes --workdir <repo>`
+4. Confirm migration `20260327183000_capsule_hardening.sql` is present remotely
+5. Deploy `functions/capsule-dispatch`
+6. Configure the GitHub Actions schedule
+7. Verify with `rollout-checklist.md` and `staging-runbook.md`
+8. Update the frontend to target any new public/private split if needed
 
 ## Important
 

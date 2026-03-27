@@ -1,11 +1,11 @@
 $steps = @(
-  '1. Apply supabase/schema.sql',
-  '2. Apply supabase/policies.sql',
-  '3. Apply supabase/capsule-delivery.sql',
-  '4. Deploy function supabase/functions/capsule-dispatch',
-  '5. Configure .github/workflows/capsule-dispatch.yml secrets',
-  '6. Run scripts/smoke-check.ps1',
-  '7. Run scripts/release-check.ps1',
+  '1. Run supabase db push --include-all --yes',
+  '2. Verify migration 20260327183000_capsule_hardening.sql on remote',
+  '3. Deploy function supabase/functions/capsule-dispatch',
+  '4. Configure .github/workflows/capsule-dispatch.yml secrets',
+  '5. Run scripts/smoke-check.ps1',
+  '6. Run scripts/release-check.ps1',
+  '7. Run scripts/staging-e2e.ps1',
   '8. Follow supabase/staging-runbook.md'
 )
 

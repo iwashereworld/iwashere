@@ -11,13 +11,17 @@ online in a staging environment before touching production.
 - if Supabase branching is unavailable on the current plan, use a dedicated
   staging project instead of a branch
 
-## 2. Apply SQL
+## 2. Apply Database Rollout
 
-Apply in this order:
+Apply the staged migration bundle:
 
-1. `schema.sql`
-2. `policies.sql`
-3. `capsule-delivery.sql`
+```bash
+supabase db push --include-all --yes --workdir <repo>
+```
+
+Expected remote migration:
+
+- `20260327183000_capsule_hardening.sql`
 
 ## 3. Deploy Functions
 
