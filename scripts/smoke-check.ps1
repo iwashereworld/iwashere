@@ -112,6 +112,15 @@ Assert-Contains $ui 'function showToast(msg, tone)' 'app-ui.js must contain show
 Assert-Contains $i18n 'message_for_memory' 'app-i18n.js must localize the text-only message step.'
 Assert-Contains $uiOverrides 'function updateStepMeta(step)' 'app-ui-overrides.js must override Turkish step copy safely.'
 Assert-Contains $i18nOverrides 'Object.assign(window.I18N_MESSAGES.tr' 'app-i18n-overrides.js must override Turkish copy safely.'
+if (([regex]::Matches($ui, 'function getStepCopy\(')).Count -gt 2) {
+  throw 'app-ui.js contains too many getStepCopy() definitions.'
+}
+if (([regex]::Matches($ui, 'function getOnboardingSteps\(')).Count -gt 2) {
+  throw 'app-ui.js contains too many getOnboardingSteps() definitions.'
+}
+if (([regex]::Matches($ui, 'function proceedFromMessageStep\(')).Count -gt 2) {
+  throw 'app-ui.js contains too many proceedFromMessageStep() definitions.'
+}
 Assert-NotContains $index 'voice-area' 'index.html must not render the voice area.'
 Assert-NotContains $index 'prepareVoiceUpload' 'index.html must not contain prepareVoiceUpload().'
 Assert-NotContains $index 'attachVoiceToMark' 'index.html must not contain attachVoiceToMark().'

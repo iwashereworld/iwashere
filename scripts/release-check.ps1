@@ -103,6 +103,12 @@ Assert-Contains $runtimeConfig 'PUBLIC_APP_URL' 'api/runtime-config.js must expo
 Assert-Contains $health 'publicAppUrl' 'api/health.js must expose runtime health metadata.'
 Assert-Contains $i18nOverrides 'hero_eyebrow' 'app-i18n-overrides.js must provide Turkish copy overrides.'
 Assert-Contains $uiOverrides 'function getStepCopy()' 'app-ui-overrides.js must override onboarding copy safely.'
+if (([regex]::Matches($uiOverrides, 'function getStepCopy\(')).Count -ne 1) {
+  throw 'app-ui-overrides.js must keep a single getStepCopy() override.'
+}
+if (([regex]::Matches($i18nOverrides, 'Object\.assign\(window\.I18N_MESSAGES\.tr')).Count -ne 1) {
+  throw 'app-i18n-overrides.js must keep a single Turkish override block.'
+}
 Assert-Contains $configExample 'window.IWH_CONFIG' 'app-config.example.js must define example config.'
 Assert-Contains $configExample 'PUBLIC_APP_URL' 'app-config.example.js must document PUBLIC_APP_URL.'
 Assert-NotContains $configExample 'ENABLE_VOICE_UPLOAD' 'app-config.example.js must not expose voice upload flag.'
