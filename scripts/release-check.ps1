@@ -16,6 +16,7 @@ $privacyPath = Join-Path $root 'privacy-policy.html'
 $termsPath = Join-Path $root 'terms.html'
 $robotsPath = Join-Path $root 'robots.txt'
 $sitemapPath = Join-Path $root 'sitemap.xml'
+$faviconPath = Join-Path $root 'favicon.svg'
 $voiceMigrationPath = Join-Path $root 'supabase\migrations\20260324170300_voice_storage.sql'
 
 function Assert-Contains {
@@ -58,12 +59,17 @@ $privacy = Get-Content -Raw $privacyPath
 $terms = Get-Content -Raw $termsPath
 $robots = Get-Content -Raw $robotsPath
 $sitemap = Get-Content -Raw $sitemapPath
+$favicon = Get-Content -Raw $faviconPath
 
 if (Test-Path $voiceMigrationPath) {
   throw 'Deprecated voice storage migration should not remain in the repo.'
 }
 
 Assert-Contains $index '<script src="/api/runtime-config.js"></script>' 'index.html must load the runtime config endpoint.'
+Assert-Contains $index '<link rel="icon" type="image/svg+xml" href="/favicon.svg">' 'index.html must expose favicon.svg.'
+Assert-Contains $privacy '<link rel="icon" type="image/svg+xml" href="/favicon.svg">' 'privacy-policy.html must expose favicon.svg.'
+Assert-Contains $terms '<link rel="icon" type="image/svg+xml" href="/favicon.svg">' 'terms.html must expose favicon.svg.'
+Assert-Contains $favicon '<svg' 'favicon.svg must be a valid SVG file.'
 Assert-Contains $index '<meta name="description"' 'index.html must include a description meta tag.'
 Assert-Contains $index '<link rel="canonical"' 'index.html must include a canonical URL.'
 Assert-Contains $index 'application/ld+json' 'index.html must include structured data.'

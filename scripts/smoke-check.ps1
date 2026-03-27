@@ -4,6 +4,7 @@ $root = Split-Path -Parent $PSScriptRoot
 $indexPath = Join-Path $root 'index.html'
 $privacyPath = Join-Path $root 'privacy-policy.html'
 $termsPath = Join-Path $root 'terms.html'
+$faviconPath = Join-Path $root 'favicon.svg'
 $configPath = Join-Path $root 'app-config.js'
 $runtimeConfigPath = Join-Path $root 'api\runtime-config.js'
 $helpersPath = Join-Path $root 'app-helpers.js'
@@ -50,6 +51,7 @@ function Assert-NotContains {
 $index = Get-Content -Raw $indexPath
 $privacy = Get-Content -Raw $privacyPath
 $terms = Get-Content -Raw $termsPath
+$favicon = Get-Content -Raw $faviconPath
 $config = Get-Content -Raw $configPath
 $runtimeConfig = Get-Content -Raw $runtimeConfigPath
 $helpers = Get-Content -Raw $helpersPath
@@ -73,6 +75,10 @@ if (Test-Path $voiceMigrationPath) {
 }
 
 Assert-Contains $index '<script src="/api/runtime-config.js"></script>' 'index.html must load the runtime config endpoint.'
+Assert-Contains $index '<link rel="icon" type="image/svg+xml" href="/favicon.svg">' 'index.html must expose favicon.svg.'
+Assert-Contains $privacy '<link rel="icon" type="image/svg+xml" href="/favicon.svg">' 'privacy-policy.html must expose favicon.svg.'
+Assert-Contains $terms '<link rel="icon" type="image/svg+xml" href="/favicon.svg">' 'terms.html must expose favicon.svg.'
+Assert-Contains $favicon '<svg' 'favicon.svg must be a valid SVG file.'
 Assert-Contains $index '<script src="app-config.js"></script>' 'index.html must load app-config.js.'
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
 Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
