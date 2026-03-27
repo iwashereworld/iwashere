@@ -828,33 +828,47 @@ window.addEventListener('load', initCookieBanner);
 <script src="app-ui.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+function getRuntimeConfigErrors() {
+  var errors = [];
+  if (!window.IWH_CONFIG || !IWH_CONFIG.SUPABASE_URL) errors.push('SUPABASE_URL');
+  if (!window.IWH_CONFIG || !IWH_CONFIG.SUPABASE_ANON_KEY) errors.push('SUPABASE_ANON_KEY');
+  if (!window.IWH_CONFIG || !IWH_CONFIG.FUNCTIONS_BASE_URL) errors.push('FUNCTIONS_BASE_URL');
+  return errors;
+}
+
+var _runtimeConfigErrors = getRuntimeConfigErrors();
+
 // SUPABASE
-var _supabase = supabase.createClient(
+var _supabase = _runtimeConfigErrors.length ? null : supabase.createClient(
   IWH_CONFIG.SUPABASE_URL,
   IWH_CONFIG.SUPABASE_ANON_KEY
 );
 
 // AUTH STATE LISTENER
-_supabase.auth.getSession().then(function(r) {
-  if (r.data && r.data.session) {
-    var u = r.data.session.user;
-    AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id, meta: u.user_metadata || {} };
-    if (_requestedMarkId) _requestedMarkState = 'idle';
-    updateUserUI();
-  }
-});
-_supabase.auth.onAuthStateChange(function(event, session) {
-  if (session) {
-    var u = session.user;
-    AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id, meta: u.user_metadata || {} };
-    if (_requestedMarkId) _requestedMarkState = 'idle';
-    updateUserUI();
-    if (viewer) loadMarks();
-  } else {
-    AUTH.user = null;
-    updateUserUI();
-  }
-});
+if (_supabase) {
+  _supabase.auth.getSession().then(function(r) {
+    if (r.data && r.data.session) {
+      var u = r.data.session.user;
+      AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id, meta: u.user_metadata || {} };
+      if (_requestedMarkId) _requestedMarkState = 'idle';
+      updateUserUI();
+    }
+  });
+  _supabase.auth.onAuthStateChange(function(event, session) {
+    if (session) {
+      var u = session.user;
+      AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id, meta: u.user_metadata || {} };
+      if (_requestedMarkId) _requestedMarkState = 'idle';
+      updateUserUI();
+      if (viewer) loadMarks();
+    } else {
+      AUTH.user = null;
+      updateUserUI();
+    }
+  });
+} else {
+  console.error('[IWH] Runtime config is incomplete. Missing:', _runtimeConfigErrors.join(', '));
+}
 
 // COUNTRIES DATABASE
 var COUNTRIES = [
@@ -1061,6 +1075,8 @@ function applyBodyModeState() {
 // Initialize CesiumJS
 async function initCesium() {
   try {
+    if (!_supabase) throw new Error('Missing runtime config for Supabase.');
+    if (!IWH_CONFIG.FUNCTIONS_BASE_URL) throw new Error('Missing runtime config for FUNCTIONS_BASE_URL.');
     // Use Cesium Ion default token (free tier - 5000 sessions/month)
     // For production, get your own token at https://cesium.com/ion/tokens
     // Cesium token is now securely fetched from Supabase Edge Function
@@ -2196,7 +2212,11 @@ document.addEventListener('DOMContentLoaded', function() {
   initBgGlobe();
   
   // Load stats
-  loadStats();
+  if (_runtimeConfigErrors.length) {
+    showToast('Runtime config is incomplete: ' + _runtimeConfigErrors.join(', '), 'error');
+  } else {
+    loadStats();
+  }
   if (_requestedMarkId) {
     showGlobe();
   }
@@ -2392,6 +2412,9 @@ async function submit() {
 }
 
 function saveMarkToDB(pin) {
+  if (!_supabase) {
+    return Promise.resolve({ error: new Error('Missing runtime config for Supabase client') });
+  }
   if (AUTH.user && AUTH.user.id) {
     var recipientInput = document.getElementById('iem');
     var recipientEmail = ST.rc === 'o' && recipientInput ? normalizeEmail(recipientInput.value) : null;
@@ -2430,6 +2453,10 @@ function saveMarkToDB(pin) {
 }
 
 function loadMarks() {
+  if (!_supabase) {
+    console.error('[IWH] loadMarks skipped. Missing runtime config:', _runtimeConfigErrors.join(', '));
+    return;
+  }
   console.log('[IWH] Loading marks from Supabase...');
   _supabase.from('marks').select(MARK_SELECT_FIELDS).order('created_at', { ascending: false }).limit(500).then(function(res) {
     console.log('[IWH] Marks response:', res);
@@ -2478,6 +2505,7 @@ function mergeRequestedMarkIntoState(pin) {
 
 function fetchRequestedMarkById(markId) {
   if (!markId) return Promise.resolve(null);
+  if (!_supabase) return Promise.resolve(null);
   if (_requestedMarkFetchPromise) return _requestedMarkFetchPromise;
   _requestedMarkFetchPromise = _supabase
     .from('marks')
@@ -2583,6 +2611,10 @@ function focusRequestedMarkIfNeeded() {
 }
 
 function loadStats() {
+  if (!_supabase) {
+    console.error('[IWH] loadStats skipped. Missing runtime config:', _runtimeConfigErrors.join(', '));
+    return;
+  }
   _supabase.from('marks').select('id,country_code,country_name,capsule_days', { count: 'exact' }).limit(500).then(function(res) {
     if (res.error) return;
     var total = res.count != null ? res.count : ((res.data && res.data.length) || 0);
