@@ -837,6 +837,37 @@ function getRuntimeConfigErrors() {
 }
 
 var _runtimeConfigErrors = getRuntimeConfigErrors();
+var IWH_DEBUG = /(?:\?|&)debug=1(?:&|$)/.test(window.location.search || '') || /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '');
+
+function debugLog() {
+  if (!IWH_DEBUG || !window.console || !console.log) return;
+  console.log.apply(console, arguments);
+}
+
+function copyTextWithFallback(text) {
+  if (!text) return Promise.reject(new Error('Missing text to copy.'));
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise(function(resolve, reject) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', 'readonly');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      ta.style.pointerEvents = 'none';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (!ok) throw new Error('Copy command failed.');
+      resolve();
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
 
 // SUPABASE
 var _supabase = _runtimeConfigErrors.length ? null : supabase.createClient(
@@ -869,6 +900,20 @@ if (_supabase) {
 } else {
   console.error('[IWH] Runtime config is incomplete. Missing:', _runtimeConfigErrors.join(', '));
 }
+
+window.addEventListener('error', function(event) {
+  console.error('[IWH] Unhandled error:', event.error || event.message || event);
+  if (typeof showToast === 'function') {
+    showToast('Something went wrong. Please refresh and try again.', 'error');
+  }
+});
+
+window.addEventListener('unhandledrejection', function(event) {
+  console.error('[IWH] Unhandled rejection:', event.reason || event);
+  if (typeof showToast === 'function') {
+    showToast('A request failed unexpectedly. Please try again.', 'error');
+  }
+});
 
 // COUNTRIES DATABASE
 var COUNTRIES = [
@@ -1134,7 +1179,7 @@ async function initCesium() {
       );
       bingImagery = viewer.imageryLayers.addImageryProvider(esriImagery);
     } catch (e) {
-      console.log('[IWH] ESRI failed, using OpenStreetMap:', e);
+      debugLog('[IWH] ESRI failed, using OpenStreetMap:', e);
       // Fallback to OpenStreetMap
       var osmImageryProvider = new Cesium.OpenStreetMapImageryProvider({
         url: 'https://tile.openstreetmap.org/'
@@ -2457,9 +2502,9 @@ function loadMarks() {
     console.error('[IWH] loadMarks skipped. Missing runtime config:', _runtimeConfigErrors.join(', '));
     return;
   }
-  console.log('[IWH] Loading marks from Supabase...');
+  debugLog('[IWH] Loading marks from Supabase...');
   _supabase.from('marks').select(MARK_SELECT_FIELDS).order('created_at', { ascending: false }).limit(500).then(function(res) {
-    console.log('[IWH] Marks response:', res);
+    debugLog('[IWH] Marks response:', res);
     if (res.error) {
       console.error('[IWH] Load error:', res.error);
       showToast('Could not load public marks right now.', 'error');
@@ -2475,7 +2520,7 @@ function loadMarks() {
         ST.pins.push(pin);
         if (viewer) addPinToGlobe(pin);
       });
-      console.log('[IWH] Loaded ' + ST.pins.length + ' marks');
+      debugLog('[IWH] Loaded ' + ST.pins.length + ' marks');
       updateStats();
       renderLists();
       syncPinLOD(true);
@@ -2686,15 +2731,20 @@ function doShr() {
   }
 
   if (navigator.share) {
-    navigator.share(payload).catch(function() {});
-  } else if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(payload.url).then(function() {
+    navigator.share(payload).catch(function(err) {
+      if (err && err.name === 'AbortError') return;
+      copyTextWithFallback(payload.url).then(function() {
+        showToast('Share link copied to clipboard.', 'success');
+      }).catch(function() {
+        showToast(payload.url, 'error');
+      });
+    });
+  } else {
+    copyTextWithFallback(payload.url).then(function() {
       showToast('Share link copied to clipboard.', 'success');
     }).catch(function() {
       showToast(payload.url, 'error');
     });
-  } else {
-    showToast(payload.url, 'error');
   }
 }
 
@@ -2709,15 +2759,11 @@ function copyShareLink() {
     showToast('This mark is missing a shareable link.', 'error');
     return;
   }
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(function() {
-      showToast('Share link copied.', 'success');
-    }).catch(function() {
-      showToast(url, 'error');
-    });
-    return;
-  }
-  showToast(url, 'error');
+  copyTextWithFallback(url).then(function() {
+    showToast('Share link copied.', 'success');
+  }).catch(function() {
+    showToast(url, 'error');
+  });
 }
 
 // Landing BG Globe (keep Globe.gl for landing page - lightweight)

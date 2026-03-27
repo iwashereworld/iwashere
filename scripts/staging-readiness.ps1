@@ -30,6 +30,40 @@ function Assert-Contains {
   }
 }
 
+function Get-VercelCommand {
+  $commonPaths = @(
+    (Join-Path $env:APPDATA 'npm\vercel.cmd'),
+    (Join-Path $env:APPDATA 'npm\vercel'),
+    'C:\Users\samet\AppData\Roaming\npm\vercel.cmd'
+  )
+  foreach ($candidate in $commonPaths) {
+    if ($candidate -and (Test-Path $candidate)) {
+      return [pscustomobject]@{
+        Binary = $candidate
+        Args = @()
+      }
+    }
+  }
+
+  $vercel = Get-Command vercel -ErrorAction SilentlyContinue
+  if ($vercel) {
+    return [pscustomobject]@{
+      Binary = $vercel.Source
+      Args = @()
+    }
+  }
+
+  $npx = Get-Command npx -ErrorAction SilentlyContinue
+  if ($npx) {
+    return [pscustomobject]@{
+      Binary = $npx.Source
+      Args = @('vercel')
+    }
+  }
+
+  throw 'Vercel CLI was not found. Install it or make it available on PATH before running staging-readiness.'
+}
+
 function Get-RuntimeConfigText {
   param(
     [string]$TargetUrl
@@ -39,7 +73,8 @@ function Get-RuntimeConfigText {
   if ($uri.Host -like '*.vercel.app') {
     $deployment = $uri.GetLeftPart([System.UriPartial]::Authority)
     $path = $uri.PathAndQuery
-    return (& vercel curl $path --deployment $deployment)
+    $vercelCommand = Get-VercelCommand
+    return (& $vercelCommand.Binary @($vercelCommand.Args) curl $path --deployment $deployment)
   }
 
   return Invoke-RestMethod -Method Get -Uri $TargetUrl

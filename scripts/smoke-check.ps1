@@ -4,8 +4,11 @@ $root = Split-Path -Parent $PSScriptRoot
 $indexPath = Join-Path $root 'index.html'
 $privacyPath = Join-Path $root 'privacy-policy.html'
 $termsPath = Join-Path $root 'terms.html'
+$packageJsonPath = Join-Path $root 'package.json'
+$envExamplePath = Join-Path $root '.env.example'
 $configPath = Join-Path $root 'app-config.js'
 $runtimeConfigPath = Join-Path $root 'api\runtime-config.js'
+$healthPath = Join-Path $root 'api\health.js'
 $helpersPath = Join-Path $root 'app-helpers.js'
 $uiPath = Join-Path $root 'app-ui.js'
 $i18nPath = Join-Path $root 'app-i18n.js'
@@ -49,8 +52,11 @@ function Assert-NotContains {
 $index = Get-Content -Raw $indexPath
 $privacy = Get-Content -Raw $privacyPath
 $terms = Get-Content -Raw $termsPath
+$packageJson = Get-Content -Raw $packageJsonPath
+$envExample = Get-Content -Raw $envExamplePath
 $config = Get-Content -Raw $configPath
 $runtimeConfig = Get-Content -Raw $runtimeConfigPath
+$health = Get-Content -Raw $healthPath
 $helpers = Get-Content -Raw $helpersPath
 $ui = Get-Content -Raw $uiPath
 $i18n = Get-Content -Raw $i18nPath
@@ -71,6 +77,11 @@ Assert-Contains $index '<script src="app-config.js"></script>' 'index.html must 
 Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
 Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
 Assert-Contains $index 'Message for This Memory' 'index.html must keep the text-based memory step.'
+Assert-Contains $packageJson '"smoke"' 'package.json must expose a smoke script.'
+Assert-Contains $packageJson '"release:check"' 'package.json must expose a release check script.'
+Assert-Contains $packageJson '"start"' 'package.json must expose a start script.'
+Assert-Contains $envExample 'SUPABASE_URL=' '.env.example must define SUPABASE_URL.'
+Assert-Contains $envExample 'PUBLIC_APP_URL=' '.env.example must define PUBLIC_APP_URL.'
 Assert-Contains $config 'window.IWH_CONFIG' 'app-config.js must define IWH_CONFIG.'
 Assert-Contains $config "SUPABASE_URL: ''" 'app-config.js must keep SUPABASE_URL empty by default.'
 Assert-Contains $config "SUPABASE_ANON_KEY: ''" 'app-config.js must keep SUPABASE_ANON_KEY empty by default.'
@@ -79,7 +90,11 @@ Assert-Contains $config 'PUBLIC_APP_URL' 'app-config.js must define PUBLIC_APP_U
 Assert-Contains $runtimeConfig 'process.env.SUPABASE_URL' 'api/runtime-config.js must read SUPABASE_URL from env.'
 Assert-Contains $runtimeConfig 'process.env.PUBLIC_APP_URL' 'api/runtime-config.js must read PUBLIC_APP_URL from env.'
 Assert-Contains $runtimeConfig 'window.IWH_CONFIG = Object.assign' 'api/runtime-config.js must emit browser config.'
+Assert-Contains $health 'ok: true' 'api/health.js must return a success payload.'
+Assert-Contains $health 'service: "iwashere"' 'api/health.js must identify the service.'
 Assert-Contains $index 'function getRuntimeConfigErrors()' 'index.html must guard against missing runtime config.'
+Assert-Contains $index 'function copyTextWithFallback(text)' 'index.html must provide a clipboard fallback helper.'
+Assert-Contains $index "window.addEventListener('unhandledrejection'" 'index.html must handle unhandled promise rejections.'
 Assert-Contains $helpers 'function renderLists()' 'app-helpers.js must contain renderLists().'
 Assert-Contains $helpers 'function showMarks()' 'app-helpers.js must contain showMarks().'
 Assert-Contains $helpers 'function showShareCard(pin)' 'app-helpers.js must contain showShareCard().'

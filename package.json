@@ -1,0 +1,15 @@
+{
+  "name": "iwashere",
+  "private": true,
+  "version": "1.0.0",
+  "description": "I Was Here globe experience",
+  "scripts": {
+    "smoke": "powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-check.ps1",
+    "release:check": "powershell -ExecutionPolicy Bypass -File .\\scripts\\release-check.ps1",
+    "staging:readiness": "powershell -ExecutionPolicy Bypass -File .\\scripts\\staging-readiness.ps1",
+    "staging:e2e": "powershell -ExecutionPolicy Bypass -File .\\scripts\\staging-e2e.ps1",
+    "build": "powershell -ExecutionPolicy Bypass -File .\\scripts\\release-check.ps1",
+    "start": "npx vercel dev --listen 3000",
+    "dev": "npx vercel dev --listen 3000"
+  }
+}
