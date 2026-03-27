@@ -1,5 +1,6 @@
 ﻿var MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id';
 var MAX_NAME_LENGTH = 80;
+var LEGACY_MARK_SELECT_FIELDS = MARK_SELECT_FIELDS;
 var MAX_MESSAGE_LENGTH = 500;
 var MAX_RECIPIENT_EMAIL_LENGTH = 254;
 var MAX_PHOTO_BYTES = 3 * 1024 * 1024;

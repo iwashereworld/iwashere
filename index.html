@@ -2461,7 +2461,9 @@ function loadMarks() {
     return;
   }
   console.log('[IWH] Loading marks from Supabase...');
-  _supabase.from('marks').select(MARK_SELECT_FIELDS).order('created_at', { ascending: false }).limit(500).then(function(res) {
+  runMarksSelectQuery(function(selectFields) {
+    return _supabase.from('marks').select(selectFields).order('created_at', { ascending: false }).limit(500);
+  }).then(function(res) {
     console.log('[IWH] Marks response:', res);
     if (res.error) {
       console.error('[IWH] Load error:', res.error);
@@ -2510,11 +2512,13 @@ function fetchRequestedMarkById(markId) {
   if (!markId) return Promise.resolve(null);
   if (!_supabase) return Promise.resolve(null);
   if (_requestedMarkFetchPromise) return _requestedMarkFetchPromise;
-  _requestedMarkFetchPromise = _supabase
-    .from('marks')
-    .select(MARK_SELECT_FIELDS)
-    .eq('id', markId)
-    .maybeSingle()
+  _requestedMarkFetchPromise = runMarksSelectQuery(function(selectFields) {
+    return _supabase
+      .from('marks')
+      .select(selectFields)
+      .eq('id', markId)
+      .maybeSingle();
+  })
     .then(function(res) {
       _requestedMarkFetchPromise = null;
       if (res.error) {
@@ -2541,6 +2545,22 @@ function fetchRequestedMarkById(markId) {
       return null;
     });
   return _requestedMarkFetchPromise;
+}
+
+function isMissingCapsuleColumnError(error) {
+  if (!error) return false;
+  var message = String(error.message || '');
+  return error.code === '42703' && /capsule_(status|release_at|opened_at)/i.test(message);
+}
+
+function runMarksSelectQuery(buildQuery) {
+  return Promise.resolve(buildQuery(MARK_SELECT_FIELDS)).then(function(res) {
+    if (res && res.error && isMissingCapsuleColumnError(res.error)) {
+      console.warn('[IWH] Falling back to legacy mark fields because capsule columns are unavailable:', res.error.message);
+      return buildQuery(LEGACY_MARK_SELECT_FIELDS);
+    }
+    return res;
+  });
 }
 
 function resolveRequestedMark() {
