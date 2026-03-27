@@ -30,6 +30,21 @@ function Assert-Contains {
   }
 }
 
+function Get-RuntimeConfigText {
+  param(
+    [string]$TargetUrl
+  )
+
+  $uri = [System.Uri]$TargetUrl
+  if ($uri.Host -like '*.vercel.app') {
+    $deployment = $uri.GetLeftPart([System.UriPartial]::Authority)
+    $path = $uri.PathAndQuery
+    return (& vercel curl $path --deployment $deployment)
+  }
+
+  return Invoke-RestMethod -Method Get -Uri $TargetUrl
+}
+
 foreach ($path in $requiredPaths) {
   if (-not (Test-Path $path)) {
     throw "Missing required staging asset: $path"
@@ -48,7 +63,7 @@ if (-not $ExpectedFunctionsBaseUrl) {
   throw 'STAGING_FUNCTIONS_BASE_URL is required.'
 }
 
-$runtimeConfig = Invoke-RestMethod -Method Get -Uri $RuntimeConfigUrl
+$runtimeConfig = Get-RuntimeConfigText $RuntimeConfigUrl
 $runtimeConfigText = $runtimeConfig | Out-String
 
 Assert-Contains $runtimeConfigText $ExpectedSupabaseUrl 'Staging runtime config does not point to the expected Supabase URL.'

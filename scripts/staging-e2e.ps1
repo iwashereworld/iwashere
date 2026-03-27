@@ -19,6 +19,19 @@ $giftMarkId = $null
 $selfQueueId = $null
 $giftQueueId = $null
 
+function Format-WebException($err) {
+  if ($err.Exception.Response) {
+    try {
+      $reader = New-Object System.IO.StreamReader($err.Exception.Response.GetResponseStream())
+      return $reader.ReadToEnd()
+    } catch {
+      return ($err | Out-String)
+    }
+  }
+
+  return ($err | Out-String)
+}
+
 function JsonHeaders($apikey, $token) {
   return @{
     apikey = $apikey
@@ -30,12 +43,20 @@ function JsonHeaders($apikey, $token) {
 try {
   $adminHeaders = JsonHeaders $ServiceRoleKey $ServiceRoleKey
   $createUserBody = @{ email = $email; password = $password; email_confirm = $true } | ConvertTo-Json
-  $createdUser = Invoke-RestMethod -Method Post -Uri "$BaseUrl/auth/v1/admin/users" -Headers $adminHeaders -Body $createUserBody
+  try {
+    $createdUser = Invoke-RestMethod -Method Post -Uri "$BaseUrl/auth/v1/admin/users" -Headers $adminHeaders -Body $createUserBody
+  } catch {
+    throw ('Auth admin user creation failed: ' + (Format-WebException $_))
+  }
   $userId = $createdUser.id
 
   $signinHeaders = @{ apikey = $AnonKey; 'Content-Type' = 'application/json' }
   $signinBody = @{ email = $email; password = $password } | ConvertTo-Json
-  $session = Invoke-RestMethod -Method Post -Uri "$BaseUrl/auth/v1/token?grant_type=password" -Headers $signinHeaders -Body $signinBody
+  try {
+    $session = Invoke-RestMethod -Method Post -Uri "$BaseUrl/auth/v1/token?grant_type=password" -Headers $signinHeaders -Body $signinBody
+  } catch {
+    throw ('Auth password sign-in failed: ' + (Format-WebException $_))
+  }
   $accessToken = $session.access_token
   $userHeaders = @{ apikey = $AnonKey; Authorization = "Bearer $accessToken" }
   $authUser = Invoke-RestMethod -Method Get -Uri "$BaseUrl/auth/v1/user" -Headers $userHeaders
@@ -46,8 +67,10 @@ try {
     Prefer = 'return=representation'
     'Content-Type' = 'application/json'
   }
-  $futureSelf = (Get-Date).ToUniversalTime().AddMinutes(5).ToString('yyyy-MM-ddTHH:mm:ssZ')
-  $futureGift = (Get-Date).ToUniversalTime().AddDays(1).ToString('yyyy-MM-ddTHH:mm:ssZ')
+  $futureSelfAt = (Get-Date).ToUniversalTime().AddSeconds(20)
+  $futureGiftAt = (Get-Date).ToUniversalTime().AddSeconds(25)
+  $futureSelf = $futureSelfAt.ToString('yyyy-MM-ddTHH:mm:ssZ')
+  $futureGift = $futureGiftAt.ToString('yyyy-MM-ddTHH:mm:ssZ')
 
   $selfBody = @{
     user_id = $userId
@@ -64,7 +87,11 @@ try {
     recipient_email = $null
     is_public = $false
   } | ConvertTo-Json
-  $selfMarkInsert = Invoke-RestMethod -Method Post -Uri "$BaseUrl/rest/v1/marks?select=id,user_id,capsule_for,recipient_email,capsule_status,capsule_release_at,is_public" -Headers $markHeaders -Body $selfBody
+  try {
+    $selfMarkInsert = Invoke-RestMethod -Method Post -Uri "$BaseUrl/rest/v1/marks?select=id,user_id,capsule_for,recipient_email,capsule_status,capsule_release_at,is_public" -Headers $markHeaders -Body $selfBody
+  } catch {
+    throw ('Self capsule insert failed: ' + (Format-WebException $_))
+  }
   $selfMarkId = $selfMarkInsert[0].id
 
   $giftBody = @{
@@ -82,7 +109,11 @@ try {
     recipient_email = 'recipient@example.com'
     is_public = $false
   } | ConvertTo-Json
-  $giftMarkInsert = Invoke-RestMethod -Method Post -Uri "$BaseUrl/rest/v1/marks?select=id,user_id,capsule_for,recipient_email,capsule_status,capsule_release_at,is_public" -Headers $markHeaders -Body $giftBody
+  try {
+    $giftMarkInsert = Invoke-RestMethod -Method Post -Uri "$BaseUrl/rest/v1/marks?select=id,user_id,capsule_for,recipient_email,capsule_status,capsule_release_at,is_public" -Headers $markHeaders -Body $giftBody
+  } catch {
+    throw ('Gift capsule insert failed: ' + (Format-WebException $_))
+  }
   $giftMarkId = $giftMarkInsert[0].id
 
   Start-Sleep -Seconds 2
@@ -108,9 +139,8 @@ try {
     throw 'Self capsule should remain locked before due time.'
   }
 
-  $now = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
-  $selfPatchBody = @{ scheduled_for = $now; status = 'pending'; last_error = $null } | ConvertTo-Json
-  Invoke-RestMethod -Method Patch -Uri "$BaseUrl/rest/v1/capsule_deliveries?id=eq.$selfQueueId" -Headers $serviceJsonHeaders -Body $selfPatchBody | Out-Null
+  $selfWaitSeconds = [Math]::Max(1, [int][Math]::Ceiling(($futureSelfAt - (Get-Date).ToUniversalTime()).TotalSeconds) + 1)
+  Start-Sleep -Seconds $selfWaitSeconds
 
   $dispatch = Invoke-RestMethod -Method Post -Uri "$BaseUrl/functions/v1/capsule-dispatch" -Headers $dispatchHeaders
 
@@ -124,8 +154,8 @@ try {
     throw 'Self capsule mark should become public and opened after dispatch.'
   }
 
-  $giftPatchBody = @{ scheduled_for = $now; status = 'pending'; last_error = $null } | ConvertTo-Json
-  Invoke-RestMethod -Method Patch -Uri "$BaseUrl/rest/v1/capsule_deliveries?id=eq.$giftQueueId" -Headers $serviceJsonHeaders -Body $giftPatchBody | Out-Null
+  $giftWaitSeconds = [Math]::Max(1, [int][Math]::Ceiling(($futureGiftAt - (Get-Date).ToUniversalTime()).TotalSeconds) + 1)
+  Start-Sleep -Seconds $giftWaitSeconds
 
   $giftDispatch = Invoke-RestMethod -Method Post -Uri "$BaseUrl/functions/v1/capsule-dispatch" -Headers $dispatchHeaders
   Start-Sleep -Seconds 1
