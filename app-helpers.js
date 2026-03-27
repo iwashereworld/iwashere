@@ -1,6 +1,7 @@
 ﻿var MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id';
 var LEGACY_MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id';
 var CAPSULE_MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,capsule_date,capsule_for,is_public,capsule_status,capsule_release_at,capsule_opened_at,created_at,user_id';
+var CAPSULE_SELECT_FIELDS = 'id,name,owner_email,message,occasion,recipient_type,recipient_email,visibility,open_at,has_location,country_code,country_name,lat,lon,status,delivery_status,opened_at,recipient_notified_at,owner_notified_at,published_mark_id,created_at,user_id';
 var MARK_SELECT_FIELDS = LEGACY_MARK_SELECT_FIELDS;
 var MAX_NAME_LENGTH = 80;
 var MAX_MESSAGE_LENGTH = 500;
@@ -192,6 +193,42 @@ normalizeMarkRecord = function(m) {
     owner: m.user_id || null
   };
 };
+
+function normalizeCapsuleRecord(c) {
+  if (!c) return null;
+
+  var hasLocation = c.has_location === true;
+  var lat = hasLocation ? parseFloat(c.lat) : null;
+  var lon = hasLocation ? parseFloat(c.lon) : null;
+  if (hasLocation && (!isFinite(lat) || !isFinite(lon))) return null;
+
+  return {
+    id: c.id,
+    type: 'capsule',
+    name: clampText(c.name || 'Unknown', MAX_NAME_LENGTH) || 'Unknown',
+    ownerEmail: normalizeEmail(c.owner_email || ''),
+    msg: clampText(c.message || '', MAX_MESSAGE_LENGTH),
+    occasion: c.occasion || 'future_self',
+    recipientType: c.recipient_type || 'self',
+    recipientEmail: normalizeEmail(c.recipient_email || ''),
+    visibility: c.visibility || 'private',
+    openAt: c.open_at || null,
+    hasLocation: hasLocation,
+    code: hasLocation ? (c.country_code || '') : '',
+    cname: hasLocation ? (c.country_name || '') : '',
+    lat: hasLocation ? lat : null,
+    lon: hasLocation ? lon : null,
+    status: c.status || 'scheduled',
+    deliveryStatus: c.delivery_status || 'pending',
+    openedAt: c.opened_at || null,
+    recipientNotifiedAt: c.recipient_notified_at || null,
+    ownerNotifiedAt: c.owner_notified_at || null,
+    publishedMarkId: c.published_mark_id || null,
+    photo: safeImageUrl(c.photo),
+    added: c.created_at || new Date().toISOString(),
+    owner: c.user_id || null
+  };
+}
 
 countdown = function(input, years) {
   var pin = typeof input === 'object'
@@ -788,6 +825,9 @@ function renderProfileRecent(container, marks) {
     item.onclick = function() {
       closeProfile();
       showGlobe();
+      if (p.type === 'capsule') {
+        return;
+      }
       flyTo(p.lat, p.lon, 500000);
     };
 
@@ -798,18 +838,26 @@ function renderProfileRecent(container, marks) {
 
     var name = document.createElement('div');
     name.className = 'prname';
-    name.textContent = p.cname;
+    name.textContent = p.type === 'capsule'
+      ? (p.hasLocation ? (p.cname || (getCurrentLanguage() === 'tr' ? 'Konumlu kapsul' : 'Capsule with place')) : (getCurrentLanguage() === 'tr' ? 'Konumsuz kapsul' : 'Location-free capsule'))
+      : p.cname;
     info.appendChild(name);
 
     var meta = document.createElement('div');
     meta.className = 'prmeta';
-    meta.textContent = new Date(p.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' }) + (p.years ? (' - ' + getCapsuleStateLabel(p)) : '');
+    meta.textContent = new Date(p.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' }) + (
+      p.type === 'capsule'
+        ? (' - ' + (p.status === 'opened'
+          ? (getCurrentLanguage() === 'tr' ? 'Acildi' : 'Opened')
+          : (getCurrentLanguage() === 'tr' ? 'Planlandi' : 'Scheduled')))
+        : (p.years ? (' - ' + getCapsuleStateLabel(p)) : '')
+    );
     info.appendChild(meta);
 
-    if (getVisibleMarkMessage(p)) {
+    if (p.type === 'capsule' ? p.msg : getVisibleMarkMessage(p)) {
       var msg = document.createElement('div');
       msg.className = 'prmsg';
-      msg.textContent = '"' + getVisibleMarkMessage(p) + '"';
+      msg.textContent = '"' + (p.type === 'capsule' ? p.msg : getVisibleMarkMessage(p)) + '"';
       info.appendChild(msg);
     }
 
@@ -825,11 +873,15 @@ function openProfile() {
   }
 
   var marks = ST.pins.filter(function(p) { return p.owner === AUTH.user.id; });
+  var capsulesList = (ST.capsules || []).filter(function(c) { return c.owner === AUTH.user.id; });
   var countries = marks.map(function(p) { return p.code || p.cname; }).filter(function(value, index, arr) {
     return value && arr.indexOf(value) === index;
   });
-  var capsules = marks.filter(function(p) { return p.years > 0; }).length;
+  var capsules = capsulesList.length;
   var avatarSource = marks.find(function(p) { return safeImageUrl(p.photo); });
+  var recentItems = marks.concat(capsulesList).sort(function(a, b) {
+    return new Date(b.added || 0) - new Date(a.added || 0);
+  });
 
   var avatar = document.getElementById('profile-avatar');
   clearChildren(avatar);
@@ -846,7 +898,7 @@ function openProfile() {
   document.getElementById('profile-stat-marks').textContent = marks.length;
   document.getElementById('profile-stat-countries').textContent = countries.length;
   document.getElementById('profile-stat-capsules').textContent = capsules;
-  renderProfileRecent(document.getElementById('profile-recent'), marks);
+  renderProfileRecent(document.getElementById('profile-recent'), recentItems);
 
   document.getElementById('profile-modal').classList.add('show');
   if (typeof syncOverlayState === 'function') syncOverlayState();
@@ -859,9 +911,10 @@ function showMarks() {
   }
   var body = document.getElementById('mbody');
   var marks = ST.pins.filter(function(p) { return p.owner === AUTH.user.id; });
+  var capsules = (ST.capsules || []).filter(function(c) { return c.owner === AUTH.user.id; });
 
   clearChildren(body);
-  if (!marks.length) {
+  if (!marks.length && !capsules.length) {
     var empty = document.createElement('div');
     empty.style.cssText = 'text-align:center;padding:3rem 1rem;font-size:.85rem;color:rgba(240,237,232,.35)';
     empty.appendChild(document.createTextNode(t('empty_my_marks')));
@@ -875,6 +928,12 @@ function showMarks() {
     empty.appendChild(cta);
     body.appendChild(empty);
   } else {
+    if (marks.length) {
+      var marksHeading = document.createElement('div');
+      marksHeading.style.cssText = 'font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:#c8a96e;margin-bottom:10px;';
+      marksHeading.textContent = getCurrentLanguage() === 'tr' ? 'Izlerim' : 'My Marks';
+      body.appendChild(marksHeading);
+    }
     marks.forEach(function(p) {
       var cd = countdown(p);
 
@@ -930,6 +989,48 @@ function showMarks() {
       item.appendChild(actions);
       body.appendChild(item);
     });
+
+    if (capsules.length) {
+      var capsuleHeading = document.createElement('div');
+      capsuleHeading.style.cssText = 'font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:#c8a96e;margin:18px 0 10px;';
+      capsuleHeading.textContent = getCurrentLanguage() === 'tr' ? 'Kapsullerim' : 'My Capsules';
+      body.appendChild(capsuleHeading);
+
+      capsules.forEach(function(c) {
+        var capsuleItem = document.createElement('div');
+        capsuleItem.className = 'mitem';
+
+        capsuleItem.appendChild(createAvatarNode(c.photo, c.name, 'mdot'));
+
+        var capsuleInfo = document.createElement('div');
+        capsuleInfo.className = 'minfo';
+
+        var capsuleName = document.createElement('div');
+        capsuleName.className = 'mcn';
+        capsuleName.textContent = '- ' + (c.hasLocation ? (c.cname || (getCurrentLanguage() === 'tr' ? 'Konumlu kapsul' : 'Capsule with place')) : (getCurrentLanguage() === 'tr' ? 'Konumsuz kapsul' : 'Location-free capsule'));
+        capsuleInfo.appendChild(capsuleName);
+
+        var capsuleDate = document.createElement('div');
+        capsuleDate.className = 'mdt';
+        capsuleDate.textContent = new Date(c.openAt || c.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' });
+        capsuleInfo.appendChild(capsuleDate);
+
+        var capsuleMsg = document.createElement('div');
+        capsuleMsg.className = 'mmsg';
+        capsuleMsg.textContent = '"' + c.msg + '"';
+        capsuleInfo.appendChild(capsuleMsg);
+
+        var capsuleMeta = document.createElement('div');
+        capsuleMeta.className = 'mcap';
+        capsuleMeta.textContent = c.status === 'opened'
+          ? (getCurrentLanguage() === 'tr' ? 'Acilmis kapsul' : 'Opened capsule')
+          : (getCurrentLanguage() === 'tr' ? 'Planli kapsul' : 'Scheduled capsule');
+        capsuleInfo.appendChild(capsuleMeta);
+
+        capsuleItem.appendChild(capsuleInfo);
+        body.appendChild(capsuleItem);
+      });
+    }
   }
   document.getElementById('mmarks').classList.add('show');
   if (typeof syncOverlayState === 'function') syncOverlayState();
@@ -1035,16 +1136,22 @@ function bSmry() {
   var oy = opens ? formatCapsuleDateTime(opens) : '';
   var summary = document.getElementById('smry');
   clearChildren(summary);
-  summary.appendChild(createRow((cap ? (getCurrentLanguage() === 'tr' ? 'Kapsul konumu - ' : 'Capsule place - ') : (getCurrentLanguage() === 'tr' ? 'Küre izi - ' : 'Globe mark - ')) + (ST.selName || '-'), '$1.00'));
+  summary.appendChild(createRow((cap ? (getCurrentLanguage() === 'tr' ? 'Kapsul tipi' : 'Capsule type') : (getCurrentLanguage() === 'tr' ? 'Tur' : 'Type')), cap ? (getCurrentLanguage() === 'tr' ? 'Zamana ayarli mesaj' : 'Scheduled message') : (getCurrentLanguage() === 'tr' ? 'Anlik iz' : 'Live mark')));
   summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'İsim: ' : 'Name: ') + ST.name, '-'));
-  summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Koordinatlar' : 'Coordinates', ST.selLat ? ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) : '-'));
   if (cap) {
-    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Tur' : 'Type'), getCurrentLanguage() === 'tr' ? 'Gelecek kapsulu' : 'Future capsule'));
-    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Kapsül - açılır ' : 'Capsule - opens on ') + oy, '$2.00'));
+    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Kime' : 'For'), ST.rc === 'o' ? (getCurrentLanguage() === 'tr' ? 'Baska biri' : 'Someone else') : (getCurrentLanguage() === 'tr' ? 'Kendim' : 'Myself')));
+    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Gorunurluk' : 'Visibility'), ST.capsuleVisibility === 'public'
+      ? (getCurrentLanguage() === 'tr' ? 'Acildiginda haritada yayinlanir' : 'Publishes on the map when it opens')
+      : (ST.capsuleVisibility === 'email'
+        ? (getCurrentLanguage() === 'tr' ? 'Sadece email ile gider' : 'Delivered by email only')
+        : (getCurrentLanguage() === 'tr' ? 'Ozel kalir' : 'Stays private'))));
+    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Acilis' : 'Opens'), oy || '-', '$2.00'));
     summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Hedef' : 'Recipient'), ST.rc === 'o' ? (getCurrentLanguage() === 'tr' ? 'Birine gonder' : 'Someone else') : (getCurrentLanguage() === 'tr' ? 'Kendim' : 'Myself')));
+    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Konum' : 'Location'), ST.locationConfirmed && ST.selName ? ST.selName : (getCurrentLanguage() === 'tr' ? 'Konum eklenmedi' : 'No location added')));
   } else {
     summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Tur' : 'Type'), getCurrentLanguage() === 'tr' ? 'Anlik iz' : 'Live mark'));
     summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Gorunurluk' : 'Visibility'), getCurrentLanguage() === 'tr' ? 'Simdi gorunur' : 'Visible now'));
+    summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Koordinatlar' : 'Coordinates', ST.selLat ? ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) : '-'));
   }
   summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Toplam' : 'Total', '$' + tot.toFixed(2), true));
 }

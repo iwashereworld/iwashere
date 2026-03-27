@@ -133,6 +133,9 @@ function resetForm() {
   ST.capsuleDate = null;
   ST.rc = 's';
   ST.vis = 'pub';
+  ST.capsuleVisibility = 'private';
+  ST.capsuleOccasion = 'future_self';
+  ST.capsuleHasLocation = false;
   ST.composerType = 'mark';
   document.getElementById('iname').value = '';
   var prev = document.getElementById('prev');
@@ -319,24 +322,107 @@ function sRC(r) {
   document.getElementById('os').setAttribute('aria-pressed', r === 's' ? 'true' : 'false');
   document.getElementById('oo').setAttribute('aria-pressed', r === 'o' ? 'true' : 'false');
   document.getElementById('re').style.display = r === 'o' ? 'block' : 'none';
+  if (r === 'o' && ST.capsuleOccasion === 'future_self') {
+    setCapsuleOccasion('gift');
+  }
+}
+
+function setCapsuleOccasion(occasion) {
+  ST.capsuleOccasion = occasion || 'future_self';
+  ['future', 'birthday', 'anniversary', 'gift', 'custom'].forEach(function(key) {
+    var id = 'capsule-occ-' + key;
+    var el = document.getElementById(id);
+    if (!el) return;
+    var current = (
+      (key === 'future' && ST.capsuleOccasion === 'future_self') ||
+      (key !== 'future' && ST.capsuleOccasion === key)
+    );
+    el.classList.toggle('on', current);
+    el.setAttribute('aria-pressed', current ? 'true' : 'false');
+  });
+}
+
+function setCapsuleVisibility(visibility) {
+  ST.capsuleVisibility = visibility || 'private';
+  ['private', 'public', 'email'].forEach(function(key) {
+    var el = document.getElementById('capsule-vis-' + key);
+    if (!el) return;
+    var current = ST.capsuleVisibility === key;
+    el.classList.toggle('on', current);
+    el.setAttribute('aria-pressed', current ? 'true' : 'false');
+  });
+  if (ST.capsuleVisibility === 'public') {
+    ST.capsuleHasLocation = true;
+  } else if (!ST.locationConfirmed) {
+    ST.capsuleHasLocation = false;
+  }
+  updateCapsuleUI();
+  if (typeof updateCreateFlowUI === 'function') updateCreateFlowUI();
 }
 
 function updateCapsuleUI() {
-  var hasCapsule = ST.capsuleDays > 0;
+  var hasCapsule = ST.composerType === 'capsule';
   var recipientBlock = document.getElementById('recipient-block');
   var note = document.getElementById('capsule-note');
   var preview = document.getElementById('opens-preview');
+  var locationNote = document.getElementById('capsule-location-note');
+  var skipLocation = document.getElementById('btn-skip-location');
   if (recipientBlock) recipientBlock.classList.toggle('section-hidden', !hasCapsule);
   if (note) {
-    note.textContent = hasCapsule
-      ? (getCurrentLanguage() === 'tr'
-        ? t('visibility_note_capsule')
-        : t('visibility_note_capsule'))
-      : (getCurrentLanguage() === 'tr'
-        ? t('visibility_note_public')
-        : t('visibility_note_public'));
+    if (!hasCapsule) {
+      note.textContent = t('visibility_note_public');
+    } else if (ST.capsuleVisibility === 'public') {
+      note.textContent = getCurrentLanguage() === 'tr'
+        ? 'Acildiginda haritada yayinlanir. Bu secimde konum zorunludur.'
+        : 'When it opens, it will publish on the map. A location is required for this option.';
+    } else if (ST.capsuleVisibility === 'email') {
+      note.textContent = getCurrentLanguage() === 'tr'
+        ? 'Harita ile baglantisi olmaz. Mesaj email ile teslim edilir.'
+        : 'This stays off the map. The message is delivered by email only.';
+    } else {
+      note.textContent = getCurrentLanguage() === 'tr'
+        ? 'Acilana kadar gizli kalir. Acildiginda sadece sahibi ya da alicisi gorur.'
+        : 'It stays hidden until it opens. After that, only the owner or recipient can see it.';
+    }
   }
   if (preview) preview.classList.toggle('section-hidden', !hasCapsule);
+  if (locationNote) {
+    locationNote.style.display = hasCapsule ? 'block' : 'none';
+    locationNote.textContent = ST.capsuleVisibility === 'public'
+      ? (getCurrentLanguage() === 'tr'
+        ? 'Bu kapsul haritada yayinlanacak, bu yuzden bir konum eklemen gerekiyor.'
+        : 'This capsule will publish on the map, so a location is required.')
+      : (getCurrentLanguage() === 'tr'
+        ? 'Konum istege bagli. Istersen bir yer ekle, istersen kapsulu yersiz tut.'
+        : 'Location is optional. Add a place if it gives the capsule meaning, or keep it location-free.');
+  }
+  if (skipLocation) {
+    skipLocation.style.display = hasCapsule ? 'inline-flex' : 'none';
+    skipLocation.disabled = ST.capsuleVisibility === 'public';
+    skipLocation.textContent = ST.capsuleVisibility === 'public'
+      ? (getCurrentLanguage() === 'tr' ? 'Public kapsulde konum zorunlu' : 'Public capsules require a location')
+      : (getCurrentLanguage() === 'tr' ? 'Konum olmadan devam et' : 'Continue without location');
+  }
+}
+
+function skipCapsuleLocation() {
+  if (!isCapsuleComposer() || ST.capsuleVisibility === 'public') return;
+  ST.selCode = '';
+  ST.selName = '';
+  ST.selLat = null;
+  ST.selLon = null;
+  ST.locationConfirmed = false;
+  ST.capsuleHasLocation = false;
+  var locDisplay = document.getElementById('loc-display');
+  if (locDisplay) locDisplay.value = '';
+  var preciseCoords = document.getElementById('precise-coords');
+  if (preciseCoords) preciseCoords.style.display = 'none';
+  if (tempMarker && viewer) {
+    viewer.entities.remove(tempMarker);
+    tempMarker = null;
+  }
+  if (typeof updateCreateFlowUI === 'function') updateCreateFlowUI();
+  goS(5);
 }
 
 function setQuick(days, id) {

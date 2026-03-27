@@ -698,6 +698,7 @@ window.addEventListener('load', initCookieBanner);
       <h3 data-i18n="choose_location">Choose Location</h3>
       <p class="sub3" data-i18n="choose_location_sub">Click anywhere on the globe or search for a place. Zoom in for street-level precision.</p>
       <p class="soft-help" data-i18n="choose_location_help">Click once on the globe to preview the pin, then confirm it when the place feels right.</p>
+      <div class="note-box" id="capsule-location-note" style="display:none;margin-bottom:.9rem;">Location is optional for this capsule unless you want it to publish on the map later.</div>
       <label class="fl" data-i18n="selected_location">Selected Location</label>
       <input type="text" id="loc-display" readonly placeholder="Click on the globe..." data-i18n-placeholder="location_click_placeholder">
       <label class="fl" data-i18n="or_search">Or search</label>
@@ -710,6 +711,7 @@ window.addEventListener('load', initCookieBanner);
         <div style="font-size:.9rem;color:var(--gold);font-family:'Cormorant Garamond',serif;" id="exact-coords-display">--</div>
       </div>
       <button class="btn bp" onclick="confirmCreateLocation()" id="btn2" disabled>Confirm location</button>
+      <button class="btn bs" id="btn-skip-location" onclick="skipCapsuleLocation()" style="display:none;">Continue without location</button>
       <button class="btn bs" onclick="goBackFromLocationStep()" data-i18n="back">Back</button>
     </div>
     <!-- Step 3 -->
@@ -717,6 +719,16 @@ window.addEventListener('load', initCookieBanner);
       <h3 data-i18n="capsule_options">Show Now or Open Later</h3>
       <p class="sub3" data-i18n="capsule_options_sub">Pick one clear mode: visible now as a public mark, or locked until a future date.</p>
       <div class="note-box" id="capsule-note" data-i18n="visibility_note_public">Show this memory now as a public mark on the globe.</div>
+      <label class="fl" id="capsule-type-label">Capsule Type</label>
+      <div class="g3">
+        <div class="oc on" id="capsule-occ-future" onclick="setCapsuleOccasion('future_self')" role="button" tabindex="0" aria-pressed="true">Future Self</div>
+        <div class="oc" id="capsule-occ-birthday" onclick="setCapsuleOccasion('birthday')" role="button" tabindex="0" aria-pressed="false">Birthday</div>
+        <div class="oc" id="capsule-occ-anniversary" onclick="setCapsuleOccasion('anniversary')" role="button" tabindex="0" aria-pressed="false">Anniversary</div>
+      </div>
+      <div class="g2" style="margin-top:0;">
+        <div class="oc" id="capsule-occ-gift" onclick="setCapsuleOccasion('gift')" role="button" tabindex="0" aria-pressed="false">Gift</div>
+        <div class="oc" id="capsule-occ-custom" onclick="setCapsuleOccasion('custom')" role="button" tabindex="0" aria-pressed="false">Just Because</div>
+      </div>
       <div id="recipient-block">
       <label class="fl" data-i18n="recipient">Recipient</label>
       <div class="g2">
@@ -724,6 +736,12 @@ window.addEventListener('load', initCookieBanner);
         <div class="oc a2" id="oo" onclick="sRC('o')" role="button" tabindex="0" aria-pressed="false" data-i18n="someone_else">Someone Else</div>
       </div>
       <div id="re" style="display:none;"><label class="fl" data-i18n="recipient_email">Recipient Email</label><input type="email" id="iem" placeholder="their@email.com" maxlength="254" data-i18n-placeholder="recipient_email_placeholder"></div>
+      </div>
+      <label class="fl" id="capsule-visibility-label">When it opens, what should happen?</label>
+      <div class="g3">
+        <div class="oc on" id="capsule-vis-private" onclick="setCapsuleVisibility('private')" role="button" tabindex="0" aria-pressed="true">Stay private</div>
+        <div class="oc" id="capsule-vis-public" onclick="setCapsuleVisibility('public')" role="button" tabindex="0" aria-pressed="false">Publish on map</div>
+        <div class="oc" id="capsule-vis-email" onclick="setCapsuleVisibility('email')" role="button" tabindex="0" aria-pressed="false">Email only</div>
       </div>
       <label class="fl" data-i18n="opens_in">Opens in</label>
       <div class="g3">
@@ -748,8 +766,6 @@ window.addEventListener('load', initCookieBanner);
         <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);" data-i18n="capsule_opens">Capsule Opens</div>
         <div id="opens-date-text" style="font-size:.9rem;color:var(--gold);margin-top:6px;font-family:'Cormorant Garamond',serif;line-height:1.5;">In 1 year - ...</div>
       </div>
-      <div style="text-align:center;margin-bottom:.5rem;"><span style="font-size:.72rem;color:var(--muted);" data-i18n="or">or</span></div>
-      <div class="oc on" id="tq0" onclick="setQuick(0,'tq0')" role="button" tabindex="0" aria-pressed="true" style="margin-bottom:1rem;" data-i18n="no_capsule">Show it now (public mark)</div>
       <button class="btn bp" id="btn3" onclick="proceedFromCapsuleStep()" data-i18n="continue_message">Continue to Message</button>
       <button class="btn bs" onclick="goBackFromCapsuleStep()" data-i18n="back">Back</button>
     </div>
@@ -941,6 +957,7 @@ if (_supabase) {
       AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id, meta: u.user_metadata || {} };
       if (_requestedMarkId) _requestedMarkState = 'idle';
       updateUserUI();
+      loadCapsules();
     }
   });
   _supabase.auth.onAuthStateChange(function(event, session) {
@@ -949,10 +966,13 @@ if (_supabase) {
       AUTH.user = { name: (u.user_metadata && u.user_metadata.name) || u.email.split('@')[0], email: u.email, id: u.id, meta: u.user_metadata || {} };
       if (_requestedMarkId) _requestedMarkState = 'idle';
       updateUserUI();
+      loadCapsules();
       if (viewer) loadMarks();
     } else {
       AUTH.user = null;
+      ST.capsules = [];
       updateUserUI();
+      updateStats();
     }
   });
 } else {
@@ -1035,8 +1055,12 @@ var CITIES = [
 
 var ST = {
   pins: [],
+  capsules: [],
   name: '', photo: null, selCode: '', selName: '', selLat: null, selLon: null,
   yr: 0, capsuleDays: 0, capsuleDate: null, rc: 's', vis: 'pub',
+  capsuleVisibility: 'private',
+  capsuleOccasion: 'future_self',
+  capsuleHasLocation: false,
   composerType: 'mark',
   createMode: false,
   createStep: 0,
@@ -1521,6 +1545,8 @@ function updateCreateFlowUI() {
   var step2Help = document.querySelector('#step2 .soft-help');
   var step3Title = document.querySelector('#step3 h3');
   var step3Sub = document.querySelector('#step3 .sub3');
+  var capsuleTypeLabel = document.getElementById('capsule-type-label');
+  var capsuleVisibilityLabel = document.getElementById('capsule-visibility-label');
   var step4Title = document.querySelector('#step4 h3');
   var step4Sub = document.querySelector('#step4 .sub3');
   var step5Title = document.querySelector('#step5 h3');
@@ -1529,6 +1555,14 @@ function updateCreateFlowUI() {
   var successCopy = document.getElementById('ss4');
   var hintCopy = document.getElementById('start-hint-copy');
   var selectedPlaceLabel = document.querySelector('#locked-location-banner .locked-location-label');
+  var occFuture = document.getElementById('capsule-occ-future');
+  var occBirthday = document.getElementById('capsule-occ-birthday');
+  var occAnniversary = document.getElementById('capsule-occ-anniversary');
+  var occGift = document.getElementById('capsule-occ-gift');
+  var occCustom = document.getElementById('capsule-occ-custom');
+  var visPrivate = document.getElementById('capsule-vis-private');
+  var visPublic = document.getElementById('capsule-vis-public');
+  var visEmail = document.getElementById('capsule-vis-email');
 
   if (hintCopy) {
     hintCopy.textContent = isCapsuleFlow
@@ -1543,7 +1577,7 @@ function updateCreateFlowUI() {
   }
   if (flowSub) {
     flowSub.textContent = isCapsuleFlow
-      ? ltxt('Click a place on the globe to anchor this capsule.', 'Bu kapsulu baglamak icin kure uzerinde bir yer sec.')
+      ? ltxt('Start with the message, choose when it opens, then decide whether this capsule needs a place.', 'Once mesaji kur, ne zaman acilacagini sec, sonra bu kapsulun bir yere ihtiyaci olup olmadigina karar ver.')
       : ltxt('Click anywhere on the globe or use search to preview where your mark will appear.', 'Izinin nerede gorunecegini onizlemek icin kurede bir yere tikla ya da arama kullan.');
   }
   if (selectedPlaceLabel) {
@@ -1590,6 +1624,16 @@ function updateCreateFlowUI() {
       ? ltxt('Optional: start the capsule note here, then finish the full message in the next step.', 'Istege bagli: kapsul notunu burada baslat, sonra tam mesaji sonraki adimda bitir.')
       : ltxt('Optional: leave a draft note now, then finish the full message in the next step.', 'Istege bagli: taslak notunu simdi yaz, sonra tam mesaji sonraki adimda bitir.');
   }
+  if (capsuleTypeLabel) capsuleTypeLabel.textContent = ltxt('Capsule Type', 'Kapsul Turu');
+  if (capsuleVisibilityLabel) capsuleVisibilityLabel.textContent = ltxt('When it opens, what should happen?', 'Acilinca ne olsun?');
+  if (occFuture) occFuture.textContent = ltxt('Future Self', 'Gelecekteki Ben');
+  if (occBirthday) occBirthday.textContent = ltxt('Birthday', 'Dogum Gunu');
+  if (occAnniversary) occAnniversary.textContent = ltxt('Anniversary', 'Yil Donumu');
+  if (occGift) occGift.textContent = ltxt('Gift', 'Hediye');
+  if (occCustom) occCustom.textContent = ltxt('Just Because', 'Icinden Geldigi Gibi');
+  if (visPrivate) visPrivate.textContent = ltxt('Stay private', 'Ozel kalsin');
+  if (visPublic) visPublic.textContent = ltxt('Publish on map', 'Haritada yayinlansin');
+  if (visEmail) visEmail.textContent = ltxt('Email only', 'Sadece email');
   if (step3Title) step3Title.textContent = ltxt('When Should It Open?', 'Ne Zaman Aculsin?');
   if (step3Sub) step3Sub.textContent = ltxt('Choose the opening date and decide who this capsule is for.', 'Acilis tarihini sec ve bu kapsulun kime ait olduguna karar ver.');
   if (step4Title) step4Title.textContent = isCapsuleFlow ? ltxt('Write the Capsule Message', 'Kapsul Mesajini Yaz') : ltxt('Write Your Mark', 'Izini Yaz');
@@ -1656,6 +1700,9 @@ function startCreateFlow() {
   ST.composerType = flowType;
   ST.rc = 's';
   ST.vis = flowType === 'capsule' ? 'prv' : 'pub';
+  ST.capsuleVisibility = 'private';
+  ST.capsuleOccasion = flowType === 'capsule' ? 'future_self' : 'future_self';
+  ST.capsuleHasLocation = false;
   if (flowType === 'capsule') {
     setQuick(365, 'tq365');
   } else {
@@ -2394,6 +2441,7 @@ async function showGlobe() {
   updatePinFilterUI();
   renderLists();
   if (typeof renderCountrySummary === 'function') renderCountrySummary();
+  if (AUTH.user) loadCapsules();
   revealStartHint();
 }
 
@@ -2664,13 +2712,14 @@ async function submit() {
     openAuth('login');
     return;
   }
-  if (!ST.locationConfirmed || ST.selLat == null || ST.selLon == null) {
+  var isCapsuleFlow = ST.composerType === 'capsule';
+  var needsLocation = !isCapsuleFlow || ST.capsuleVisibility === 'public';
+  if (needsLocation && (!ST.locationConfirmed || ST.selLat == null || ST.selLon == null)) {
     showToast(t('toast_confirm_location'), 'error');
     return;
   }
 
   var submitBtn = document.getElementById('btn-submit-mark');
-  var isCapsuleFlow = ST.composerType === 'capsule';
   if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.textContent = isCapsuleFlow ? ltxt('Creating Capsule...', 'Kapsul Olusturuluyor...') : ltxt('Saving Mark...', 'Iz Kaydediliyor...');
@@ -2693,7 +2742,7 @@ async function submit() {
     owner: AUTH.user ? AUTH.user.email : null
   };
 
-  var saveResult = await saveMarkToDB(newPin);
+  var saveResult = isCapsuleFlow ? await saveCapsuleToDB(newPin) : await saveMarkToDB(newPin);
   if (!saveResult || saveResult.error) {
     if (submitBtn) {
       submitBtn.disabled = false;
@@ -2707,11 +2756,19 @@ async function submit() {
     newPin.id = saveResult.data.id;
   }
 
-  ST.pins.unshift(newPin);
-  window._lastPin = newPin;
+  if (isCapsuleFlow) {
+    var capsuleRecord = typeof normalizeCapsuleRecord === 'function' ? normalizeCapsuleRecord(saveResult.data) : null;
+    if (capsuleRecord) {
+      ST.capsules.unshift(capsuleRecord);
+    }
+    window._lastPin = null;
+  } else {
+    ST.pins.unshift(newPin);
+    window._lastPin = newPin;
+  }
   
   // Add pin to Cesium globe
-  addPinToGlobe(newPin);
+  if (!isCapsuleFlow) addPinToGlobe(newPin);
   
   // Remove temp marker
   if (tempMarker) {
@@ -2724,7 +2781,7 @@ async function submit() {
   updateCreateFlowUI();
   
   // Fly to new pin
-  flyTo(lat, lon, 500000);
+  if (!isCapsuleFlow) flyTo(lat, lon, 500000);
   
   renderLists();
   updateStats();
@@ -2734,7 +2791,11 @@ async function submit() {
   var opens = isCapsuleFlow && typeof getCapsuleScheduleDateFromState === 'function' ? getCapsuleScheduleDateFromState() : null;
   
   document.getElementById('ss4').textContent = yr > 0 ?
-    t('capsule_success_visible') + (opens ? ' ' + opens.toLocaleString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '') :
+    (
+      ST.rc === 'o'
+        ? ltxt('Your capsule is scheduled. The recipient will get it by email when it opens, and you will get a delivery confirmation.', 'Kapsulun planlandi. Acildiginda aliciya email gidecek ve sana teslim onayi gelecek.')
+        : ltxt('Your capsule is scheduled. It will reopen for you by email when the date arrives.', 'Kapsulun planlandi. Tarihi geldiginde sana email ile geri donecek.')
+    ) + (opens ? ' ' + opens.toLocaleString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '') :
     t('mark_success_visible');
   
   if (yr > 0 && opens) {
@@ -2742,7 +2803,7 @@ async function submit() {
     document.getElementById('cdt').textContent = opens.toLocaleString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
   
-  document.getElementById('btn-share-card').style.display = 'block';
+  document.getElementById('btn-share-card').style.display = isCapsuleFlow ? 'none' : 'block';
   if (submitBtn) {
     submitBtn.disabled = false;
     submitBtn.textContent = isCapsuleFlow ? t('save_capsule') : t('save_my_mark');
@@ -2794,6 +2855,51 @@ function saveMarkToDB(pin) {
     });
   }
   return Promise.resolve({ error: new Error('Missing auth user') });
+}
+
+function saveCapsuleToDB(pin) {
+  if (!_supabase) {
+    return Promise.resolve({ error: new Error('Missing runtime config for Supabase client') });
+  }
+  if (!AUTH.user || !AUTH.user.id) {
+    return Promise.resolve({ error: new Error('Missing auth user') });
+  }
+
+  var recipientInput = document.getElementById('iem');
+  var recipientEmail = ST.rc === 'o' && recipientInput ? normalizeEmail(recipientInput.value) : null;
+  var schedule = typeof getCapsuleScheduleDateFromState === 'function' ? getCapsuleScheduleDateFromState() : null;
+  if (!schedule) {
+    return Promise.resolve({ error: new Error('Capsule schedule is missing') });
+  }
+  var hasLocation = !!(ST.locationConfirmed && ST.selLat != null && ST.selLon != null);
+  var visibility = ST.capsuleVisibility || 'private';
+
+  return _supabase.from('capsules').insert({
+    user_id: AUTH.user.id,
+    name: clampText(pin.name, MAX_NAME_LENGTH),
+    owner_email: normalizeEmail(AUTH.user.email || ''),
+    message: clampText(pin.msg, MAX_MESSAGE_LENGTH),
+    occasion: ST.capsuleOccasion || 'future_self',
+    recipient_type: ST.rc === 'o' ? 'other' : 'self',
+    recipient_email: ST.rc === 'o' ? (recipientEmail || null) : null,
+    visibility: visibility,
+    open_at: schedule.toISOString(),
+    has_location: hasLocation,
+    country_code: hasLocation ? (pin.code || '') : null,
+    country_name: hasLocation ? (pin.cname || '') : null,
+    lat: hasLocation ? pin.lat : null,
+    lon: hasLocation ? pin.lon : null,
+    photo: pin.photo || null
+  }).select(CAPSULE_SELECT_FIELDS).single().then(function(r) {
+    if (r.error) {
+      console.error('Capsule save error:', r.error);
+      return r;
+    }
+    return r;
+  }).catch(function(err) {
+    console.error('Capsule save error:', err);
+    return { error: err };
+  });
 }
 
 function loadMarks() {
@@ -2862,6 +2968,34 @@ function loadMarks() {
     setMarksLoading(false);
   });
   return _marksLoadPromise;
+}
+
+function loadCapsules() {
+  if (!_supabase || !AUTH.user || !AUTH.user.id) {
+    ST.capsules = [];
+    return Promise.resolve([]);
+  }
+  return _supabase.from('capsules')
+    .select(CAPSULE_SELECT_FIELDS)
+    .eq('user_id', AUTH.user.id)
+    .order('created_at', { ascending: false })
+    .then(function(res) {
+      if (res.error) {
+        console.error('[IWH] Capsules load error:', res.error);
+        return [];
+      }
+      ST.capsules = (res.data || []).map(function(row) {
+        return typeof normalizeCapsuleRecord === 'function' ? normalizeCapsuleRecord(row) : null;
+      }).filter(Boolean);
+      updateStats();
+      if (document.getElementById('profile-modal').classList.contains('show') && typeof openProfile === 'function') openProfile();
+      if (document.getElementById('mmarks').classList.contains('show') && typeof showMarks === 'function') showMarks();
+      return ST.capsules;
+    })
+    .catch(function(err) {
+      console.error('[IWH] Capsules load error:', err);
+      return [];
+    });
 }
 
 function mergeRequestedMarkIntoState(pin) {
@@ -3015,30 +3149,38 @@ function loadStats() {
     console.error('[IWH] loadStats skipped. Missing runtime config:', _runtimeConfigErrors.join(', '));
     return;
   }
-  _supabase.from('marks').select('id,country_code,country_name,capsule_days', { count: 'exact' }).limit(500).then(function(res) {
-    if (res.error) return;
-    var total = res.count != null ? res.count : ((res.data && res.data.length) || 0);
+  Promise.all([
+    _supabase.from('marks').select('id,country_code,country_name', { count: 'exact' }).limit(500),
+    _supabase.from('capsules').select('id', { count: 'exact' }).limit(500)
+  ]).then(function(results) {
+    var marksRes = results[0];
+    var capsulesRes = results[1];
+    if (marksRes.error) return;
+    var total = marksRes.count != null ? marksRes.count : ((marksRes.data && marksRes.data.length) || 0);
     var marksEl = document.getElementById('s1');
     if (marksEl) animCount(marksEl, total || 0, 1200);
 
     var countriesMap = {};
-    var capsules = 0;
-    (res.data || []).forEach(function(mark) {
+    (marksRes.data || []).forEach(function(mark) {
       var code = mark.country_code || mark.country_name;
       if (code) countriesMap[code] = true;
-      if ((mark.capsule_days || 0) > 0) capsules += 1;
     });
 
     var countriesEl = document.getElementById('s2');
     var capsulesEl = document.getElementById('s3');
     if (countriesEl) animCount(countriesEl, Object.keys(countriesMap).length, 900);
-    if (capsulesEl) animCount(capsulesEl, capsules, 900);
+    if (capsulesEl) {
+      var capsuleCount = capsulesRes && !capsulesRes.error
+        ? (capsulesRes.count != null ? capsulesRes.count : ((capsulesRes.data && capsulesRes.data.length) || 0))
+        : 0;
+      animCount(capsulesEl, capsuleCount, 900);
+    }
   });
 }
 
 function updateLandingStatsFromPins() {
   var countries = ST.pins.map(function(p) { return p.code || p.cname; }).filter(function(v, i, a) { return v && a.indexOf(v) === i; });
-  var capsules = ST.pins.filter(function(p) { return (p.capsule_days || 0) > 0; }).length;
+  var capsules = ST.capsules.length;
   var s2 = document.getElementById('s2');
   var s3 = document.getElementById('s3');
   if (s2) s2.textContent = countries.length.toLocaleString();
@@ -3056,7 +3198,7 @@ function updateStats() {
   }
   
   var sk2 = document.getElementById('sk2');
-  if (sk2) sk2.textContent = ST.pins.filter(function(p) { return (p.capsule_days || 0) > 0; }).length.toLocaleString();
+  if (sk2) sk2.textContent = ST.capsules.length.toLocaleString();
   updateLandingStatsFromPins();
   if (typeof renderCountrySummary === 'function') renderCountrySummary();
 }
