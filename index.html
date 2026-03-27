@@ -220,6 +220,12 @@ footer a{color:var(--muted);text-decoration:none;}
 .onboard-item.current .onboard-dot{border-color:var(--gold);color:var(--gold);}
 .onboard-item.done{color:rgba(240,237,232,.72);}
 .onboard-item.done .onboard-dot{background:rgba(200,169,110,.14);border-color:rgba(200,169,110,.4);color:var(--gold);}
+.mini-guide{background:rgba(18,26,42,.72);border:1px solid rgba(200,169,110,.16);border-radius:12px;padding:.85rem .9rem;margin:.85rem 0 1rem;}
+.mini-guide-title{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.45rem;}
+.mini-guide-list{display:grid;gap:.45rem;}
+.mini-guide-item{font-size:.76rem;line-height:1.5;color:var(--muted);display:flex;gap:.55rem;align-items:flex-start;}
+.mini-guide-step{width:18px;height:18px;border-radius:50%;border:1px solid rgba(200,169,110,.28);display:flex;align-items:center;justify-content:center;font-size:.62rem;color:var(--gold);flex-shrink:0;margin-top:1px;}
+.soft-help{font-size:.72rem;color:var(--muted);line-height:1.55;margin:.55rem 0 0;}
 #srch{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:100;width:290px;}
 #si{width:100%;background:rgba(6,10,18,.92);border:1px solid rgba(200,169,110,.28);border-radius:24px;padding:9px 18px 9px 36px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;backdrop-filter:blur(16px);}
 #sres{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:rgba(6,10,18,.97);border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;z-index:200;}
@@ -632,7 +638,15 @@ window.addEventListener('load', initCookieBanner);
     <!-- Step 1 -->
     <div class="step active" id="step1">
       <h3 data-i18n="your_details">Your Details</h3>
-      <p class="sub3" data-i18n="your_details_sub">Choose a name that will stand for eternity.</p>
+      <p class="sub3" data-i18n="your_details_sub">Choose the name people will see on this mark.</p>
+      <div class="mini-guide">
+        <div class="mini-guide-title" data-i18n="quick_start">Quick Start</div>
+        <div class="mini-guide-list">
+          <div class="mini-guide-item"><span class="mini-guide-step">1</span><span data-i18n="quick_start_1">Choose the name that will appear on your mark.</span></div>
+          <div class="mini-guide-item"><span class="mini-guide-step">2</span><span data-i18n="quick_start_2">Click the globe once to preview the exact place.</span></div>
+          <div class="mini-guide-item"><span class="mini-guide-step">3</span><span data-i18n="quick_start_3">Confirm the place, finish the message, and save.</span></div>
+        </div>
+      </div>
       <label class="fl" data-i18n="display_name">Display Name</label>
       <input type="text" id="iname" placeholder="Your name" maxlength="80" data-i18n-placeholder="your_name">
       <button class="btn bp" onclick="goS(2)" id="btn1" disabled>Continue to Location</button>
@@ -641,12 +655,14 @@ window.addEventListener('load', initCookieBanner);
     <div class="step" id="step2">
       <h3 data-i18n="choose_location">Choose Location</h3>
       <p class="sub3" data-i18n="choose_location_sub">Click anywhere on the globe or search for a place. Zoom in for street-level precision.</p>
+      <p class="soft-help" data-i18n="choose_location_help">Click once on the globe to preview the pin, then confirm it when the place feels right.</p>
       <label class="fl" data-i18n="selected_location">Selected Location</label>
       <input type="text" id="loc-display" readonly placeholder="Click on the globe..." data-i18n-placeholder="location_click_placeholder">
       <label class="fl" data-i18n="or_search">Or search</label>
       <select id="csel" onchange="selCC(this.value)"><option value="" data-i18n="country_select_placeholder">Select country...</option></select>
       <label class="fl" data-i18n="memory_note">Memory Note</label>
       <textarea id="quick-imsg" placeholder="Leave a short note for this place..." maxlength="500" data-i18n-placeholder="memory_note_placeholder" oninput="syncMemoryMessage(this.value,'quick')" style="min-height:96px;"></textarea>
+      <p class="soft-help" data-i18n="memory_note_helper">Optional: leave a draft note now, then finish the full message in the next step.</p>
       <div id="precise-coords" style="margin-top:8px;padding:10px;background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;display:none;">
         <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px;" data-i18n="exact_coordinates">Exact Coordinates</div>
         <div style="font-size:.9rem;color:var(--gold);font-family:'Cormorant Garamond',serif;" id="exact-coords-display">--</div>
@@ -1407,10 +1423,15 @@ function updateCreateFlowUI() {
     }
   }
   var btn1 = document.getElementById('btn1');
-  if (btn1) btn1.textContent = ltxt('Continue to Location', 'Konuma Geç');
+  if (btn1) {
+    btn1.textContent = ltxt('Choose My Place', 'Yerimi Sec');
+    btn1.disabled = ST.name.trim().length < 2;
+  }
   var btn2 = document.getElementById('btn2');
   if (btn2) {
-    btn2.textContent = ltxt('Confirm location', 'Konumu onayla');
+    btn2.textContent = (ST.selLat != null && ST.selLon != null)
+      ? ltxt('Confirm This Place', 'Bu Yeri Onayla')
+      : ltxt('Click Globe to Choose', 'Secmek Icin Kureye Tikla');
     btn2.disabled = !(ST.selLat != null && ST.selLon != null);
   }
   updateLockedLocationBanner();
@@ -1440,6 +1461,10 @@ function startCreateFlow() {
   if (sb) sb.classList.remove('hidden');
   goS(1);
   updateCreateFlowUI();
+  var nameInput = document.getElementById('iname');
+  if (nameInput) {
+    setTimeout(function() { nameInput.focus(); }, 80);
+  }
 }
 
 function cancelCreateFlow() {
