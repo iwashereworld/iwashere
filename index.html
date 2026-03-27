@@ -2102,6 +2102,10 @@ async function showGlobe() {
       viewer.scene.requestRender();
     }, 50);
   }
+
+  if (_supabase) {
+    loadMarks();
+  }
   
   populateDrop();
   updateStats();
