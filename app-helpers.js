@@ -44,8 +44,8 @@ function parseRequestedMarkIdFromLocation() {
 
 function buildSharePayload(pin) {
   if (!pin || !pin.id) return null;
-  var title = 'I Was Here in ' + (pin.cname || 'this place');
-  var text = (pin.name || 'Someone') + ' left a mark in ' + (pin.cname || 'this place') + ' on I Was Here.';
+  var title = (pin.cname || 'A saved place') + ' on I Was Here';
+  var text = (pin.name || 'Someone') + ' saved a memory in ' + (pin.cname || 'this place') + ' on I Was Here.';
   if (pin.msg) text += ' "' + pin.msg + '"';
   return {
     title: title,
@@ -585,45 +585,6 @@ async function deleteMark(pinId, buttonEl) {
   showToast('Mark deleted successfully.', 'success');
 }
 
-function buildProfileBio(marks) {
-  if (AUTH.user && AUTH.user.meta && AUTH.user.meta.bio) {
-    return clampText(AUTH.user.meta.bio, 220);
-  }
-  if (!marks.length) {
-    return 'You have not placed a mark yet. Start with your first location and build your story on the globe.';
-  }
-  var countries = marks.map(function(mark) { return mark.cname; }).filter(function(value, index, arr) { return value && arr.indexOf(value) === index; });
-  if (countries.length > 1) {
-    return 'Tracking meaningful places across ' + countries.length + ' countries on I Was Here.';
-  }
-  return 'Building a personal map of memories on I Was Here.';
-}
-
-function buildProfileSummary(marks, countries, capsules) {
-  if (!marks.length) {
-    return 'Your globe is still empty. Start with one meaningful place and build from there.';
-  }
-
-  var latest = marks.slice().sort(function(a, b) {
-    return new Date(b.added || 0) - new Date(a.added || 0);
-  })[0];
-
-  var parts = [];
-  parts.push(marks.length + ' mark' + (marks.length === 1 ? '' : 's'));
-  parts.push(countries.length + ' countr' + (countries.length === 1 ? 'y' : 'ies'));
-  if (capsules) parts.push(capsules + ' capsule' + (capsules === 1 ? '' : 's'));
-  if (latest && latest.cname) parts.push('latest in ' + latest.cname);
-  return parts.join(' • ');
-}
-
-function buildProfileBadgeLevel(markCount) {
-  if (markCount >= 25) return 'Worldbuilder';
-  if (markCount >= 10) return 'Trail Keeper';
-  if (markCount >= 3) return 'Memory Mapper';
-  if (markCount >= 1) return 'First Marker';
-  return 'New Explorer';
-}
-
 function showMarks() {
   if (!AUTH.user) {
     openAuth('login');
@@ -724,17 +685,17 @@ function showShareCard(pin) {
     initial.textContent = String(pin.name || '').trim().charAt(0).toUpperCase() || '?';
     avatar.appendChild(initial);
   }
-  document.getElementById('share-headline').textContent = getCurrentLanguage() === 'tr' ? 'Bu izi paylaş' : 'Share this mark';
+  document.getElementById('share-headline').textContent = pin.years > 0 ? t('share_headline_capsule') : t('share_headline_mark');
   document.getElementById('share-name').textContent = pin.name;
-  document.getElementById('share-country').textContent = (getCurrentLanguage() === 'tr' ? 'I Was Here • ' : 'I Was Here in ') + pin.cname;
+  document.getElementById('share-country').textContent = t('share_country_prefix') + ' ' + pin.cname;
   document.getElementById('share-coords').textContent = pin.lat.toFixed(2) + ', ' + pin.lon.toFixed(2);
   document.getElementById('share-msg').textContent = getVisibleMarkMessage(pin)
     ? '"' + getVisibleMarkMessage(pin) + '"'
-    : (getCurrentLanguage() === 'tr' ? 'Hatırlamaya değer bir yer, küreye kaydedildi.' : 'A place worth remembering, saved on the globe.');
-  document.getElementById('share-date').textContent = (getCurrentLanguage() === 'tr' ? 'Kaydedildi ' : 'Saved ') + new Date(pin.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' });
+    : t('share_fallback_message');
+  document.getElementById('share-date').textContent = t('share_saved_prefix') + ' ' + new Date(pin.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' });
   var typeChip = document.getElementById('share-chip-type');
   var dateChip = document.getElementById('share-chip-date');
-  if (typeChip) typeChip.textContent = pin.years > 0 ? (getCurrentLanguage() === 'tr' ? 'Kapsül izi' : 'Capsule mark') : (getCurrentLanguage() === 'tr' ? 'Herkese açık iz' : 'Public mark');
+  if (typeChip) typeChip.textContent = pin.years > 0 ? t('share_capsule_memory') : t('share_public_memory');
   if (dateChip) dateChip.textContent = pin.years > 0 ? getCapsuleStateLabel(pin) : (getCurrentLanguage() === 'tr' ? 'Şimdi görünür' : 'Visible now');
   var deleteBtn = document.getElementById('share-delete-btn');
   if (deleteBtn) {
@@ -759,7 +720,7 @@ function renderProfileRecent(container, marks) {
     empty.textContent = t('empty_profile_activity');
     var cta = document.createElement('button');
     cta.type = 'button';
-    cta.textContent = getCurrentLanguage() === 'tr' ? 'İlk izini bırak' : 'Place your first mark';
+    cta.textContent = t('profile_recent_cta');
     cta.style.cssText = 'margin-top:12px;background:#c8a96e;color:#020408;border:none;border-radius:999px;padding:8px 14px;font-size:.72rem;cursor:pointer;font-family:inherit;';
     cta.onclick = function() {
       closeProfile();
@@ -834,8 +795,8 @@ function openProfile() {
   document.getElementById('profile-meta').textContent = AUTH.user.email;
   document.getElementById('profile-badge-level').textContent = buildProfileBadgeLevel(marks.length);
   document.getElementById('profile-badge-latest').textContent = marks.length
-    ? ((getCurrentLanguage() === 'tr' ? 'Son: ' : 'Latest: ') + marks[0].cname)
-    : (getCurrentLanguage() === 'tr' ? 'Henüz iz yok' : 'No marks yet');
+    ? (t('profile_latest_prefix') + ' ' + marks[0].cname)
+    : t('profile_no_marks');
   document.getElementById('profile-bio').textContent = buildProfileBio(marks);
   document.getElementById('profile-summary').textContent = buildProfileSummary(marks, countries, capsules);
   document.getElementById('profile-stat-marks').textContent = marks.length;
@@ -1165,43 +1126,43 @@ async function deleteMark(pinId, buttonEl) {
 function buildProfileBio(marks) {
   if (AUTH.user && AUTH.user.meta && AUTH.user.meta.bio) return clampText(AUTH.user.meta.bio, 220);
   if (!marks.length) return getCurrentLanguage() === 'tr'
-    ? 'Henüz bir iz bırakmadın. İlk konumunla başla ve hikâyeni küre üzerinde kur.'
-    : 'You have not placed a mark yet. Start with your first location and build your story on the globe.';
+    ? 'Hikayen tek bir anlamli yerle baslar. Ilk izini birak ve kisisel haritani olusturmaya basla.'
+    : 'Your story starts with one meaningful place. Drop your first mark and start building your personal map.';
   var countries = marks.map(function(mark) { return mark.cname; }).filter(function(value, index, arr) { return value && arr.indexOf(value) === index; });
   if (countries.length > 1) {
     return getCurrentLanguage() === 'tr'
-      ? countries.length + ' ülkede anlamlı yerleri takip ediyorsun.'
-      : 'Tracking meaningful places across ' + countries.length + ' countries on I Was Here.';
+      ? countries.length + ' ulkeye yayilan anlamli anilarin buyuyen bir haritasini tutuyorsun.'
+      : 'Keeping a growing map of meaningful memories across ' + countries.length + ' countries.';
   }
-  return getCurrentLanguage() === 'tr' ? 'I Was Here üzerinde kişisel anı haritanı kuruyorsun.' : 'Building a personal map of memories on I Was Here.';
+  return getCurrentLanguage() === 'tr' ? 'Geri donmeye deger yerlerden kisisel bir ani haritasi kuruyorsun.' : 'Building a personal map of places worth remembering.';
 }
 
 function buildProfileSummary(marks, countries, capsules) {
   if (!marks.length) {
     return getCurrentLanguage() === 'tr'
-      ? 'Küren henüz boş. Tek bir anlamlı yerle başla ve oradan ilerle.'
-      : 'Your globe is still empty. Start with one meaningful place and build from there.';
+      ? 'Henuz bir izin yok. Tek bir anlamli yerle basla, gerisi onun ustune kurulur.'
+      : 'No marks yet. Start with one meaningful place and build the rest from there.';
   }
   var latest = marks.slice().sort(function(a, b) { return new Date(b.added || 0) - new Date(a.added || 0); })[0];
   var parts = [getMarkWord(marks.length)];
   parts.push(getCurrentLanguage() === 'tr' ? countries.length + ' ülke' : countries.length + ' countr' + (countries.length === 1 ? 'y' : 'ies'));
   if (capsules) parts.push(getCurrentLanguage() === 'tr' ? capsules + ' kapsül' : capsules + ' capsule' + (capsules === 1 ? '' : 's'));
-  if (latest && latest.cname) parts.push(getCurrentLanguage() === 'tr' ? 'son: ' + latest.cname : 'latest in ' + latest.cname);
+  if (latest && latest.cname) parts.push(getCurrentLanguage() === 'tr' ? 'son durak ' + latest.cname : 'latest in ' + latest.cname);
   return parts.join(' • ');
 }
 
 function buildProfileBadgeLevel(markCount) {
   if (getCurrentLanguage() === 'tr') {
     if (markCount >= 25) return 'Dünya Kurucusu';
-    if (markCount >= 10) return 'İz Bekçisi';
-    if (markCount >= 3) return 'Anı Haritacısı';
-    if (markCount >= 1) return 'İlk İşaretçi';
+    if (markCount >= 10) return 'Ani Koruyucusu';
+    if (markCount >= 3) return 'Harita Anlaticisi';
+    if (markCount >= 1) return 'Ilk Iz';
     return 'Yeni Kâşif';
   }
   if (markCount >= 25) return 'Worldbuilder';
-  if (markCount >= 10) return 'Trail Keeper';
-  if (markCount >= 3) return 'Memory Mapper';
-  if (markCount >= 1) return 'First Marker';
+  if (markCount >= 10) return 'Memory Keeper';
+  if (markCount >= 3) return 'Map Storyteller';
+  if (markCount >= 1) return 'First Mark';
   return 'New Explorer';
 }
 
