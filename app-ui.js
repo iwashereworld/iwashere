@@ -7,7 +7,7 @@ function isCapsuleComposer() {
 }
 
 function getComposerStepSequence() {
-  return isCapsuleComposer() ? [1, 2, 3, 4, 5] : [1, 2, 4, 5];
+  return isCapsuleComposer() ? [1, 4, 3, 2, 5] : [1, 2, 4, 5];
 }
 
 function getComposerStepIndex(step) {
@@ -30,9 +30,9 @@ function getStepCopy() {
     return isCapsuleComposer()
       ? {
           1: 'Bu kapsulu birakacak ismi sec.',
-          2: 'Kapsulu bir yere baglamak icin konum sec.',
-          3: 'Ne zaman acilacagini ve kime ait oldugunu belirle.',
           4: 'Gelecekte okunacak mesaji yaz.',
+          3: 'Ne zaman acilacagini ve kime ait oldugunu belirle.',
+          2: 'Mesajin baglanacagi yeri son adim olarak sec.',
           5: 'Ozeti kontrol et ve kapsulu planla.'
         }
       : {
@@ -45,9 +45,9 @@ function getStepCopy() {
   return isCapsuleComposer()
     ? {
         1: 'Choose the name that will sign this capsule.',
-        2: 'Pick the place that will anchor this capsule.',
-        3: 'Choose when it opens and who it is for.',
         4: 'Write the message that will be opened later.',
+        3: 'Choose when it opens and who it is for.',
+        2: 'Choose the place that will anchor it at the end.',
         5: 'Review the details and schedule the capsule.'
       }
     : {
@@ -61,11 +61,11 @@ function getStepCopy() {
 function getOnboardingSteps() {
   if (getCurrentLanguage() === 'tr') {
     return isCapsuleComposer()
-      ? ['Gorunen ismini ekle', 'Kapsul yeri sec', 'Acilis zamanini belirle', 'Mesajini yaz', 'Kapsulu planla']
+      ? ['Gorunen ismini ekle', 'Mesajini yaz', 'Acilis zamanini belirle', 'Kapsul yeri sec', 'Kapsulu planla']
       : ['Gorunen ismini ekle', 'Tam yeri sec', 'Mesajini yaz', 'Izini birak'];
   }
   return isCapsuleComposer()
-    ? ['Add your display name', 'Choose the capsule place', 'Pick when it opens', 'Write the message', 'Schedule the capsule']
+    ? ['Add your display name', 'Write the message', 'Pick when it opens', 'Choose the capsule place', 'Schedule the capsule']
     : ['Add your display name', 'Choose the place', 'Write your message', 'Leave your mark'];
 }
 
@@ -271,7 +271,7 @@ function proceedFromCapsuleStep() {
     }
   }
 
-  goS(4);
+  goS(2);
 }
 
 function proceedFromMessageStep() {
@@ -285,11 +285,15 @@ function proceedFromMessageStep() {
   }
 
   bSmry();
-  goS(5);
+  goS(isCapsuleComposer() ? 3 : 5);
 }
 
 function proceedToReview() {
   proceedFromMessageStep();
+}
+
+function proceedFromIdentityStep() {
+  goS(isCapsuleComposer() ? 4 : 2);
 }
 
 function goBackFromMessageStep() {
@@ -298,6 +302,14 @@ function goBackFromMessageStep() {
 
 function goBackFromReviewStep() {
   goS(getPreviousComposerStep(5));
+}
+
+function goBackFromLocationStep() {
+  goS(getPreviousComposerStep(2));
+}
+
+function goBackFromCapsuleStep() {
+  goS(getPreviousComposerStep(3));
 }
 
 function sRC(r) {

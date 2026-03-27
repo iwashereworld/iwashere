@@ -691,7 +691,7 @@ window.addEventListener('load', initCookieBanner);
       </div>
       <label class="fl" data-i18n="display_name">Display Name</label>
       <input type="text" id="iname" placeholder="Your name" maxlength="80" data-i18n-placeholder="your_name">
-      <button class="btn bp" onclick="goS(2)" id="btn1" disabled>Continue to Location</button>
+      <button class="btn bp" onclick="proceedFromIdentityStep()" id="btn1" disabled>Continue to Location</button>
     </div>
     <!-- Step 2 -->
     <div class="step" id="step2">
@@ -710,7 +710,7 @@ window.addEventListener('load', initCookieBanner);
         <div style="font-size:.9rem;color:var(--gold);font-family:'Cormorant Garamond',serif;" id="exact-coords-display">--</div>
       </div>
       <button class="btn bp" onclick="confirmCreateLocation()" id="btn2" disabled>Confirm location</button>
-      <button class="btn bs" onclick="goS(1)" data-i18n="back">Back</button>
+      <button class="btn bs" onclick="goBackFromLocationStep()" data-i18n="back">Back</button>
     </div>
     <!-- Step 3 -->
     <div class="step" id="step3">
@@ -751,7 +751,7 @@ window.addEventListener('load', initCookieBanner);
       <div style="text-align:center;margin-bottom:.5rem;"><span style="font-size:.72rem;color:var(--muted);" data-i18n="or">or</span></div>
       <div class="oc on" id="tq0" onclick="setQuick(0,'tq0')" role="button" tabindex="0" aria-pressed="true" style="margin-bottom:1rem;" data-i18n="no_capsule">Show it now (public mark)</div>
       <button class="btn bp" id="btn3" onclick="proceedFromCapsuleStep()" data-i18n="continue_message">Continue to Message</button>
-      <button class="btn bs" onclick="goS(2)" data-i18n="back">Back</button>
+      <button class="btn bs" onclick="goBackFromCapsuleStep()" data-i18n="back">Back</button>
     </div>
     <!-- Step 4 -->
     <div class="step" id="step4">
@@ -1562,27 +1562,27 @@ function updateCreateFlowUI() {
   }
   if (quickStart2) {
     quickStart2.textContent = isCapsuleFlow
-      ? ltxt('Pick the place that will anchor this capsule.', 'Bu kapsulu baglayacak yeri sec.')
+      ? ltxt('Write the future message before you choose timing and place.', 'Zamani ve yeri secmeden once gelecekte acilacak mesaji yaz.')
       : ltxt('Click the globe once to preview the exact place.', 'Tam yeri onizlemek icin kureye bir kez tikla.');
   }
   if (quickStart3) {
     quickStart3.textContent = isCapsuleFlow
-      ? ltxt('Set when it opens, finish the message, and schedule it.', 'Ne zaman acilacagini sec, mesaji tamamla ve planla.')
+      ? ltxt('Set when it opens, choose the place, and schedule it.', 'Ne zaman acilacagini sec, yeri ekle ve planla.')
       : ltxt('Confirm the place, finish the message, and save.', 'Yeri onayla, mesaji tamamla ve kaydet.');
   }
   if (step2Title) {
     step2Title.textContent = isCapsuleFlow
-      ? ltxt('Choose Capsule Location', 'Kapsul Konumunu Sec')
+      ? ltxt('Choose Capsule Place', 'Kapsul Yerini Sec')
       : ltxt('Choose Mark Location', 'Iz Konumunu Sec');
   }
   if (step2Sub) {
     step2Sub.textContent = isCapsuleFlow
-      ? ltxt('Pick the place that will anchor this capsule on the globe.', 'Bu kapsulu kureye baglayacak yeri sec.')
+      ? ltxt('Choose the place that gives this capsule context before you schedule it.', 'Kapsulu planlamadan once ona anlam katacak yeri sec.')
       : ltxt('Click anywhere on the globe or search for the place where this mark should appear.', 'Bu izin gorunmesini istedigin yeri kureden sec ya da aratarak bul.');
   }
   if (step2Help) {
     step2Help.textContent = isCapsuleFlow
-      ? ltxt('Click once to preview the place, then lock it in for this capsule.', 'Yeri onizlemek icin bir kez tikla, sonra bu kapsul icin sabitle.')
+      ? ltxt('The place comes after the message and timing. Add it once the capsule feels right.', 'Yer, mesaj ve zamandan sonra gelir. Kapsul dogru hissettiginde ekle.')
       : ltxt('Click once on the globe to preview the pin, then confirm it when the place feels right.', 'Pini onizlemek icin kureye bir kez tikla, yer dogruysa onayla.');
   }
   if (quickNoteHelper) {
@@ -1590,12 +1590,12 @@ function updateCreateFlowUI() {
       ? ltxt('Optional: start the capsule note here, then finish the full message in the next step.', 'Istege bagli: kapsul notunu burada baslat, sonra tam mesaji sonraki adimda bitir.')
       : ltxt('Optional: leave a draft note now, then finish the full message in the next step.', 'Istege bagli: taslak notunu simdi yaz, sonra tam mesaji sonraki adimda bitir.');
   }
-  if (step3Title) step3Title.textContent = ltxt('Capsule Timing and Recipient', 'Kapsul Zamani ve Alici');
-  if (step3Sub) step3Sub.textContent = ltxt('Choose when this capsule opens and who it should be for.', 'Bu kapsulun ne zaman acilacagini ve kime ait oldugunu sec.');
+  if (step3Title) step3Title.textContent = ltxt('When Should It Open?', 'Ne Zaman Aculsin?');
+  if (step3Sub) step3Sub.textContent = ltxt('Choose the opening date and decide who this capsule is for.', 'Acilis tarihini sec ve bu kapsulun kime ait olduguna karar ver.');
   if (step4Title) step4Title.textContent = isCapsuleFlow ? ltxt('Write the Capsule Message', 'Kapsul Mesajini Yaz') : ltxt('Write Your Mark', 'Izini Yaz');
   if (step4Sub) {
     step4Sub.textContent = isCapsuleFlow
-      ? ltxt('Write the message that will be opened later.', 'Daha sonra okunacak mesaji yaz.')
+      ? ltxt('Start with the message itself, then choose when it should open.', 'Once mesaji yaz, sonra ne zaman acilacagini sec.')
       : ltxt('Write the message that will live on this place now.', 'Bu yerde simdi gorunecek mesaji yaz.');
   }
   if (step5Title) step5Title.textContent = isCapsuleFlow ? ltxt('Review Capsule', 'Kapsulu Gozden Gecir') : ltxt('Review Mark', 'Izini Gozden Gecir');
@@ -1609,14 +1609,26 @@ function updateCreateFlowUI() {
   var btn1 = document.getElementById('btn1');
   if (btn1) {
     btn1.textContent = isCapsuleFlow
-      ? ltxt('Continue to Capsule Place', 'Kapsul Yerine Gec')
+      ? ltxt('Continue to Capsule Message', 'Kapsul Mesajina Gec')
       : ltxt('Choose My Place', 'Yerimi Sec');
     btn1.disabled = ST.name.trim().length < 2;
+  }
+  var btn3 = document.getElementById('btn3');
+  if (btn3) {
+    btn3.textContent = isCapsuleFlow
+      ? ltxt('Continue to Capsule Place', 'Kapsul Yerine Gec')
+      : ltxt('Continue to Message', 'Mesaja Gec');
+  }
+  var btn4 = document.getElementById('btn4');
+  if (btn4) {
+    btn4.textContent = isCapsuleFlow
+      ? ltxt('Continue to Capsule Timing', 'Kapsul Zamanina Gec')
+      : ltxt('Continue to Review', 'Ozete Gec');
   }
   var btn2 = document.getElementById('btn2');
   if (btn2) {
     btn2.textContent = (ST.selLat != null && ST.selLon != null)
-      ? (isCapsuleFlow ? ltxt('Use This Place for Capsule', 'Bu Yeri Kapsulde Kullan') : ltxt('Confirm This Place', 'Bu Yeri Onayla'))
+      ? (isCapsuleFlow ? ltxt('Continue to Capsule Review', 'Kapsul Ozetine Gec') : ltxt('Confirm This Place', 'Bu Yeri Onayla'))
       : ltxt('Click Globe to Choose', 'Secmek Icin Kureye Tikla');
     btn2.disabled = !(ST.selLat != null && ST.selLon != null);
   }
@@ -1692,7 +1704,7 @@ function confirmCreateLocation() {
   var btn2 = document.getElementById('btn2');
   if (btn2) btn2.disabled = false;
   updateCreateFlowUI();
-  goS(ST.composerType === 'capsule' ? 3 : 4);
+  goS(ST.composerType === 'capsule' ? 5 : 4);
 }
 
 function previewCreateLocation(lat, lon) {
