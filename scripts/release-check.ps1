@@ -12,10 +12,12 @@ $stagingRunbookPath = Join-Path $root 'supabase\staging-runbook.md'
 $vercelEnvMapPath = Join-Path $root 'supabase\vercel-env-map.md'
 $capsuleDispatchReadmePath = Join-Path $root 'supabase\functions\capsule-dispatch\README.md'
 $capsuleReadinessPath = Join-Path $root 'scripts\capsule-readiness.ps1'
+$stagingReadinessPath = Join-Path $root 'scripts\staging-readiness.ps1'
 $privacyPath = Join-Path $root 'privacy-policy.html'
 $termsPath = Join-Path $root 'terms.html'
 $robotsPath = Join-Path $root 'robots.txt'
 $sitemapPath = Join-Path $root 'sitemap.xml'
+$voiceMigrationPath = Join-Path $root 'supabase\migrations\20260324170300_voice_storage.sql'
 
 function Assert-Contains {
   param(
@@ -53,6 +55,7 @@ $stagingRunbook = Get-Content -Raw $stagingRunbookPath
 $vercelEnvMap = Get-Content -Raw $vercelEnvMapPath
 $capsuleDispatchReadme = Get-Content -Raw $capsuleDispatchReadmePath
 $capsuleReadiness = Get-Content -Raw $capsuleReadinessPath
+$stagingReadiness = Get-Content -Raw $stagingReadinessPath
 $privacy = Get-Content -Raw $privacyPath
 $terms = Get-Content -Raw $termsPath
 $robots = Get-Content -Raw $robotsPath
@@ -90,9 +93,16 @@ Assert-Contains $vercelEnvMap 'Safe Rollout Rule' 'vercel env map must define a 
 Assert-NotContains $vercelEnvMap 'ENABLE_VOICE_UPLOAD' 'vercel env map must not mention deprecated voice flag.'
 Assert-Contains $capsuleDispatchReadme 'Required Secrets' 'capsule-dispatch README must document required secrets.'
 Assert-Contains $capsuleReadiness 'Missing secrets' 'capsule readiness script must report missing secrets clearly.'
+Assert-Contains $stagingReadiness 'STAGING_RUNTIME_CONFIG_URL is required.' 'staging-readiness must require a target runtime config URL.'
+Assert-Contains $stagingReadiness 'STAGING_SUPABASE_URL is required.' 'staging-readiness must require the expected staging Supabase URL.'
+Assert-Contains $stagingReadiness 'STAGING_FUNCTIONS_BASE_URL is required.' 'staging-readiness must require the expected functions base URL.'
+Assert-Contains $stagingReadiness 'Invoke-RestMethod' 'staging-readiness must perform a real runtime config request.'
 Assert-Contains $privacy '<meta name="description"' 'privacy-policy.html must include SEO description metadata.'
 Assert-Contains $terms '<meta name="description"' 'terms.html must include SEO description metadata.'
 Assert-Contains $robots 'Sitemap: https://iwashere-seven.vercel.app/sitemap.xml' 'robots.txt must reference the sitemap.'
 Assert-Contains $sitemap '<loc>https://iwashere-seven.vercel.app/</loc>' 'sitemap.xml must include the home page.'
+if (Test-Path $voiceMigrationPath) {
+  throw 'Deprecated voice storage migration must not exist.'
+}
 
 Write-Output 'Release check passed.'

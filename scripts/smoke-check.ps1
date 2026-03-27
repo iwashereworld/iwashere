@@ -20,6 +20,7 @@ $capsuleDeliveryPath = Join-Path $root 'supabase\capsule-delivery.sql'
 $capsuleDispatchReadmePath = Join-Path $root 'supabase\functions\capsule-dispatch\README.md'
 $capsuleDispatchIndexPath = Join-Path $root 'supabase\functions\capsule-dispatch\index.ts'
 $capsuleReadinessPath = Join-Path $root 'scripts\capsule-readiness.ps1'
+$voiceMigrationPath = Join-Path $root 'supabase\migrations\20260324170300_voice_storage.sql'
 
 function Assert-Contains {
   param(
@@ -112,5 +113,8 @@ Assert-Contains $capsuleDispatchReadme 'Capsule Dispatch Function' 'capsule-disp
 Assert-Contains $capsuleDispatchIndex 'Deno.serve' 'capsule-dispatch function must define a handler.'
 Assert-Contains $capsuleDispatchIndex 'Email delivery configuration is incomplete.' 'capsule-dispatch must guard against missing email configuration.'
 Assert-Contains $capsuleReadiness 'Capsule readiness incomplete.' 'scripts/capsule-readiness.ps1 must validate delivery secrets.'
+if (Test-Path $voiceMigrationPath) {
+  throw 'Deprecated voice storage migration must not exist.'
+}
 
 Write-Output 'Smoke check passed.'

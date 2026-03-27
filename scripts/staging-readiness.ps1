@@ -1,3 +1,10 @@
+[CmdletBinding()]
+param(
+  [string]$RuntimeConfigUrl = $env:STAGING_RUNTIME_CONFIG_URL,
+  [string]$ExpectedSupabaseUrl = $env:STAGING_SUPABASE_URL,
+  [string]$ExpectedFunctionsBaseUrl = $env:STAGING_FUNCTIONS_BASE_URL
+)
+
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -11,10 +18,41 @@ $requiredPaths = @(
   (Join-Path $root 'supabase\functions\capsule-dispatch\index.ts')
 )
 
+function Assert-Contains {
+  param(
+    [string]$Content,
+    [string]$Needle,
+    [string]$Message
+  )
+
+  if ($Content -notmatch [regex]::Escape($Needle)) {
+    throw $Message
+  }
+}
+
 foreach ($path in $requiredPaths) {
   if (-not (Test-Path $path)) {
     throw "Missing required staging asset: $path"
   }
 }
+
+if (-not $RuntimeConfigUrl) {
+  throw 'STAGING_RUNTIME_CONFIG_URL is required.'
+}
+
+if (-not $ExpectedSupabaseUrl) {
+  throw 'STAGING_SUPABASE_URL is required.'
+}
+
+if (-not $ExpectedFunctionsBaseUrl) {
+  throw 'STAGING_FUNCTIONS_BASE_URL is required.'
+}
+
+$runtimeConfig = Invoke-RestMethod -Method Get -Uri $RuntimeConfigUrl
+$runtimeConfigText = $runtimeConfig | Out-String
+
+Assert-Contains $runtimeConfigText $ExpectedSupabaseUrl 'Staging runtime config does not point to the expected Supabase URL.'
+Assert-Contains $runtimeConfigText $ExpectedFunctionsBaseUrl 'Staging runtime config does not point to the expected functions base URL.'
+Assert-Contains $runtimeConfigText 'SUPABASE_ANON_KEY' 'Staging runtime config must expose SUPABASE_ANON_KEY.'
 
 Write-Output 'Staging readiness check passed.'
