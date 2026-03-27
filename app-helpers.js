@@ -47,6 +47,117 @@ function countdown(added, years) {
   return days + 'd';
 }
 
+MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,capsule_date,capsule_for,is_public,capsule_status,capsule_release_at,capsule_opened_at,created_at,user_id';
+
+function getValidDate(value) {
+  if (!value) return null;
+  var date = new Date(value);
+  return isFinite(date.getTime()) ? date : null;
+}
+
+function getMarkReleaseDate(pin) {
+  if (!pin) return null;
+  var direct = getValidDate(pin.capsule_release_at) || getValidDate(pin.capsule_date);
+  if (direct) return direct;
+  if ((pin.capsule_days || 0) > 0) {
+    var added = getValidDate(pin.added) || new Date();
+    return new Date(added.getTime() + ((pin.capsule_days || 0) * 86400000));
+  }
+  return null;
+}
+
+function getCapsuleState(pin) {
+  if (!pin || !(pin.capsule_days > 0 || pin.capsule_date || pin.capsule_release_at)) return 'public';
+  if (pin.capsule_status === 'locked' || pin.capsule_status === 'opened') return pin.capsule_status;
+  var releaseDate = getMarkReleaseDate(pin);
+  if (!releaseDate) return 'public';
+  return releaseDate.getTime() > Date.now() ? 'locked' : 'opened';
+}
+
+function formatCapsuleDateTime(value) {
+  var date = getValidDate(value);
+  if (!date) return '';
+  return date.toLocaleString(getCurrentLocale(), {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function getCapsuleStateLabel(pin) {
+  var state = getCapsuleState(pin);
+  if (state === 'locked') {
+    return getCurrentLanguage() === 'tr'
+      ? 'Henüz açılmadı · ' + formatCapsuleDateTime(getMarkReleaseDate(pin))
+      : 'Locked until ' + formatCapsuleDateTime(getMarkReleaseDate(pin));
+  }
+  if (state === 'opened') {
+    return getCurrentLanguage() === 'tr'
+      ? 'Açıldı · ' + formatCapsuleDateTime(pin.capsule_opened_at || getMarkReleaseDate(pin))
+      : 'Opened ' + formatCapsuleDateTime(pin.capsule_opened_at || getMarkReleaseDate(pin));
+  }
+  return getCurrentLanguage() === 'tr' ? 'Şimdi görünür' : 'Visible now';
+}
+
+function getVisibleMarkMessage(pin) {
+  if (!pin) return '';
+  if (getCapsuleState(pin) === 'locked') {
+    return getCurrentLanguage() === 'tr'
+      ? 'Bu kapsül henüz açılmadı.'
+      : 'This capsule has not opened yet.';
+  }
+  return pin.msg || '';
+}
+
+normalizeMarkRecord = function(m) {
+  if (!m) return null;
+
+  var lat = parseFloat(m.lat);
+  var lon = parseFloat(m.lon);
+  if (!isFinite(lat) || !isFinite(lon)) return null;
+
+  return {
+    id: m.id,
+    name: clampText(m.name || 'Unknown', MAX_NAME_LENGTH) || 'Unknown',
+    code: m.country_code || '',
+    cname: m.country_name || 'Unknown',
+    lat: lat,
+    lon: lon,
+    msg: clampText(m.message || '', MAX_MESSAGE_LENGTH),
+    years: Math.round((m.capsule_days || 0) / 365),
+    capsule_days: m.capsule_days || 0,
+    capsule_date: m.capsule_date || null,
+    capsule_for: m.capsule_for || 'myself',
+    is_public: m.is_public !== false,
+    capsule_status: m.capsule_status || '',
+    capsule_release_at: m.capsule_release_at || m.capsule_date || null,
+    capsule_opened_at: m.capsule_opened_at || null,
+    photo: safeImageUrl(m.photo),
+    added: m.created_at || new Date().toISOString(),
+    owner: m.user_id || null
+  };
+};
+
+countdown = function(input, years) {
+  var pin = typeof input === 'object'
+    ? input
+    : { added: input, years: years, capsule_days: years ? years * 365 : 0 };
+  var releaseDate = getMarkReleaseDate(pin);
+  if (!releaseDate) return '';
+  var diff = releaseDate.getTime() - Date.now();
+  if (diff <= 0) return getCurrentLanguage() === 'tr' ? 'Açıldı' : 'Opened';
+  var minutes = Math.max(1, Math.floor(diff / 60000));
+  if (minutes < 60) return minutes + (getCurrentLanguage() === 'tr' ? ' dk' : 'm');
+  var hours = Math.floor(minutes / 60);
+  if (hours < 48) return hours + (getCurrentLanguage() === 'tr' ? ' sa' : 'h');
+  var days = Math.floor(hours / 24);
+  if (days > 365) return Math.round(days / 365) + 'y';
+  if (days > 30) return Math.round(days / 30) + 'mo';
+  return days + 'd';
+};
+
 function escapeHtml(value) {
   return String(value == null ? '' : value)
     .replace(/&/g, '&amp;')
@@ -298,9 +409,9 @@ function createCountrySummaryDetail(pin) {
   name.textContent = pin.name;
   var meta = document.createElement('div');
   meta.className = 'cs-detail-meta';
-  meta.textContent = pin.msg
-    ? pin.msg
-    : (pin.lat.toFixed(3) + ', ' + pin.lon.toFixed(3));
+  meta.textContent = getCapsuleState(pin) === 'locked'
+    ? getCapsuleStateLabel(pin)
+    : (pin.msg ? pin.msg : (pin.lat.toFixed(3) + ', ' + pin.lon.toFixed(3)));
   copy.appendChild(name);
   copy.appendChild(meta);
   item.appendChild(copy);
@@ -484,7 +595,7 @@ function showMarks() {
     body.appendChild(empty);
   } else {
     marks.forEach(function(p) {
-      var cd = countdown(p.added, p.years);
+      var cd = countdown(p);
 
       var item = document.createElement('div');
       item.className = 'mitem';
@@ -505,17 +616,17 @@ function showMarks() {
       date.textContent = new Date(p.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' });
       info.appendChild(date);
 
-      if (p.msg) {
+      if (getVisibleMarkMessage(p)) {
         var msg = document.createElement('div');
         msg.className = 'mmsg';
-        msg.textContent = '"' + p.msg + '"';
+        msg.textContent = '"' + getVisibleMarkMessage(p) + '"';
         info.appendChild(msg);
       }
 
       if (p.years) {
         var cap = document.createElement('div');
         cap.className = 'mcap';
-        cap.textContent = (getCurrentLanguage() === 'tr' ? 'Açılmasına ' : 'Opens in ') + cd;
+        cap.textContent = getCapsuleStateLabel(p);
         info.appendChild(cap);
       }
 
@@ -564,12 +675,14 @@ function showShareCard(pin) {
   document.getElementById('share-name').textContent = pin.name;
   document.getElementById('share-country').textContent = (getCurrentLanguage() === 'tr' ? 'I Was Here • ' : 'I Was Here in ') + pin.cname;
   document.getElementById('share-coords').textContent = pin.lat.toFixed(2) + ', ' + pin.lon.toFixed(2);
-  document.getElementById('share-msg').textContent = pin.msg ? '"' + pin.msg + '"' : (getCurrentLanguage() === 'tr' ? 'Hatırlamaya değer bir yer, küreye kaydedildi.' : 'A place worth remembering, saved on the globe.');
+  document.getElementById('share-msg').textContent = getVisibleMarkMessage(pin)
+    ? '"' + getVisibleMarkMessage(pin) + '"'
+    : (getCurrentLanguage() === 'tr' ? 'Hatırlamaya değer bir yer, küreye kaydedildi.' : 'A place worth remembering, saved on the globe.');
   document.getElementById('share-date').textContent = (getCurrentLanguage() === 'tr' ? 'Kaydedildi ' : 'Saved ') + new Date(pin.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' });
   var typeChip = document.getElementById('share-chip-type');
   var dateChip = document.getElementById('share-chip-date');
   if (typeChip) typeChip.textContent = pin.years > 0 ? (getCurrentLanguage() === 'tr' ? 'Kapsül izi' : 'Capsule mark') : (getCurrentLanguage() === 'tr' ? 'Herkese açık iz' : 'Public mark');
-  if (dateChip) dateChip.textContent = pin.years > 0 ? ((getCurrentLanguage() === 'tr' ? 'Açılmasına ' : 'Opens in ') + countdown(pin.added, pin.years)) : (getCurrentLanguage() === 'tr' ? 'Şimdi görünür' : 'Visible now');
+  if (dateChip) dateChip.textContent = pin.years > 0 ? getCapsuleStateLabel(pin) : (getCurrentLanguage() === 'tr' ? 'Şimdi görünür' : 'Visible now');
   var deleteBtn = document.getElementById('share-delete-btn');
   if (deleteBtn) {
     var canDelete = !!(AUTH.user && pin.owner && AUTH.user.id === pin.owner);
@@ -634,13 +747,13 @@ function renderProfileRecent(container, marks) {
 
     var meta = document.createElement('div');
     meta.className = 'prmeta';
-    meta.textContent = new Date(p.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' }) + (p.years ? (getCurrentLanguage() === 'tr' ? ' - kapsül aktif' : ' - capsule active') : '');
+    meta.textContent = new Date(p.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' }) + (p.years ? (' - ' + getCapsuleStateLabel(p)) : '');
     info.appendChild(meta);
 
-    if (p.msg) {
+    if (getVisibleMarkMessage(p)) {
       var msg = document.createElement('div');
       msg.className = 'prmsg';
-      msg.textContent = '"' + p.msg + '"';
+      msg.textContent = '"' + getVisibleMarkMessage(p) + '"';
       info.appendChild(msg);
     }
 
@@ -707,7 +820,7 @@ function showMarks() {
     body.appendChild(empty);
   } else {
     marks.forEach(function(p) {
-      var cd = countdown(p.added, p.years);
+      var cd = countdown(p);
 
       var item = document.createElement('div');
       item.className = 'mitem';
@@ -728,17 +841,17 @@ function showMarks() {
       date.textContent = new Date(p.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' });
       info.appendChild(date);
 
-      if (p.msg) {
+      if (getVisibleMarkMessage(p)) {
         var msg = document.createElement('div');
         msg.className = 'mmsg';
-        msg.textContent = '"' + p.msg + '"';
+        msg.textContent = '"' + getVisibleMarkMessage(p) + '"';
         info.appendChild(msg);
       }
 
       if (p.years) {
         var cap = document.createElement('div');
         cap.className = 'mcap';
-        cap.textContent = (getCurrentLanguage() === 'tr' ? 'Açılmasına ' : 'Opens in ') + cd;
+        cap.textContent = getCapsuleStateLabel(p);
         info.appendChild(cap);
       }
 
@@ -793,7 +906,7 @@ function showPinTooltip(pin, x, y) {
   var isOwner = AUTH.user && pin.owner && AUTH.user.id === pin.owner;
   tn.textContent = pin.name + (isOwner ? (getCurrentLanguage() === 'tr' ? ' • Senin izin' : ' • Your mark') : '');
   tc.textContent = pin.cname + ' • ' + pin.lat.toFixed(3) + ', ' + pin.lon.toFixed(3);
-  tm.textContent = pin.msg || ((getCurrentLanguage() === 'tr' ? 'Kaydedildi ' : 'Saved ') + new Date(pin.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'short', day: 'numeric' }));
+  tm.textContent = getVisibleMarkMessage(pin) || getCapsuleStateLabel(pin) || ((getCurrentLanguage() === 'tr' ? 'Kaydedildi ' : 'Saved ') + new Date(pin.added || Date.now()).toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'short', day: 'numeric' }));
   tt.classList.add('show');
   positionTooltip(tt, x, y);
 }
@@ -852,9 +965,8 @@ function renderCountrySummary() {
 function bSmry() {
   var cap = !!(ST.capsuleDate || ST.capsuleDays > 0);
   var tot = 1 + (cap ? 2 : 0);
-  var opens = ST.capsuleDate ? new Date(ST.capsuleDate) : new Date();
-  if (!ST.capsuleDate) opens.setDate(opens.getDate() + (ST.capsuleDays || 365));
-  var oy = opens.toLocaleDateString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric' });
+  var opens = typeof getCapsuleScheduleDateFromState === 'function' ? getCapsuleScheduleDateFromState() : null;
+  var oy = opens ? formatCapsuleDateTime(opens) : '';
   var summary = document.getElementById('smry');
   clearChildren(summary);
   summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Küre izi - ' : 'Globe mark - ') + (ST.selName || '-'), '$1.00'));
@@ -940,7 +1052,7 @@ function renderLists() {
     return;
   }
   pins.slice(0, 5).forEach(function(p) {
-    var cd = countdown(p.added, p.years);
+    var cd = countdown(p);
     var item = document.createElement('div');
     item.className = 'pitem';
     item.onclick = function() { flyTo(p.lat, p.lon, getHeightForZoom(29)); };

@@ -25,7 +25,15 @@ Apply in this order:
 supabase functions deploy capsule-dispatch
 ```
 
-## 4. Verify Core Product
+## 4. Configure Scheduled Dispatch
+
+- add GitHub Actions secrets:
+  - `CAPSULE_DISPATCH_URL`
+  - `SUPABASE_ANON_KEY`
+- point `CAPSULE_DISPATCH_URL` to the staging function endpoint
+- enable `.github/workflows/capsule-dispatch.yml`
+
+## 5. Verify Core Product
 
 - open the Vercel preview or staging site
 - confirm `/api/runtime-config.js` returns the staging values
@@ -34,17 +42,19 @@ supabase functions deploy capsule-dispatch
 - create a capsule mark for yourself
 - create a capsule mark for another recipient
 
-## 5. Verify Capsule Delivery Queue
+## 6. Verify Capsule Delivery Queue
 
 - inspect `public.capsule_deliveries`
+- confirm a row exists for the self capsule
 - confirm a row exists for the recipient-targeted capsule
 - set `scheduled_for` to the current time in staging
 - invoke the `capsule-dispatch` function
+- trigger the `capsule-dispatch` GitHub Actions workflow manually
 - if email secrets are configured, confirm the row becomes `sent` or `failed`
-- if email secrets are not configured yet, confirm the function returns `503`
-  without mutating queued jobs
+- if email secrets are not configured yet, confirm self capsules still reveal
+  and gift jobs return to `pending`
 
-## 6. Exit Criteria
+## 7. Exit Criteria
 
 - smoke check passes locally
 - release check passes locally

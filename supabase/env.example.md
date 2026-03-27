@@ -14,6 +14,11 @@ Set these secrets in Supabase before deploying the backend functions.
 - `RESEND_API_KEY`
 - `DELIVERY_FROM_EMAIL`
 
+## GitHub Actions `capsule-dispatch`
+
+- `CAPSULE_DISPATCH_URL`
+- `SUPABASE_ANON_KEY`
+
 ## Notes
 
 - keep service role keys only in Supabase secrets, never in frontend code

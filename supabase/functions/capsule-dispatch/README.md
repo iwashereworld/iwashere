@@ -1,13 +1,14 @@
 # Capsule Dispatch Function
 
-This Supabase Edge Function is the backend delivery entry point for future
-capsules addressed to another recipient.
+This Supabase Edge Function is the backend delivery entry point for all due
+capsules.
 
 ## Purpose
 
-- find due `pending` rows from `public.capsule_deliveries`
-- send an email through a provider such as Resend
-- mark the job as `sent` or `failed`
+- atomically claim due `pending` rows from `public.capsule_deliveries`
+- reveal self capsules when their release time arrives
+- send recipient email for gift capsules through a provider such as Resend
+- mark jobs as `revealed`, `sent`, `failed`, or return them to `pending`
 
 ## Required Secrets
 
@@ -25,15 +26,20 @@ supabase functions deploy capsule-dispatch
 
 ## Trigger Strategy
 
-Recommended options:
+Recommended option for this repo:
 
-- Supabase scheduled invocation
-- external cron calling the function endpoint
+- GitHub Actions schedule hitting the function endpoint directly
+
+The scheduled job should:
+
+- call the Supabase function endpoint with the anon key
+- fail loudly when the function returns a non-2xx status
+- keep the schedule outside the frontend deployment target
 
 ## Important
 
 Use service role credentials only inside the function runtime. Never expose them
 to the frontend.
 
-If email delivery secrets are missing, the function should return `503` without
-mutating queued jobs.
+If email delivery secrets are missing, gift jobs should be returned to
+`pending`, while normal self-reveal capsules can still be opened safely.

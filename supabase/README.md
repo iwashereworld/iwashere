@@ -12,7 +12,8 @@ the current frontend toward a production-ready Supabase setup.
 - `env.example.md`: required secret inventory for functions
 - `staging-runbook.md`: end-to-end staging rollout sequence
 - `production-runbook.md`: guarded production rollout sequence
-- `functions/capsule-dispatch/`: Edge Function scaffold for due capsule sends
+- `functions/capsule-dispatch/`: Edge Function for due self-reveal and gift delivery jobs
+- `../.github/workflows/capsule-dispatch.yml`: scheduled trigger for capsule dispatch
 
 ## Intent
 
@@ -31,8 +32,10 @@ is not a security boundary. The database must enforce:
 3. Apply `schema.sql`
 4. Apply `policies.sql`
 5. Apply `capsule-delivery.sql`
-6. Verify with `rollout-checklist.md` and `staging-runbook.md`
-7. Update the frontend to target any new public/private split if needed
+6. Deploy `functions/capsule-dispatch`
+7. Configure the GitHub Actions schedule
+8. Verify with `rollout-checklist.md` and `staging-runbook.md`
+9. Update the frontend to target any new public/private split if needed
 
 ## Important
 

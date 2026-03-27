@@ -34,21 +34,29 @@ Load the values listed in `env.example.md` for production.
 supabase functions deploy capsule-dispatch
 ```
 
-## 6. Functional Verification
+## 6. Configure Scheduled Dispatch
+
+- add GitHub Actions secrets:
+  - `CAPSULE_DISPATCH_URL`
+  - `SUPABASE_ANON_KEY`
+- point `CAPSULE_DISPATCH_URL` to the production function endpoint
+- enable `.github/workflows/capsule-dispatch.yml`
+
+## 7. Functional Verification
 
 - create one public mark
 - create one capsule mark for `myself`
 - create one capsule mark for `other`
 - verify the queue row is created
 
-## 7. Monitor
+## 8. Monitor
 
 - watch Supabase database logs
 - watch Edge Function logs
 - watch Vercel runtime behavior
 - confirm public mark loading and authenticated mark creation still work
 
-## 8. Rollback Trigger
+## 9. Rollback Trigger
 
 Rollback immediately if any of these happen:
 

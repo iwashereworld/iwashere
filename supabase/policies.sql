@@ -23,7 +23,14 @@ with check (
   auth.uid() = user_id
   and (
     (capsule_days = 0 and capsule_date is null and recipient_email is null and capsule_for = 'myself')
-    or (capsule_days > 0)
+    or (
+      capsule_days > 0
+      and capsule_date is not null
+      and (
+        (capsule_for = 'myself' and recipient_email is null)
+        or (capsule_for = 'other' and recipient_email is not null)
+      )
+    )
   )
 );
 

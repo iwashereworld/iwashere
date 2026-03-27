@@ -35,11 +35,14 @@
 
 ## Delivery Validation
 
+- create a capsule mark for `myself`
 - create a capsule mark for `other`
-- confirm a `capsule_deliveries` row is created
+- confirm `capsule_deliveries` rows are created for both
 - move `scheduled_for` to the current time in staging
 - invoke the `capsule-dispatch` function
-- confirm the row becomes `sent` or `failed` with an error recorded
+- trigger the `capsule-dispatch` GitHub Actions workflow
+- confirm self capsule rows become `revealed`
+- confirm gift rows become `sent` or return to `pending` with an error recorded
 
 ## After Release
 

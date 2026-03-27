@@ -566,3 +566,155 @@ function proceedFromMessageStep() {
 function proceedToReview() {
   proceedFromMessageStep();
 }
+
+function getCapsuleScheduleDateFromState() {
+  if (!(ST.capsuleDays > 0 || ST.capsuleDate)) return null;
+  if (ST.capsuleDate) {
+    var customDate = new Date(ST.capsuleDate);
+    return isFinite(customDate.getTime()) ? customDate : null;
+  }
+  var quickDate = new Date();
+  quickDate.setSeconds(0, 0);
+  return new Date(quickDate.getTime() + ((ST.capsuleDays || 0) * 86400000));
+}
+
+setQuick = function(days, id) {
+  ST.capsuleDays = days;
+  ST.capsuleDate = null;
+  ST.yr = days > 0 ? Math.max(1, Math.round(days / 365)) : 0;
+
+  ['tq7', 'tq30', 'tq90', 'tq180', 'tq365', 'tq730', 'tq1825', 'tq9125', 'tq0', 'tqcustom'].forEach(function(i) {
+    var el = document.getElementById(i);
+    if (el) {
+      el.classList.remove('on');
+      el.setAttribute('aria-pressed', 'false');
+    }
+  });
+  var active = document.getElementById(id);
+  if (active) {
+    active.classList.add('on');
+    active.setAttribute('aria-pressed', 'true');
+  }
+
+  var customArea = document.getElementById('custom-date-area');
+  if (customArea) customArea.style.display = 'none';
+  var datePreview = document.getElementById('date-preview');
+  if (datePreview) datePreview.style.display = 'none';
+
+  updateOpensPreview();
+  updateCapsuleUI();
+};
+
+toggleCustomDate = function() {
+  ['tq7', 'tq30', 'tq90', 'tq180', 'tq365', 'tq730', 'tq1825', 'tq9125', 'tq0'].forEach(function(i) {
+    var el = document.getElementById(i);
+    if (el) {
+      el.classList.remove('on');
+      el.setAttribute('aria-pressed', 'false');
+    }
+  });
+  var btn = document.getElementById('tqcustom');
+  if (btn) {
+    btn.classList.add('on');
+    btn.setAttribute('aria-pressed', 'true');
+  }
+
+  var customArea = document.getElementById('custom-date-area');
+  if (customArea) customArea.style.display = 'block';
+  updateCapsuleUI();
+
+  var input = document.getElementById('capsule-date');
+  if (!input) return;
+  var now = new Date();
+  now.setSeconds(0, 0);
+  var localMin = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+  input.min = localMin;
+  if (!input.value) {
+    input.value = localMin;
+  }
+  setCustomDate(input.value);
+};
+
+setCustomDate = function(val) {
+  if (!val) return;
+  var selected = new Date(val);
+  if (!isFinite(selected.getTime())) return;
+  if (selected.getTime() <= Date.now()) {
+    showToast(getCurrentLanguage() === 'tr' ? 'Kapsül zamanı gelecekte olmalı.' : 'Capsule time must be in the future.', 'error');
+    return;
+  }
+  ST.capsuleDate = selected.toISOString();
+  ST.capsuleDays = Math.max(1, Math.ceil((selected.getTime() - Date.now()) / 86400000));
+  ST.yr = Math.max(1, Math.round(ST.capsuleDays / 365));
+  updateOpensPreview();
+
+  var dp = document.getElementById('date-preview');
+  if (dp) {
+    dp.textContent = (getCurrentLanguage() === 'tr' ? 'Açılır: ' : 'Opens ') + selected.toLocaleString(getCurrentLocale(), {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    dp.style.display = 'block';
+  }
+};
+
+updateOpensPreview = function() {
+  var el = document.getElementById('opens-date-text');
+  var preview = document.getElementById('opens-preview');
+  if (!el) return;
+
+  if (!ST.capsuleDays && ST.capsuleDays !== 0) ST.capsuleDays = 365;
+
+  if (ST.capsuleDays === 0) {
+    el.textContent = getCurrentLanguage() === 'tr' ? 'Kapsül yok - sadece iz' : 'No capsule - mark only';
+    if (preview) preview.style.opacity = '.4';
+    return;
+  }
+
+  if (preview) preview.style.opacity = '1';
+  var opens = getCapsuleScheduleDateFromState();
+  if (!opens) return;
+  var days = Math.max(1, Math.ceil((opens.getTime() - Date.now()) / 86400000));
+  el.textContent = formatRelativeDurationDays(days) + ' - ' + opens.toLocaleString(getCurrentLocale(), {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+proceedFromCapsuleStep = function() {
+  var recipientInput = document.getElementById('iem');
+  var recipientEmail = recipientInput ? normalizeEmail(recipientInput.value) : '';
+  if (recipientInput) recipientInput.value = recipientEmail;
+
+  if (ST.capsuleDays > 0) {
+    var releaseDate = getCapsuleScheduleDateFromState();
+    if (!releaseDate) {
+      showToast(getCurrentLanguage() === 'tr' ? 'Lütfen geçerli bir kapsül zamanı seç.' : 'Please choose a valid capsule time.', 'error');
+      return;
+    }
+    if (releaseDate.getTime() <= Date.now()) {
+      showToast(getCurrentLanguage() === 'tr' ? 'Kapsül zamanı gelecekte olmalı.' : 'Capsule time must be in the future.', 'error');
+      return;
+    }
+  }
+
+  if (ST.capsuleDays > 0 && ST.rc === 'o') {
+    if (!recipientEmail) {
+      showToast(getCurrentLanguage() === 'tr' ? 'Devam etmeden önce alıcı e-postasını gir.' : 'Please enter a recipient email before continuing.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+      showToast(getCurrentLanguage() === 'tr' ? 'Geçerli bir alıcı e-postası gir.' : 'Please enter a valid recipient email.');
+      return;
+    }
+  }
+
+  goS(4);
+};
