@@ -1,26 +1,72 @@
+function getComposerType() {
+  return ST && ST.composerType === 'capsule' ? 'capsule' : 'mark';
+}
+
+function isCapsuleComposer() {
+  return getComposerType() === 'capsule';
+}
+
+function getComposerStepSequence() {
+  return isCapsuleComposer() ? [1, 2, 3, 4, 5] : [1, 2, 4, 5];
+}
+
+function getComposerStepIndex(step) {
+  return getComposerStepSequence().indexOf(step);
+}
+
+function getComposerStepNumber(step) {
+  var index = getComposerStepIndex(step);
+  return index >= 0 ? index + 1 : getComposerStepSequence().length;
+}
+
+function getPreviousComposerStep(step) {
+  var sequence = getComposerStepSequence();
+  var index = sequence.indexOf(step);
+  return index > 0 ? sequence[index - 1] : sequence[0];
+}
+
 function getStepCopy() {
   if (getCurrentLanguage() === 'tr') {
-    return {
-      1: 'Gorunen bir isimle basla ve izine kimlik kazandir.',
-      2: 'Kure uzerinde tam bir nokta sec ya da bir yer ara.',
-      3: 'Bu aninin simdi mi gorunecegine yoksa kapsul olarak sonra mi acilacagina karar ver.',
-      4: 'Bu yerle birlikte kaydedilecek mesaji yaz.',
-      5: 'Ozeti gozden gecir ve izini kureye birak.'
-    };
+    return isCapsuleComposer()
+      ? {
+          1: 'Bu kapsulu birakacak ismi sec.',
+          2: 'Kapsulu bir yere baglamak icin konum sec.',
+          3: 'Ne zaman acilacagini ve kime ait oldugunu belirle.',
+          4: 'Gelecekte okunacak mesaji yaz.',
+          5: 'Ozeti kontrol et ve kapsulu planla.'
+        }
+      : {
+          1: 'Gorunen bir isimle basla ve izine kimlik kazandir.',
+          2: 'Kure uzerinde tam bir nokta sec ya da bir yer ara.',
+          4: 'Bu yerle birlikte haritada gorunecek mesaji yaz.',
+          5: 'Ozeti gozden gecir ve izini birak.'
+        };
   }
-  return {
-    1: 'Start with a display name so your mark has an identity.',
-    2: 'Pick an exact location on the globe or search for a place.',
-    3: 'Choose whether this memory stays visible now or opens later as a capsule.',
-    4: 'Write the message that will be saved with this place.',
-    5: 'Review the summary and place your mark on the globe.'
-  };
+  return isCapsuleComposer()
+    ? {
+        1: 'Choose the name that will sign this capsule.',
+        2: 'Pick the place that will anchor this capsule.',
+        3: 'Choose when it opens and who it is for.',
+        4: 'Write the message that will be opened later.',
+        5: 'Review the details and schedule the capsule.'
+      }
+    : {
+        1: 'Start with a display name so your mark has an identity.',
+        2: 'Pick an exact location on the globe or search for a place.',
+        4: 'Write the message that will be shown with this place.',
+        5: 'Review the summary and leave your mark.'
+      };
 }
 
 function getOnboardingSteps() {
-  return getCurrentLanguage() === 'tr'
-    ? ['Gorunen ismini ekle', 'Tam yeri sec', 'Kapsul zamanini sec', 'Mesajini yaz', 'Izini kaydet ve paylas']
-    : ['Add your display name', 'Choose the place', 'Choose capsule timing', 'Write your message', 'Save and share your mark'];
+  if (getCurrentLanguage() === 'tr') {
+    return isCapsuleComposer()
+      ? ['Gorunen ismini ekle', 'Kapsul yeri sec', 'Acilis zamanini belirle', 'Mesajini yaz', 'Kapsulu planla']
+      : ['Gorunen ismini ekle', 'Tam yeri sec', 'Mesajini yaz', 'Izini birak'];
+  }
+  return isCapsuleComposer()
+    ? ['Add your display name', 'Choose the capsule place', 'Pick when it opens', 'Write the message', 'Schedule the capsule']
+    : ['Add your display name', 'Choose the place', 'Write your message', 'Leave your mark'];
 }
 
 function renderOnboardingChecklist(step) {
@@ -63,9 +109,9 @@ function dismissStartHint() {
   if (hint) hint.classList.add('hidden');
 }
 
-function openSb() {
+function openSb(type) {
   if (typeof startCreateFlow === 'function') {
-    startCreateFlow();
+    startCreateFlow(type || 'mark');
     return;
   }
   document.getElementById('sb').classList.remove('hidden');
@@ -87,6 +133,7 @@ function resetForm() {
   ST.capsuleDate = null;
   ST.rc = 's';
   ST.vis = 'pub';
+  ST.composerType = 'mark';
   document.getElementById('iname').value = '';
   var prev = document.getElementById('prev');
   if (prev) prev.style.display = 'none';
@@ -137,17 +184,25 @@ function updateStepMeta(step) {
   var meta = document.getElementById('step-meta');
   var tip = document.getElementById('step-tip');
   if (!meta || !tip) return;
+  var totalSteps = getComposerStepSequence().length;
+  var currentStep = getComposerStepNumber(step);
 
-  if (step >= 1 && step <= 5) {
-    meta.textContent = getCurrentLanguage() === 'tr' ? step + ' / 5. Adim' : 'Step ' + step + ' of 5';
+  if (getComposerStepIndex(step) >= 0) {
+    meta.textContent = getCurrentLanguage() === 'tr'
+      ? currentStep + ' / ' + totalSteps + '. Adim'
+      : 'Step ' + currentStep + ' of ' + totalSteps;
     tip.textContent = getStepCopy()[step] || '';
   } else {
     meta.textContent = getCurrentLanguage() === 'tr' ? 'Tamamlandi' : 'Finished';
     tip.textContent = getCurrentLanguage() === 'tr'
-      ? 'Izin kaydedildi. Paylasabilir ya da yeni bir tane birakabilirsin.'
-      : 'Your mark has been saved. Share it or place another one.';
+      ? (isCapsuleComposer()
+        ? 'Kapsulun kaydedildi. Paylasabilir ya da yeni bir tane planlayabilirsin.'
+        : 'Izin kaydedildi. Paylasabilir ya da yeni bir tane birakabilirsin.')
+      : (isCapsuleComposer()
+        ? 'Your capsule has been saved. Share it or schedule another one.'
+        : 'Your mark has been saved. Share it or place another one.');
   }
-  renderOnboardingChecklist(step >= 1 && step <= 5 ? step : 5);
+  renderOnboardingChecklist(getComposerStepIndex(step) >= 0 ? step : getComposerStepSequence()[totalSteps - 1]);
 }
 
 function goS(n) {
@@ -160,10 +215,14 @@ function goS(n) {
   ST.createMode = n === 2;
 
   var dots = document.querySelectorAll('.dot');
+  var sequence = getComposerStepSequence();
+  var currentIndex = getComposerStepIndex(n);
   dots.forEach(function(d, i) {
     d.classList.remove('on', 'dn');
-    if (i < n - 1) d.classList.add('dn');
-    if (i === n - 1) d.classList.add('on');
+    d.style.display = i < sequence.length ? 'inline-flex' : 'none';
+    if (i >= sequence.length) return;
+    if (i < currentIndex) d.classList.add('dn');
+    if (i === currentIndex) d.classList.add('on');
   });
   updateStepMeta(n);
 }
@@ -180,6 +239,10 @@ function getCapsuleScheduleDateFromState() {
 }
 
 function proceedFromCapsuleStep() {
+  if (!isCapsuleComposer()) {
+    goS(4);
+    return;
+  }
   var recipientInput = document.getElementById('iem');
   var recipientEmail = recipientInput ? normalizeEmail(recipientInput.value) : '';
   if (recipientInput) recipientInput.value = recipientEmail;
@@ -227,6 +290,14 @@ function proceedFromMessageStep() {
 
 function proceedToReview() {
   proceedFromMessageStep();
+}
+
+function goBackFromMessageStep() {
+  goS(getPreviousComposerStep(4));
+}
+
+function goBackFromReviewStep() {
+  goS(getPreviousComposerStep(5));
 }
 
 function sRC(r) {

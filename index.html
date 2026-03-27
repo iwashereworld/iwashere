@@ -179,15 +179,16 @@ footer a{color:var(--muted);text-decoration:none;}
 .share-actions{margin-top:1.2rem;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
 .share-btn{border-radius:20px;padding:8px 20px;font-size:.78rem;cursor:pointer;}
 #share-delete-btn.share-btn{display:none;margin:1rem auto 0;background:rgba(220,90,90,.08);border:1px solid rgba(220,90,90,.28);color:#ffb0b0;}
-#fab{position:fixed;bottom:1.5rem;right:1.5rem;height:52px;border-radius:999px;background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 100%);color:#020408;font-size:.86rem;font-weight:700;border:none;cursor:pointer;z-index:160;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 12px 36px rgba(200,169,110,.35);transition:all .2s;padding:0 18px;min-width:168px;}
-#fab:hover{transform:translateY(-2px);}
-#fab .fab-plus{font-size:1.25rem;line-height:1;}
-#fab.cta-preview{height:58px;padding:0 20px;gap:12px;background:linear-gradient(135deg,#f1d7a0 0%,#c8a96e 54%,#b88a39 100%);box-shadow:0 16px 42px rgba(200,169,110,.34),0 0 0 1px rgba(255,255,255,.12) inset;}
-#fab.cta-preview .fab-plus{display:grid;place-items:center;width:28px;height:28px;border-radius:999px;background:rgba(2,4,8,.14);font-size:1.05rem;}
-#fab.cta-preview .fab-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05;}
-#fab.cta-preview .fab-label strong{font-size:.86rem;letter-spacing:.01em;}
-#fab.cta-preview .fab-label span{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;opacity:.72;margin-top:4px;}
-#fab.cta-preview.create-active{box-shadow:0 0 0 2px rgba(200,169,110,.4),0 18px 44px rgba(200,169,110,.3);}
+#fab-dock{position:fixed;bottom:1.5rem;right:1.5rem;display:flex;flex-direction:column;gap:10px;z-index:160;}
+.fab-action{height:52px;border-radius:999px;color:#020408;font-size:.84rem;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 12px 36px rgba(200,169,110,.24);transition:all .2s;padding:0 18px;min-width:182px;}
+.fab-action:hover{transform:translateY(-2px);}
+.fab-action .fab-plus{font-size:1.15rem;line-height:1;}
+.fab-action .fab-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05;text-align:left;}
+.fab-action .fab-label strong{font-size:.84rem;letter-spacing:.01em;}
+.fab-action .fab-label span{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;opacity:.72;margin-top:4px;}
+#fab-mark{background:linear-gradient(135deg,#f1d7a0 0%,#c8a96e 54%,#b88a39 100%);}
+#fab-capsule{background:linear-gradient(135deg,#dae5ff 0%,#98b5eb 52%,#6b88bf 100%);box-shadow:0 12px 36px rgba(120,150,220,.2);}
+.fab-action.create-active{box-shadow:0 0 0 2px rgba(200,169,110,.3),0 18px 44px rgba(200,169,110,.28);}
 #create-flow{display:none !important;}
 #create-flow.show{display:block;}
 .cf-kicker{font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);margin-bottom:.35rem;}
@@ -200,7 +201,7 @@ footer a{color:var(--muted);text-decoration:none;}
 .cf-btn.primary:disabled{opacity:.4;cursor:not-allowed;}
 .cf-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold);}
 .cf-btn.primary:hover:not(:disabled){color:#020408;background:var(--gold2);}
-.create-mode #fab{box-shadow:0 0 0 2px rgba(200,169,110,.32),0 12px 36px rgba(200,169,110,.35);}
+.create-mode #fab-dock{opacity:.98;}
 .ghost-pin-indicator{display:inline-flex;align-items:center;gap:6px;font-size:.68rem;color:var(--muted);margin-top:.5rem;}
 .ghost-pin-indicator::before{content:'';width:10px;height:10px;border-radius:50%;border:1px dashed rgba(200,169,110,.65);background:rgba(200,169,110,.18);}
 #start-hint{position:fixed;right:1.5rem;bottom:5.6rem;z-index:161;max-width:250px;background:rgba(8,14,24,.96);border:1px solid rgba(200,169,110,.28);border-radius:16px;padding:.9rem 1rem;backdrop-filter:blur(18px);box-shadow:0 14px 36px rgba(0,0,0,.35);}
@@ -397,7 +398,7 @@ input[type=file]{display:none;}
 #globe-app header{pointer-events:auto;}
 #tt{pointer-events:auto;}
 #sb{pointer-events:auto;}
-#fab{pointer-events:auto;}
+#fab-dock{pointer-events:auto;}
 .ctrls{pointer-events:auto;}
 #srch{pointer-events:auto;}
 #cpanel{pointer-events:auto;}
@@ -421,7 +422,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   #click-coords{top:auto;bottom:156px;right:12px;left:12px;min-width:0;}
   #sb{top:auto;bottom:0;right:0;width:100%;height:min(80vh,720px);border-left:none;border-top:1px solid var(--border);border-radius:18px 18px 0 0;padding-bottom:env(safe-area-inset-bottom,0);}
   #sb.hidden{transform:translateY(100%);}
-  #fab{right:1rem;bottom:1rem;width:auto;height:54px;padding:0 16px;min-width:0;}
+  #fab-dock{right:1rem;bottom:1rem;}
+  .fab-action{height:54px;padding:0 16px;min-width:0;}
   #create-flow{left:12px;right:12px;bottom:78px;width:auto;}
   #pin-filter-bar{top:auto;bottom:84px;left:12px;right:12px;transform:none;justify-content:flex-start;width:auto;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;}
   #start-hint{right:1rem;bottom:5.2rem;max-width:min(280px,calc(100vw - 2rem));}
@@ -463,11 +465,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   .mhead,.mbody{padding:1rem;}
   .ctrls{left:12px;right:12px;bottom:12px;}
   .cb{flex:1 1 auto;min-width:92px;min-height:42px;}
-  #fab{right:12px;bottom:12px;height:54px;padding:0 14px;width:auto;min-width:0;max-width:calc(100vw - 24px);}
-  #fab .fab-label{display:none;}
-  #fab.cta-preview .fab-label{display:flex;}
-  #fab.cta-preview{height:56px;padding:0 16px;min-width:0;max-width:calc(100vw - 24px);}
-  #fab.cta-preview .fab-label span{display:none;}
+  #fab-dock{left:12px;right:12px;bottom:12px;gap:8px;}
+  .fab-action{width:100%;height:54px;padding:0 14px;max-width:none;}
+  .fab-action .fab-label span{display:none;}
   #pin-filter-bar{bottom:76px;}
   #zoom-level{bottom:82px;left:12px;right:12px;transform:none;text-align:center;}
   #pin-filter-bar .pfb{min-height:38px;display:inline-flex;align-items:center;}
@@ -639,7 +639,10 @@ window.addEventListener('load', initCookieBanner);
   <button class="cb on" id="bbrd" onclick="tglBorders()" data-i18n="controls_borders">Borders</button>
   <button class="cb" id="blbl" onclick="tglLabels()" data-i18n="controls_labels">Labels</button>
 </div>
-<button id="fab" onclick="openSb()"><span class="fab-plus">+</span><span class="fab-label">Add Memory</span></button>
+<div id="fab-dock">
+  <button id="fab-mark" class="fab-action" onclick="openSb('mark')"><span class="fab-plus">+</span><span class="fab-label"><strong data-i18n="add_mark">Add Mark</strong><span data-i18n="add_mark_sub">Visible on the map right away</span></span></button>
+  <button id="fab-capsule" class="fab-action" onclick="openSb('capsule')"><span class="fab-plus">+</span><span class="fab-label"><strong data-i18n="create_capsule">Create Capsule</strong><span data-i18n="create_capsule_sub">Opens on a future date</span></span></button>
+</div>
 <div id="create-flow" aria-live="polite">
   <div class="cf-kicker">Create Memory</div>
   <div class="cf-title" id="create-flow-title">1. Select a location</div>
@@ -653,9 +656,10 @@ window.addEventListener('load', initCookieBanner);
 </div>
 <div id="start-hint" class="hidden" aria-live="polite">
   <div class="hint-k" data-i18n="start_here">Start Here</div>
-  <div class="hint-t" data-i18n="start_hint">Open the panel to place your first mark, choose a location and leave a message.</div>
+  <div class="hint-t" id="start-hint-copy" data-i18n="start_hint">Choose whether you want to leave a mark now or plan a capsule for later.</div>
   <div class="hint-a">
-    <button type="button" class="nbtn p" onclick="openSb()" data-i18n="create_my_mark">Create My Mark</button>
+    <button type="button" class="nbtn p" onclick="openSb('mark')" data-i18n="add_mark">Add Mark</button>
+    <button type="button" class="nbtn" onclick="openSb('capsule')" data-i18n="create_capsule">Create Capsule</button>
     <button type="button" class="nbtn" onclick="dismissStartHint()" data-i18n="later">Later</button>
   </div>
 </div>
@@ -680,9 +684,9 @@ window.addEventListener('load', initCookieBanner);
       <div class="mini-guide">
         <div class="mini-guide-title" data-i18n="quick_start">Quick Start</div>
         <div class="mini-guide-list">
-          <div class="mini-guide-item"><span class="mini-guide-step">1</span><span data-i18n="quick_start_1">Choose the name that will appear on your mark.</span></div>
-          <div class="mini-guide-item"><span class="mini-guide-step">2</span><span data-i18n="quick_start_2">Click the globe once to preview the exact place.</span></div>
-          <div class="mini-guide-item"><span class="mini-guide-step">3</span><span data-i18n="quick_start_3">Confirm the place, finish the message, and save.</span></div>
+          <div class="mini-guide-item"><span class="mini-guide-step">1</span><span id="quick-start-1" data-i18n="quick_start_1">Choose the name that will appear on your mark.</span></div>
+          <div class="mini-guide-item"><span class="mini-guide-step">2</span><span id="quick-start-2" data-i18n="quick_start_2">Click the globe once to preview the exact place.</span></div>
+          <div class="mini-guide-item"><span class="mini-guide-step">3</span><span id="quick-start-3" data-i18n="quick_start_3">Confirm the place, finish the message, and save.</span></div>
         </div>
       </div>
       <label class="fl" data-i18n="display_name">Display Name</label>
@@ -700,7 +704,7 @@ window.addEventListener('load', initCookieBanner);
       <select id="csel" onchange="selCC(this.value)"><option value="" data-i18n="country_select_placeholder">Select country...</option></select>
       <label class="fl" data-i18n="memory_note">Memory Note</label>
       <textarea id="quick-imsg" placeholder="Leave a short note for this place..." maxlength="500" data-i18n-placeholder="memory_note_placeholder" oninput="syncMemoryMessage(this.value,'quick')" style="min-height:96px;"></textarea>
-      <p class="soft-help" data-i18n="memory_note_helper">Optional: leave a draft note now, then finish the full message in the next step.</p>
+      <p class="soft-help" id="quick-note-helper" data-i18n="memory_note_helper">Optional: leave a draft note now, then finish the full message in the next step.</p>
       <div id="precise-coords" style="margin-top:8px;padding:10px;background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;display:none;">
         <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px;" data-i18n="exact_coordinates">Exact Coordinates</div>
         <div style="font-size:.9rem;color:var(--gold);font-family:'Cormorant Garamond',serif;" id="exact-coords-display">--</div>
@@ -756,7 +760,7 @@ window.addEventListener('load', initCookieBanner);
       <label class="fl" data-i18n="message">Message</label>
       <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..." maxlength="500" data-i18n-placeholder="message_placeholder" oninput="syncMemoryMessage(this.value,'main')"></textarea>
       <button class="btn bp" id="btn4" onclick="proceedFromMessageStep()" style="margin-top:1rem;" data-i18n="continue_review">Continue to Review</button>
-      <button class="btn bs" onclick="goS(3)" data-i18n="back">Back</button>
+      <button class="btn bs" onclick="goBackFromMessageStep()" data-i18n="back">Back</button>
     </div>
     <!-- Step 5 -->
     <div class="step" id="step5">
@@ -764,7 +768,7 @@ window.addEventListener('load', initCookieBanner);
       <p class="sub3" data-i18n="review_place_sub">Review your mark before saving it to the globe.</p>
       <div class="pb" id="smry"></div>
       <button class="btn bp" id="btn-submit-mark" onclick="submit()" data-i18n="save_my_mark">Save My Mark</button>
-      <button class="btn bs" onclick="goS(4)" data-i18n="back">Back</button>
+      <button class="btn bs" onclick="goBackFromReviewStep()" data-i18n="back">Back</button>
     </div>
     <!-- Step 6 (success) -->
     <div class="step" id="step6">
@@ -1033,6 +1037,7 @@ var ST = {
   pins: [],
   name: '', photo: null, selCode: '', selName: '', selLat: null, selLon: null,
   yr: 0, capsuleDays: 0, capsuleDate: null, rc: 's', vis: 'pub',
+  composerType: 'mark',
   createMode: false,
   createStep: 0,
   locationConfirmed: false,
@@ -1490,42 +1495,128 @@ function updateCreateFlowUI() {
   var panel = document.getElementById('create-flow');
   if (panel) panel.classList.remove('show');
   applyBodyModeState();
-  var fab = document.getElementById('fab');
-  var fabLabel = document.querySelector('#fab .fab-label');
+  var dock = document.getElementById('fab-dock');
+  var markFab = document.getElementById('fab-mark');
+  var capsuleFab = document.getElementById('fab-capsule');
   var sidebar = document.getElementById('sb');
   var activeStep = sidebar ? sidebar.querySelector('.step.active') : null;
   var activeStepId = activeStep ? activeStep.id : '';
-  if (fab) {
-    fab.classList.toggle('cta-preview', !!_ctaPreviewEnabled);
-    fab.classList.toggle('create-active', !!(_ctaPreviewEnabled && sidebar && !sidebar.classList.contains('hidden')));
-    fab.style.display = sidebar && !sidebar.classList.contains('hidden') ? 'none' : 'flex';
+  var isCapsuleFlow = typeof isCapsuleComposer === 'function' ? isCapsuleComposer() : ST.composerType === 'capsule';
+  if (dock) {
+    dock.style.display = sidebar && !sidebar.classList.contains('hidden') ? 'none' : 'flex';
   }
-  if (fabLabel) {
-    if (_ctaPreviewEnabled) {
-      if (!sidebar || sidebar.classList.contains('hidden')) {
-        fabLabel.innerHTML = '<strong>' + ltxt('Add Memory', 'Anı Ekle') + '</strong><span>' + ltxt('Guided memory flow', 'Yonlendirmeli akis') + '</span>';
-      } else if (activeStepId === 'step2') {
-        fabLabel.innerHTML = '<strong>' + ltxt('Choosing Location', 'Konum Seciliyor') + '</strong><span>' + ltxt('Preview before you confirm it', 'Onaylamadan once onizle') + '</span>';
-      } else if (activeStepId === 'step3') {
-        fabLabel.innerHTML = '<strong>' + ltxt('Setting the Capsule', 'Kapsul Ayarlaniyor') + '</strong><span>' + ltxt('Choose when this memory opens', 'Bu aninin ne zaman acilacagini sec') + '</span>';
-      } else if (activeStepId === 'step4' || activeStepId === 'step5') {
-        fabLabel.innerHTML = '<strong>' + ltxt('Writing the Memory', 'Ani Yaziliyor') + '</strong><span>' + ltxt('Finish the memory in the panel', 'Panelde aniyi tamamla') + '</span>';
-      } else {
-        fabLabel.innerHTML = '<strong>' + ltxt('Add Memory', 'Anı Ekle') + '</strong><span>' + ltxt('Guided memory flow', 'Yonlendirmeli akis') + '</span>';
-      }
-    } else {
-      fabLabel.textContent = ltxt('Add Memory', 'Anı Ekle');
-    }
+  if (markFab) markFab.classList.toggle('create-active', !sidebar || sidebar.classList.contains('hidden') ? false : !isCapsuleFlow);
+  if (capsuleFab) capsuleFab.classList.toggle('create-active', !sidebar || sidebar.classList.contains('hidden') ? false : isCapsuleFlow);
+  var flowTitle = document.getElementById('create-flow-title');
+  var flowSub = document.getElementById('create-flow-sub');
+  var flowKicker = panel ? panel.querySelector('.cf-kicker') : null;
+  var quickNoteHelper = document.getElementById('quick-note-helper');
+  var step1Title = document.querySelector('#step1 h3');
+  var step1Sub = document.querySelector('#step1 .sub3');
+  var quickStart1 = document.getElementById('quick-start-1');
+  var quickStart2 = document.getElementById('quick-start-2');
+  var quickStart3 = document.getElementById('quick-start-3');
+  var step2Title = document.querySelector('#step2 h3');
+  var step2Sub = document.querySelector('#step2 .sub3');
+  var step2Help = document.querySelector('#step2 .soft-help');
+  var step3Title = document.querySelector('#step3 h3');
+  var step3Sub = document.querySelector('#step3 .sub3');
+  var step4Title = document.querySelector('#step4 h3');
+  var step4Sub = document.querySelector('#step4 .sub3');
+  var step5Title = document.querySelector('#step5 h3');
+  var step5Sub = document.querySelector('#step5 .sub3');
+  var submitBtn = document.getElementById('btn-submit-mark');
+  var successCopy = document.getElementById('ss4');
+  var hintCopy = document.getElementById('start-hint-copy');
+  var selectedPlaceLabel = document.querySelector('#locked-location-banner .locked-location-label');
+
+  if (hintCopy) {
+    hintCopy.textContent = isCapsuleFlow
+      ? ltxt('Choose a future message, set when it opens, and plan who it is for.', 'Gelecekte acilacak bir mesaj sec, ne zaman acilacagini belirle ve kime oldugunu planla.')
+      : ltxt('Choose a place, write a short message, and leave your mark on the globe.', 'Bir yer sec, kisa bir mesaj yaz ve kure uzerinde izini birak.');
+  }
+  if (flowKicker) {
+    flowKicker.textContent = isCapsuleFlow ? t('create_capsule') : t('add_mark');
+  }
+  if (flowTitle) {
+    flowTitle.textContent = isCapsuleFlow ? t('capsule_flow_title') : t('mark_flow_title');
+  }
+  if (flowSub) {
+    flowSub.textContent = isCapsuleFlow
+      ? ltxt('Click a place on the globe to anchor this capsule.', 'Bu kapsulu baglamak icin kure uzerinde bir yer sec.')
+      : ltxt('Click anywhere on the globe or use search to preview where your mark will appear.', 'Izinin nerede gorunecegini onizlemek icin kurede bir yere tikla ya da arama kullan.');
+  }
+  if (selectedPlaceLabel) {
+    selectedPlaceLabel.textContent = t('selected_place_label');
+  }
+  if (step1Title) step1Title.textContent = isCapsuleFlow ? t('capsule_flow_title') : t('mark_flow_title');
+  if (step1Sub) {
+    step1Sub.textContent = isCapsuleFlow
+      ? ltxt('Choose the name that will sign this capsule.', 'Bu kapsulu birakacak ismi sec.')
+      : ltxt('Choose the name people will see on this mark.', 'Bu izde gorunecek ismi sec.');
+  }
+  if (quickStart1) {
+    quickStart1.textContent = isCapsuleFlow
+      ? ltxt('Choose the name that will sign this capsule.', 'Bu kapsulu birakacak ismi sec.')
+      : ltxt('Choose the name that will appear on your mark.', 'Izinde gorunecek ismi sec.');
+  }
+  if (quickStart2) {
+    quickStart2.textContent = isCapsuleFlow
+      ? ltxt('Pick the place that will anchor this capsule.', 'Bu kapsulu baglayacak yeri sec.')
+      : ltxt('Click the globe once to preview the exact place.', 'Tam yeri onizlemek icin kureye bir kez tikla.');
+  }
+  if (quickStart3) {
+    quickStart3.textContent = isCapsuleFlow
+      ? ltxt('Set when it opens, finish the message, and schedule it.', 'Ne zaman acilacagini sec, mesaji tamamla ve planla.')
+      : ltxt('Confirm the place, finish the message, and save.', 'Yeri onayla, mesaji tamamla ve kaydet.');
+  }
+  if (step2Title) {
+    step2Title.textContent = isCapsuleFlow
+      ? ltxt('Choose Capsule Location', 'Kapsul Konumunu Sec')
+      : ltxt('Choose Mark Location', 'Iz Konumunu Sec');
+  }
+  if (step2Sub) {
+    step2Sub.textContent = isCapsuleFlow
+      ? ltxt('Pick the place that will anchor this capsule on the globe.', 'Bu kapsulu kureye baglayacak yeri sec.')
+      : ltxt('Click anywhere on the globe or search for the place where this mark should appear.', 'Bu izin gorunmesini istedigin yeri kureden sec ya da aratarak bul.');
+  }
+  if (step2Help) {
+    step2Help.textContent = isCapsuleFlow
+      ? ltxt('Click once to preview the place, then lock it in for this capsule.', 'Yeri onizlemek icin bir kez tikla, sonra bu kapsul icin sabitle.')
+      : ltxt('Click once on the globe to preview the pin, then confirm it when the place feels right.', 'Pini onizlemek icin kureye bir kez tikla, yer dogruysa onayla.');
+  }
+  if (quickNoteHelper) {
+    quickNoteHelper.textContent = isCapsuleFlow
+      ? ltxt('Optional: start the capsule note here, then finish the full message in the next step.', 'Istege bagli: kapsul notunu burada baslat, sonra tam mesaji sonraki adimda bitir.')
+      : ltxt('Optional: leave a draft note now, then finish the full message in the next step.', 'Istege bagli: taslak notunu simdi yaz, sonra tam mesaji sonraki adimda bitir.');
+  }
+  if (step3Title) step3Title.textContent = ltxt('Capsule Timing and Recipient', 'Kapsul Zamani ve Alici');
+  if (step3Sub) step3Sub.textContent = ltxt('Choose when this capsule opens and who it should be for.', 'Bu kapsulun ne zaman acilacagini ve kime ait oldugunu sec.');
+  if (step4Title) step4Title.textContent = isCapsuleFlow ? ltxt('Write the Capsule Message', 'Kapsul Mesajini Yaz') : ltxt('Write Your Mark', 'Izini Yaz');
+  if (step4Sub) {
+    step4Sub.textContent = isCapsuleFlow
+      ? ltxt('Write the message that will be opened later.', 'Daha sonra okunacak mesaji yaz.')
+      : ltxt('Write the message that will live on this place now.', 'Bu yerde simdi gorunecek mesaji yaz.');
+  }
+  if (step5Title) step5Title.textContent = isCapsuleFlow ? ltxt('Review Capsule', 'Kapsulu Gozden Gecir') : ltxt('Review Mark', 'Izini Gozden Gecir');
+  if (step5Sub) step5Sub.textContent = isCapsuleFlow ? t('step_capsule_review') : t('step_mark_review');
+  if (submitBtn) {
+    submitBtn.textContent = isCapsuleFlow ? t('save_capsule') : t('save_my_mark');
+  }
+  if (successCopy && !sidebar) {
+    successCopy.textContent = isCapsuleFlow ? t('capsule_success_visible') : t('mark_success_visible');
   }
   var btn1 = document.getElementById('btn1');
   if (btn1) {
-    btn1.textContent = ltxt('Choose My Place', 'Yerimi Sec');
+    btn1.textContent = isCapsuleFlow
+      ? ltxt('Continue to Capsule Place', 'Kapsul Yerine Gec')
+      : ltxt('Choose My Place', 'Yerimi Sec');
     btn1.disabled = ST.name.trim().length < 2;
   }
   var btn2 = document.getElementById('btn2');
   if (btn2) {
     btn2.textContent = (ST.selLat != null && ST.selLon != null)
-      ? ltxt('Confirm This Place', 'Bu Yeri Onayla')
+      ? (isCapsuleFlow ? ltxt('Use This Place for Capsule', 'Bu Yeri Kapsulde Kullan') : ltxt('Confirm This Place', 'Bu Yeri Onayla'))
       : ltxt('Click Globe to Choose', 'Secmek Icin Kureye Tikla');
     btn2.disabled = !(ST.selLat != null && ST.selLon != null);
   }
@@ -1546,9 +1637,18 @@ function updateLockedLocationBanner() {
 }
 
 function startCreateFlow() {
+  var flowType = arguments[0] === 'capsule' ? 'capsule' : 'mark';
   ST.createMode = false;
   ST.createStep = 0;
   ST.locationConfirmed = false;
+  ST.composerType = flowType;
+  ST.rc = 's';
+  ST.vis = flowType === 'capsule' ? 'prv' : 'pub';
+  if (flowType === 'capsule') {
+    setQuick(365, 'tq365');
+  } else {
+    setQuick(0, 'tq0');
+  }
   localStorage.setItem('iwh_started_flow', 'opened');
   var hint = document.getElementById('start-hint');
   if (hint) hint.classList.add('hidden');
@@ -1566,6 +1666,7 @@ function cancelCreateFlow() {
   ST.createMode = false;
   ST.createStep = 0;
   ST.locationConfirmed = false;
+  ST.composerType = 'mark';
   ST.selCode = '';
   ST.selName = '';
   ST.selLat = null;
@@ -1591,7 +1692,7 @@ function confirmCreateLocation() {
   var btn2 = document.getElementById('btn2');
   if (btn2) btn2.disabled = false;
   updateCreateFlowUI();
-  goS(3);
+  goS(ST.composerType === 'capsule' ? 3 : 4);
 }
 
 function previewCreateLocation(lat, lon) {
@@ -2282,7 +2383,6 @@ async function showGlobe() {
   renderLists();
   if (typeof renderCountrySummary === 'function') renderCountrySummary();
   revealStartHint();
-  if (shouldShowStartHint()) startCreateFlow();
 }
 
 function goLanding() {
@@ -2558,9 +2658,10 @@ async function submit() {
   }
 
   var submitBtn = document.getElementById('btn-submit-mark');
+  var isCapsuleFlow = ST.composerType === 'capsule';
   if (submitBtn) {
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Saving...';
+    submitBtn.textContent = isCapsuleFlow ? ltxt('Creating Capsule...', 'Kapsul Olusturuluyor...') : ltxt('Saving Mark...', 'Iz Kaydediliyor...');
   }
 
   var lat = ST.selLat || 0;
@@ -2584,7 +2685,7 @@ async function submit() {
   if (!saveResult || saveResult.error) {
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Save My Mark';
+      submitBtn.textContent = isCapsuleFlow ? t('save_capsule') : t('save_my_mark');
     }
     showToast(t('toast_save_failed'), 'error');
     return;
@@ -2617,12 +2718,12 @@ async function submit() {
   updateStats();
   showToast(t('toast_saved_success'), 'success');
   
-  var yr = ST.yr;
-  var opens = typeof getCapsuleScheduleDateFromState === 'function' ? getCapsuleScheduleDateFromState() : null;
+  var yr = isCapsuleFlow ? ST.yr : 0;
+  var opens = isCapsuleFlow && typeof getCapsuleScheduleDateFromState === 'function' ? getCapsuleScheduleDateFromState() : null;
   
-  document.getElementById('ss4').textContent = yr > 0 ? 
-    'Your mark is locked right now. It opens ' + (opens ? opens.toLocaleString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'soon') + '.' : 
-    'Your memory is now visible on the globe.';
+  document.getElementById('ss4').textContent = yr > 0 ?
+    t('capsule_success_visible') + (opens ? ' ' + opens.toLocaleString(getCurrentLocale(), { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '') :
+    t('mark_success_visible');
   
   if (yr > 0 && opens) {
     document.getElementById('cbdg').style.display = 'block';
@@ -2632,7 +2733,7 @@ async function submit() {
   document.getElementById('btn-share-card').style.display = 'block';
   if (submitBtn) {
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Save My Mark';
+    submitBtn.textContent = isCapsuleFlow ? t('save_capsule') : t('save_my_mark');
   }
   
   // Hide click coords
@@ -2648,8 +2749,8 @@ function saveMarkToDB(pin) {
   }
   if (AUTH.user && AUTH.user.id) {
     var recipientInput = document.getElementById('iem');
-    var recipientEmail = ST.rc === 'o' && recipientInput ? normalizeEmail(recipientInput.value) : null;
-    var hasCapsule = !!(ST.capsuleDate || ST.capsuleDays > 0);
+    var hasCapsule = ST.composerType === 'capsule' && !!(ST.capsuleDate || ST.capsuleDays > 0);
+    var recipientEmail = hasCapsule && ST.rc === 'o' && recipientInput ? normalizeEmail(recipientInput.value) : null;
     var capsuleSchedule = hasCapsule && typeof getCapsuleScheduleDateFromState === 'function'
       ? getCapsuleScheduleDateFromState()
       : null;

@@ -769,7 +769,7 @@ function renderProfileRecent(container, marks) {
     cta.onclick = function() {
       closeProfile();
       showGlobe();
-      openSb();
+      openSb('mark');
     };
     container.appendChild(empty);
     container.appendChild(cta);
@@ -995,7 +995,7 @@ function renderCountrySummary() {
     cta.type = 'button';
     cta.textContent = AUTH.user ? t('empty_country_summary_cta_signed_in') : t('empty_country_summary_cta_signed_out');
     cta.style.cssText = 'margin-top:10px;background:#c8a96e;color:#020408;border:none;border-radius:999px;padding:8px 14px;font-size:.72rem;cursor:pointer;font-family:inherit;';
-    cta.onclick = function() { AUTH.user ? (showGlobe(), openSb()) : openAuth('login'); };
+    cta.onclick = function() { AUTH.user ? (showGlobe(), openSb('mark')) : openAuth('login'); };
     body.appendChild(cta);
     return;
   }
@@ -1029,19 +1029,21 @@ function renderCountrySummary() {
 }
 
 function bSmry() {
-  var cap = !!(ST.capsuleDate || ST.capsuleDays > 0);
+  var cap = ST.composerType === 'capsule' && !!(ST.capsuleDate || ST.capsuleDays > 0);
   var tot = 1 + (cap ? 2 : 0);
   var opens = typeof getCapsuleScheduleDateFromState === 'function' ? getCapsuleScheduleDateFromState() : null;
   var oy = opens ? formatCapsuleDateTime(opens) : '';
   var summary = document.getElementById('smry');
   clearChildren(summary);
-  summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Küre izi - ' : 'Globe mark - ') + (ST.selName || '-'), '$1.00'));
+  summary.appendChild(createRow((cap ? (getCurrentLanguage() === 'tr' ? 'Kapsul konumu - ' : 'Capsule place - ') : (getCurrentLanguage() === 'tr' ? 'Küre izi - ' : 'Globe mark - ')) + (ST.selName || '-'), '$1.00'));
   summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'İsim: ' : 'Name: ') + ST.name, '-'));
   summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Koordinatlar' : 'Coordinates', ST.selLat ? ST.selLat.toFixed(4) + ', ' + ST.selLon.toFixed(4) : '-'));
   if (cap) {
-    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Gorunurluk' : 'Visibility'), getCurrentLanguage() === 'tr' ? 'Kapsul olarak sonra acilir' : 'Opens later as a capsule'));
+    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Tur' : 'Type'), getCurrentLanguage() === 'tr' ? 'Gelecek kapsulu' : 'Future capsule'));
     summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Kapsül - açılır ' : 'Capsule - opens on ') + oy, '$2.00'));
+    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Hedef' : 'Recipient'), ST.rc === 'o' ? (getCurrentLanguage() === 'tr' ? 'Birine gonder' : 'Someone else') : (getCurrentLanguage() === 'tr' ? 'Kendim' : 'Myself')));
   } else {
+    summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Tur' : 'Type'), getCurrentLanguage() === 'tr' ? 'Anlik iz' : 'Live mark'));
     summary.appendChild(createRow((getCurrentLanguage() === 'tr' ? 'Gorunurluk' : 'Visibility'), getCurrentLanguage() === 'tr' ? 'Simdi gorunur' : 'Visible now'));
   }
   summary.appendChild(createRow(getCurrentLanguage() === 'tr' ? 'Toplam' : 'Total', '$' + tot.toFixed(2), true));
@@ -1105,7 +1107,7 @@ function renderLists() {
     cta.type = 'button';
     cta.textContent = AUTH.user ? t('empty_public_list_cta_signed_in') : t('empty_public_list_cta_signed_out');
     cta.style.cssText = 'margin-top:10px;background:rgba(200,169,110,.14);border:1px solid rgba(200,169,110,.28);color:#c8a96e;border-radius:999px;padding:8px 12px;font-size:.72rem;cursor:pointer;font-family:inherit;';
-    cta.onclick = function() { AUTH.user ? (showGlobe(), openSb()) : openAuth('login'); };
+    cta.onclick = function() { AUTH.user ? (showGlobe(), openSb('mark')) : openAuth('login'); };
     pl.appendChild(cta);
     return;
   }
