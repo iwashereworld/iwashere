@@ -118,7 +118,7 @@ Assert-Contains $ui 'function showToast(msg, tone)' 'app-ui.js must contain show
 Assert-Contains $ui 'function proceedFromCapsuleStep()' 'app-ui.js must contain proceedFromCapsuleStep().'
 Assert-Contains $ui 'function getCapsuleScheduleDateFromState()' 'app-ui.js must contain getCapsuleScheduleDateFromState().'
 Assert-Contains $i18n 'message_for_memory' 'app-i18n.js must localize the text-only message step.'
-Assert-Contains $i18n "nav_open_globe: 'Kureyi Ac'" 'app-i18n.js must carry the cleaned Turkish translations.'
+Assert-Contains $i18n "nav_open_globe: 'Küreyi Aç'" 'app-i18n.js must carry the cleaned Turkish translations.'
 if (([regex]::Matches($ui, 'function getStepCopy\(')).Count -ne 1) {
   throw 'app-ui.js must keep a single getStepCopy() definition.'
 }

@@ -108,7 +108,7 @@ Assert-Contains $index '<script src="app-i18n.js?v=' 'index.html must load versi
 Assert-Contains $index "window.addEventListener('error'" 'index.html must register a global error handler.'
 Assert-Contains $index "window.addEventListener('unhandledrejection'" 'index.html must register a global rejection handler.'
 Assert-Contains $index 'copyTextWithFallback' 'index.html must keep the clipboard fallback helper.'
-Assert-Contains (Get-Content -Raw (Join-Path $root 'app-i18n.js')) "hero_eyebrow: 'Anlamli anilar icin dunya haritasi'" 'app-i18n.js must keep the cleaned Turkish copy in the base file.'
+Assert-Contains (Get-Content -Raw (Join-Path $root 'app-i18n.js')) "hero_eyebrow: 'Anlamlı anılar için dünya haritası'" 'app-i18n.js must keep the cleaned Turkish copy in the base file.'
 Assert-Contains (Get-Content -Raw (Join-Path $root 'app-ui.js')) "function getStepCopy()" 'app-ui.js must define onboarding copy in the base file.'
 if (([regex]::Matches((Get-Content -Raw (Join-Path $root 'app-ui.js')), 'function getStepCopy\(')).Count -ne 1) {
   throw 'app-ui.js must keep a single getStepCopy() definition.'
