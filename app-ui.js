@@ -126,6 +126,13 @@ function closeSb() {
   document.getElementById('sb').classList.add('hidden');
 }
 
+function exitCreateComposer() {
+  closeSb();
+  if (typeof cancelCreateFlow === 'function') cancelCreateFlow();
+  if (typeof revealStartHint === 'function') revealStartHint();
+  if (typeof syncOverlayState === 'function') syncOverlayState();
+}
+
 function resetForm() {
   ST.name = '';
   ST.photo = null;
