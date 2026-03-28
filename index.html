@@ -213,12 +213,7 @@ footer a{color:var(--muted);text-decoration:none;}
 .hint-t{font-size:.82rem;line-height:1.55;color:var(--text);}
 .hint-a{display:flex;gap:.5rem;align-items:center;margin-top:.8rem;}
 .hint-a .nbtn{padding:7px 14px;font-size:.72rem;}
-#sb .sb-topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:.95rem;}
-#sb .sb-topcopy{min-width:0;flex:1;}
-#sb .sb-kicker{font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);margin-bottom:.3rem;}
-#sb .sb-subcopy{font-size:.72rem;line-height:1.55;color:var(--muted);}
-#sb .sb-close{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:999px;border:1px solid rgba(200,169,110,.24);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer;transition:all .2s;font-size:1.05rem;flex-shrink:0;}
-#sb .sb-close:hover{border-color:var(--gold);color:var(--gold);background:rgba(200,169,110,.08);}
+#sb .composer-exit{margin-top:.55rem;}
 #sb .step-meta{font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem;}
 #sb .step-tip{font-size:.72rem;color:var(--muted);line-height:1.6;margin:-.2rem 0 1rem;}
 .locked-location{display:none;background:rgba(18,26,42,.8);border:1px solid rgba(200,169,110,.18);border-radius:12px;padding:.75rem .8rem;margin:0 0 1rem;}
@@ -675,13 +670,6 @@ window.addEventListener('load', initCookieBanner);
 <div id="tt"><div class="tav" id="tav"></div><div class="tn2" id="tn"></div><div class="tc2" id="tc"></div><div class="tm2" id="tm"></div></div>
 <aside id="sb" class="hidden">
   <div class="sbi">
-    <div class="sb-topbar">
-      <div class="sb-topcopy">
-        <div class="sb-kicker" data-i18n="close_composer">Close</div>
-        <div class="sb-subcopy" data-i18n="close_composer_sub">Exit this flow and return to the globe</div>
-      </div>
-      <button type="button" class="sb-close" onclick="exitCreateComposer()" aria-label="Close composer">×</button>
-    </div>
     <div class="step-meta" id="step-meta">Step 1 of 5</div>
     <div class="step-tip" id="step-tip">Start with a display name so your mark has an identity.</div>
     <div class="onboard-card" id="onboard-card">
@@ -708,6 +696,7 @@ window.addEventListener('load', initCookieBanner);
       <label class="fl" data-i18n="display_name">Display Name</label>
       <input type="text" id="iname" placeholder="Your name" maxlength="80" data-i18n-placeholder="your_name">
       <button class="btn bp" onclick="proceedFromIdentityStep()" id="btn1" disabled>Continue to Location</button>
+      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
     </div>
     <!-- Step 2 -->
     <div class="step" id="step2">
@@ -728,6 +717,7 @@ window.addEventListener('load', initCookieBanner);
       </div>
       <button class="btn bp" onclick="confirmCreateLocation()" id="btn2" disabled>Confirm location</button>
       <button class="btn bs" id="btn-skip-location" onclick="skipCapsuleLocation()" style="display:none;">Continue without location</button>
+      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
       <button class="btn bs" onclick="goBackFromLocationStep()" data-i18n="back">Back</button>
     </div>
     <!-- Step 3 -->
@@ -783,6 +773,7 @@ window.addEventListener('load', initCookieBanner);
         <div id="opens-date-text" style="font-size:.9rem;color:var(--gold);margin-top:6px;font-family:'Cormorant Garamond',serif;line-height:1.5;">In 1 year - ...</div>
       </div>
       <button class="btn bp" id="btn3" onclick="proceedFromCapsuleStep()" data-i18n="continue_message">Continue to Message</button>
+      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
       <button class="btn bs" onclick="goBackFromCapsuleStep()" data-i18n="back">Back</button>
     </div>
     <!-- Step 4 -->
@@ -792,6 +783,7 @@ window.addEventListener('load', initCookieBanner);
       <label class="fl" data-i18n="message">Message</label>
       <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..." maxlength="500" data-i18n-placeholder="message_placeholder" oninput="syncMemoryMessage(this.value,'main')"></textarea>
       <button class="btn bp" id="btn4" onclick="proceedFromMessageStep()" style="margin-top:1rem;" data-i18n="continue_review">Continue to Review</button>
+      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
       <button class="btn bs" onclick="goBackFromMessageStep()" data-i18n="back">Back</button>
     </div>
     <!-- Step 5 -->
@@ -800,6 +792,7 @@ window.addEventListener('load', initCookieBanner);
       <p class="sub3" data-i18n="review_place_sub">Review your mark before saving it to the globe.</p>
       <div class="pb" id="smry"></div>
       <button class="btn bp" id="btn-submit-mark" onclick="submit()" data-i18n="save_my_mark">Save My Mark</button>
+      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
       <button class="btn bs" onclick="goBackFromReviewStep()" data-i18n="back">Back</button>
     </div>
     <!-- Step 6 (success) -->
