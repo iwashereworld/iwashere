@@ -3310,7 +3310,7 @@ function loadStats() {
 
 function updateLandingStatsFromPins() {
   var countries = ST.pins.map(function(p) { return p.code || p.cname; }).filter(function(v, i, a) { return v && a.indexOf(v) === i; });
-  var capsules = ST.capsuleFeatureAvailable
+  var capsules = usesSplitCapsuleBackend()
     ? ST.capsules.length
     : (typeof countLegacyCapsules === 'function' ? countLegacyCapsules(ST.pins) : 0);
   var s2 = document.getElementById('s2');
@@ -3331,7 +3331,7 @@ function updateStats() {
   
   var sk2 = document.getElementById('sk2');
   if (sk2) {
-    var capsuleCount = ST.capsuleFeatureAvailable
+    var capsuleCount = usesSplitCapsuleBackend()
       ? ST.capsules.length
       : (typeof countLegacyCapsules === 'function' ? countLegacyCapsules(ST.pins) : 0);
     sk2.textContent = capsuleCount.toLocaleString();
