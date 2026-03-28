@@ -717,8 +717,8 @@ window.addEventListener('load', initCookieBanner);
       </div>
       <button class="btn bp" onclick="confirmCreateLocation()" id="btn2" disabled>Confirm location</button>
       <button class="btn bs" id="btn-skip-location" onclick="skipCapsuleLocation()" style="display:none;">Continue without location</button>
-      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
       <button class="btn bs" onclick="goBackFromLocationStep()" data-i18n="back">Back</button>
+      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
     </div>
     <!-- Step 3 -->
     <div class="step" id="step3">
@@ -773,8 +773,8 @@ window.addEventListener('load', initCookieBanner);
         <div id="opens-date-text" style="font-size:.9rem;color:var(--gold);margin-top:6px;font-family:'Cormorant Garamond',serif;line-height:1.5;">In 1 year - ...</div>
       </div>
       <button class="btn bp" id="btn3" onclick="proceedFromCapsuleStep()" data-i18n="continue_message">Continue to Message</button>
-      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
       <button class="btn bs" onclick="goBackFromCapsuleStep()" data-i18n="back">Back</button>
+      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
     </div>
     <!-- Step 4 -->
     <div class="step" id="step4">
@@ -783,8 +783,8 @@ window.addEventListener('load', initCookieBanner);
       <label class="fl" data-i18n="message">Message</label>
       <textarea id="imsg" placeholder="I was here in Istanbul, and I want to remember this day..." maxlength="500" data-i18n-placeholder="message_placeholder" oninput="syncMemoryMessage(this.value,'main')"></textarea>
       <button class="btn bp" id="btn4" onclick="proceedFromMessageStep()" style="margin-top:1rem;" data-i18n="continue_review">Continue to Review</button>
-      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
       <button class="btn bs" onclick="goBackFromMessageStep()" data-i18n="back">Back</button>
+      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
     </div>
     <!-- Step 5 -->
     <div class="step" id="step5">
@@ -792,8 +792,8 @@ window.addEventListener('load', initCookieBanner);
       <p class="sub3" data-i18n="review_place_sub">Review your mark before saving it to the globe.</p>
       <div class="pb" id="smry"></div>
       <button class="btn bp" id="btn-submit-mark" onclick="submit()" data-i18n="save_my_mark">Save My Mark</button>
-      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
       <button class="btn bs" onclick="goBackFromReviewStep()" data-i18n="back">Back</button>
+      <button class="btn bs composer-exit" type="button" onclick="exitCreateComposer()" data-i18n="close_composer">Close</button>
     </div>
     <!-- Step 6 (success) -->
     <div class="step" id="step6">
