@@ -898,10 +898,10 @@ window.addEventListener('load', initCookieBanner);
 </div>
 
 <script src="/api/runtime-config.js"></script>
-<script src="app-config.js?v=20260328-3"></script>
-<script src="app-i18n.js?v=20260328-3"></script>
-<script src="app-helpers.js?v=20260328-3"></script>
-<script src="app-ui.js?v=20260328-3"></script>
+<script src="app-config.js?v=20260328-4"></script>
+<script src="app-i18n.js?v=20260328-4"></script>
+<script src="app-helpers.js?v=20260328-4"></script>
+<script src="app-ui.js?v=20260328-4"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 function getRuntimeConfigErrors() {
@@ -917,6 +917,7 @@ var IWH_DEBUG = /(?:\?|&)debug=1(?:&|$)/.test(window.location.search || '') || /
 var ST = window.ST || {
   pins: [],
   capsules: [],
+  globalCapsuleCount: null,
   capsuleFeatureAvailable: true,
   capsuleFeatureChecked: false
 };
@@ -3281,6 +3282,18 @@ function loadStats() {
     console.error('[IWH] loadStats skipped. Missing runtime config:', _runtimeConfigErrors.join(', '));
     return;
   }
+  var capsuleStatsPromise = (usesSplitCapsuleBackend() && IWH_CONFIG.FUNCTIONS_BASE_URL && IWH_CONFIG.SUPABASE_ANON_KEY)
+    ? fetch(IWH_CONFIG.FUNCTIONS_BASE_URL + '/public-stats', {
+        method: 'GET',
+        headers: {
+          apikey: IWH_CONFIG.SUPABASE_ANON_KEY,
+          Authorization: 'Bearer ' + IWH_CONFIG.SUPABASE_ANON_KEY
+        }
+      }).then(function(res) {
+        if (!res.ok) throw new Error('public-stats failed with ' + res.status);
+        return res.json();
+      }).catch(function() { return null; })
+    : Promise.resolve(null);
   var requests = [
     _supabase.from('marks').select(
       usesSplitCapsuleBackend()
@@ -3292,7 +3305,9 @@ function loadStats() {
   if (usesSplitCapsuleBackend() && ST.capsuleFeatureAvailable) {
     requests.push(_supabase.from('capsules').select('id', { count: 'exact' }).limit(500));
   }
-  Promise.all(requests).then(function(results) {
+  Promise.all([Promise.all(requests), capsuleStatsPromise]).then(function(bundle) {
+    var results = bundle[0];
+    var capsuleStats = bundle[1];
     var marksRes = results[0];
     var capsulesRes = results[1];
     if (marksRes.error) return;
@@ -3310,9 +3325,12 @@ function loadStats() {
     var capsulesEl = document.getElementById('s3');
     if (countriesEl) animCount(countriesEl, Object.keys(countriesMap).length, 900);
     if (capsulesEl) {
-      var capsuleCount = ST.capsuleFeatureAvailable && capsulesRes && !capsulesRes.error
+      var capsuleCount = capsuleStats && typeof capsuleStats.capsules === 'number'
+        ? capsuleStats.capsules
+        : (ST.capsuleFeatureAvailable && capsulesRes && !capsulesRes.error
         ? (capsulesRes.count != null ? capsulesRes.count : ((capsulesRes.data && capsulesRes.data.length) || 0))
-        : (typeof countLegacyCapsules === 'function' ? countLegacyCapsules(marksRes.data || []) : 0);
+        : (typeof countLegacyCapsules === 'function' ? countLegacyCapsules(marksRes.data || []) : 0));
+      ST.globalCapsuleCount = capsuleCount;
       animCount(capsulesEl, capsuleCount, 900);
     }
   });
@@ -3320,9 +3338,11 @@ function loadStats() {
 
 function updateLandingStatsFromPins() {
   var countries = ST.pins.map(function(p) { return p.code || p.cname; }).filter(function(v, i, a) { return v && a.indexOf(v) === i; });
-  var capsules = usesSplitCapsuleBackend()
+  var capsules = ST.globalCapsuleCount != null
+    ? ST.globalCapsuleCount
+    : (usesSplitCapsuleBackend()
     ? ST.capsules.length
-    : (typeof countLegacyCapsules === 'function' ? countLegacyCapsules(ST.pins) : 0);
+    : (typeof countLegacyCapsules === 'function' ? countLegacyCapsules(ST.pins) : 0));
   var s2 = document.getElementById('s2');
   var s3 = document.getElementById('s3');
   if (s2) s2.textContent = countries.length.toLocaleString();
@@ -3341,9 +3361,11 @@ function updateStats() {
   
   var sk2 = document.getElementById('sk2');
   if (sk2) {
-    var capsuleCount = usesSplitCapsuleBackend()
+    var capsuleCount = ST.globalCapsuleCount != null
+      ? ST.globalCapsuleCount
+      : (usesSplitCapsuleBackend()
       ? ST.capsules.length
-      : (typeof countLegacyCapsules === 'function' ? countLegacyCapsules(ST.pins) : 0);
+      : (typeof countLegacyCapsules === 'function' ? countLegacyCapsules(ST.pins) : 0));
     sk2.textContent = capsuleCount.toLocaleString();
   }
   updateLandingStatsFromPins();
