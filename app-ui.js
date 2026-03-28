@@ -95,7 +95,7 @@ function renderOnboardingChecklist(step) {
 }
 
 function shouldShowStartHint() {
-  return !localStorage.getItem('iwh_started_flow');
+  return true;
 }
 
 function revealStartHint() {
@@ -104,7 +104,6 @@ function revealStartHint() {
 }
 
 function dismissStartHint() {
-  localStorage.setItem('iwh_started_flow', 'dismissed');
   var hint = document.getElementById('start-hint');
   if (hint) hint.classList.add('hidden');
 }
