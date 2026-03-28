@@ -108,6 +108,54 @@ function dismissStartHint() {
   if (hint) hint.classList.add('hidden');
 }
 
+function queuePostAuthOnboarding() {
+  try {
+    sessionStorage.setItem('iwh_post_auth_onboarding', '1');
+  } catch (err) {}
+}
+
+function shouldShowPostAuthOnboarding() {
+  try {
+    return sessionStorage.getItem('iwh_post_auth_onboarding') === '1';
+  } catch (err) {
+    return false;
+  }
+}
+
+function consumePostAuthOnboarding() {
+  try {
+    sessionStorage.removeItem('iwh_post_auth_onboarding');
+  } catch (err) {}
+}
+
+function openOnboarding() {
+  var modal = document.getElementById('onboarding-modal');
+  if (!modal) return;
+  modal.classList.add('show');
+  syncOverlayState();
+}
+
+function closeOnboarding() {
+  var modal = document.getElementById('onboarding-modal');
+  if (!modal) return;
+  modal.classList.remove('show');
+  syncOverlayState();
+}
+
+function startOnboardingFlow(type) {
+  closeOnboarding();
+  showGlobe();
+  openSb(type === 'capsule' ? 'capsule' : 'mark');
+}
+
+function maybeOpenPostAuthOnboarding() {
+  if (!AUTH.user || !shouldShowPostAuthOnboarding()) return;
+  consumePostAuthOnboarding();
+  setTimeout(function() {
+    openOnboarding();
+  }, 180);
+}
+
 function openSb(type) {
   if ((type || 'mark') === 'capsule' && ST && ST.capsuleFeatureAvailable === false) {
     showToast(typeof getCapsuleUnavailableMessage === 'function'
@@ -612,6 +660,7 @@ function signInWithGoogle() {
     showToast(getCurrentLanguage() === 'tr' ? 'Servis kullanilamiyor.' : 'Service unavailable.');
     return;
   }
+  queuePostAuthOnboarding();
   _supabase.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: window.location.origin }
@@ -688,6 +737,9 @@ function submitAuth() {
       switchTab('login');
       return;
     }
+    if (tab === 'login' || (tab === 'register' && result.data && result.data.session)) {
+      queuePostAuthOnboarding();
+    }
     showToast(tab === 'register'
       ? (getCurrentLanguage() === 'tr' ? 'Hesap olusturuldu. Artik giris yapabilirsin.' : 'Account created! You can now sign in.')
       : (getCurrentLanguage() === 'tr' ? 'Tekrar hos geldin!' : 'Welcome back!'), 'success');
@@ -735,6 +787,7 @@ function closeShareModal() {
 function syncOverlayState() {
   var hasOpenOverlay =
     document.getElementById('auth-modal').classList.contains('show') ||
+    document.getElementById('onboarding-modal').classList.contains('show') ||
     document.getElementById('mmarks').classList.contains('show') ||
     document.getElementById('profile-modal').classList.contains('show') ||
     document.getElementById('share-modal').classList.contains('show');

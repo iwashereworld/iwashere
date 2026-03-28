@@ -304,6 +304,17 @@ select option{background:#0e1624;}
 .plk{font-size:.65rem;color:var(--gold);background:rgba(200,169,110,.1);padding:2px 5px;border-radius:4px;white-space:nowrap;}
 #auth-modal{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);align-items:center;justify-content:center;pointer-events:auto;}
 #auth-modal.show{display:flex;}
+.onboarding-modal{display:none;position:fixed;inset:0;z-index:520;background:rgba(0,0,0,.72);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:1rem;}
+.onboarding-modal.show{display:flex;}
+.onboarding-box{width:min(720px,calc(100vw - 24px));background:rgba(8,14,24,.97);border:1px solid rgba(200,169,110,.22);border-radius:22px;padding:1.4rem 1.4rem 1.2rem;box-shadow:0 24px 80px rgba(0,0,0,.42);}
+.onboarding-kicker{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:.55rem;}
+.onboarding-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.05;margin-bottom:.55rem;}
+.onboarding-sub{font-size:.84rem;line-height:1.7;color:var(--muted);max-width:560px;}
+.onboarding-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:1.2rem;}
+.onboarding-card{border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:1rem;background:rgba(255,255,255,.03);}
+.onboarding-card-title{font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.45rem;}
+.onboarding-card-body{font-size:.8rem;line-height:1.7;color:rgba(240,237,232,.72);}
+.onboarding-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:1.2rem;}
 .abox{background:rgba(8,14,24,.98);border:1px solid rgba(200,169,110,.25);border-radius:20px;padding:2.5rem;width:100%;max-width:400px;margin:1rem;position:relative;animation:fu .35s ease;pointer-events:auto;}
 .alogo{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold);text-align:center;margin-bottom:.4rem;letter-spacing:.08em;}
 .atitle{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;text-align:center;margin-bottom:.3rem;}
@@ -461,6 +472,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   #country-summary .cs-title{margin-bottom:.55rem;}
   #click-coords{top:auto;bottom:150px;padding:9px 12px;}
   #start-hint{left:1rem;right:1rem;bottom:5.5rem;max-width:none;}
+  .onboarding-grid{grid-template-columns:1fr;}
   .hint-a{flex-wrap:wrap;}
   .g2,.g3{grid-template-columns:1fr;}
   .sbi,.plsec{padding:1rem;}
@@ -833,6 +845,33 @@ window.addEventListener('load', initCookieBanner);
   </div>
 </div>
 
+<div id="onboarding-modal" class="onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+  <div class="onboarding-box" onclick="event.stopPropagation()">
+    <div class="onboarding-kicker" data-i18n="onboarding_welcome">You are in</div>
+    <div class="onboarding-title" id="onboarding-title" data-i18n="onboarding_title">Start your world in two simple ways</div>
+    <div class="onboarding-sub" data-i18n="onboarding_sub">Choose whether you want to leave a visible mark now or plan a capsule for later.</div>
+    <div class="onboarding-grid">
+      <div class="onboarding-card">
+        <div class="onboarding-card-title" data-i18n="onboarding_step1_title">Add Mark</div>
+        <div class="onboarding-card-body" data-i18n="onboarding_step1_body">Choose a place, write a message, and make it visible on the globe right away.</div>
+      </div>
+      <div class="onboarding-card">
+        <div class="onboarding-card-title" data-i18n="onboarding_step2_title">Create Capsule</div>
+        <div class="onboarding-card-body" data-i18n="onboarding_step2_body">Write a message now and let it open on a future date.</div>
+      </div>
+      <div class="onboarding-card">
+        <div class="onboarding-card-title" data-i18n="onboarding_step3_title">You can always come back</div>
+        <div class="onboarding-card-body" data-i18n="onboarding_step3_body">Your marks, capsules, and profile stay ready after you sign in.</div>
+      </div>
+    </div>
+    <div class="onboarding-actions">
+      <button type="button" class="nbtn p" onclick="startOnboardingFlow('mark')" data-i18n="onboarding_cta_mark">Start with Add Mark</button>
+      <button type="button" class="nbtn" onclick="startOnboardingFlow('capsule')" data-i18n="onboarding_cta_capsule">Start with Create Capsule</button>
+      <button type="button" class="nbtn" onclick="closeOnboarding()" data-i18n="onboarding_cta_later">Maybe later</button>
+    </div>
+  </div>
+</div>
+
 <!-- MY MARKS -->
 <div id="mmarks" role="dialog" aria-modal="true" aria-labelledby="my-marks-title">
   <div class="mbox">
@@ -1063,6 +1102,7 @@ if (_supabase) {
       if (_requestedMarkId) _requestedMarkState = 'idle';
       updateUserUI();
       loadCapsules();
+      if (typeof maybeOpenPostAuthOnboarding === 'function') maybeOpenPostAuthOnboarding();
     }
   });
   _supabase.auth.onAuthStateChange(function(event, session) {
@@ -1073,6 +1113,9 @@ if (_supabase) {
       updateUserUI();
       loadCapsules();
       if (viewer) loadMarks();
+      if (typeof maybeOpenPostAuthOnboarding === 'function' && (event === 'SIGNED_IN' || event === 'USER_UPDATED' || shouldShowPostAuthOnboarding())) {
+        maybeOpenPostAuthOnboarding();
+      }
     } else {
       AUTH.user = null;
       ST.capsules = [];
@@ -3476,6 +3519,10 @@ function animCount(el, target, dur) {
 // Keyboard zoom
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
+    if (document.getElementById('onboarding-modal').classList.contains('show')) {
+      closeOnboarding();
+      return;
+    }
     if (document.getElementById('share-modal').classList.contains('show')) {
       closeShareModal();
       return;
@@ -3521,6 +3568,9 @@ document.addEventListener('keydown', function(e) {
 
 document.getElementById('auth-modal').addEventListener('click', function(e) {
   if (e.target === this) closeAuth();
+});
+document.getElementById('onboarding-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeOnboarding();
 });
 
 document.getElementById('mmarks').addEventListener('click', function(e) {
