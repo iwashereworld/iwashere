@@ -915,7 +915,7 @@ var IWH_DEBUG = /(?:\?|&)debug=1(?:&|$)/.test(window.location.search || '') || /
 var ST = window.ST || {
   pins: [],
   capsules: [],
-  capsuleFeatureAvailable: true,
+  capsuleFeatureAvailable: false,
   capsuleFeatureChecked: false
 };
 var COUNTRIES = window.COUNTRIES || [];
@@ -991,6 +991,12 @@ function markCapsuleFeatureUnavailable(error) {
 
 function probeCapsuleFeatureAvailability() {
   if (typeof ST === 'undefined' || !ST) return Promise.resolve(false);
+  if (typeof supportsSplitCapsuleBackend === 'function' && !supportsSplitCapsuleBackend()) {
+    ST.capsuleFeatureAvailable = false;
+    ST.capsuleFeatureChecked = true;
+    updateCapsuleEntryAvailability();
+    return Promise.resolve(false);
+  }
   if (!_supabase || ST.capsuleFeatureChecked) return Promise.resolve(ST.capsuleFeatureAvailable);
   ST.capsuleFeatureChecked = true;
   return _supabase.from('capsules').select('id', { head: true, count: 'exact' }).then(function(res) {
@@ -1129,7 +1135,7 @@ ST = {
   capsuleVisibility: 'private',
   capsuleOccasion: 'future_self',
   capsuleHasLocation: false,
-  capsuleFeatureAvailable: true,
+  capsuleFeatureAvailable: typeof supportsSplitCapsuleBackend === 'function' ? supportsSplitCapsuleBackend() : false,
   capsuleFeatureChecked: false,
   composerType: 'mark',
   createMode: false,
@@ -3246,10 +3252,13 @@ function loadStats() {
     console.error('[IWH] loadStats skipped. Missing runtime config:', _runtimeConfigErrors.join(', '));
     return;
   }
-  Promise.all([
-    _supabase.from('marks').select('id,country_code,country_name', { count: 'exact' }).limit(500),
-    _supabase.from('capsules').select('id', { count: 'exact' }).limit(500)
-  ]).then(function(results) {
+  var requests = [
+    _supabase.from('marks').select('id,country_code,country_name,capsule_days,capsule_date,capsule_release_at', { count: 'exact' }).limit(500)
+  ];
+  if (ST.capsuleFeatureAvailable) {
+    requests.push(_supabase.from('capsules').select('id', { count: 'exact' }).limit(500));
+  }
+  Promise.all(requests).then(function(results) {
     var marksRes = results[0];
     var capsulesRes = results[1];
     if (marksRes.error) return;
@@ -3267,9 +3276,9 @@ function loadStats() {
     var capsulesEl = document.getElementById('s3');
     if (countriesEl) animCount(countriesEl, Object.keys(countriesMap).length, 900);
     if (capsulesEl) {
-      var capsuleCount = capsulesRes && !capsulesRes.error
+      var capsuleCount = ST.capsuleFeatureAvailable && capsulesRes && !capsulesRes.error
         ? (capsulesRes.count != null ? capsulesRes.count : ((capsulesRes.data && capsulesRes.data.length) || 0))
-        : 0;
+        : (typeof countLegacyCapsules === 'function' ? countLegacyCapsules(marksRes.data || []) : 0);
       animCount(capsulesEl, capsuleCount, 900);
     }
   });
@@ -3277,7 +3286,9 @@ function loadStats() {
 
 function updateLandingStatsFromPins() {
   var countries = ST.pins.map(function(p) { return p.code || p.cname; }).filter(function(v, i, a) { return v && a.indexOf(v) === i; });
-  var capsules = ST.capsules.length;
+  var capsules = ST.capsuleFeatureAvailable
+    ? ST.capsules.length
+    : (typeof countLegacyCapsules === 'function' ? countLegacyCapsules(ST.pins) : 0);
   var s2 = document.getElementById('s2');
   var s3 = document.getElementById('s3');
   if (s2) s2.textContent = countries.length.toLocaleString();
@@ -3295,7 +3306,12 @@ function updateStats() {
   }
   
   var sk2 = document.getElementById('sk2');
-  if (sk2) sk2.textContent = ST.capsules.length.toLocaleString();
+  if (sk2) {
+    var capsuleCount = ST.capsuleFeatureAvailable
+      ? ST.capsules.length
+      : (typeof countLegacyCapsules === 'function' ? countLegacyCapsules(ST.pins) : 0);
+    sk2.textContent = capsuleCount.toLocaleString();
+  }
   updateLandingStatsFromPins();
   if (typeof renderCountrySummary === 'function') renderCountrySummary();
 }

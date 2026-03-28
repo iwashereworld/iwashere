@@ -25,6 +25,31 @@ function getAppBaseUrl() {
   return 'https://iwashere-seven.vercel.app';
 }
 
+function getSupabaseProjectRef() {
+  try {
+    var url = String((window.IWH_CONFIG && IWH_CONFIG.SUPABASE_URL) || '');
+    var match = url.match(/^https:\/\/([a-z0-9]+)\.supabase\.co/i);
+    return match && match[1] ? match[1] : '';
+  } catch (err) {
+    return '';
+  }
+}
+
+function supportsSplitCapsuleBackend() {
+  var ref = getSupabaseProjectRef();
+  return ref === 'qejlooembmhiidlumrma';
+}
+
+function countLegacyCapsules(items) {
+  return (items || []).filter(function(item) {
+    return !!item && (
+      (item.capsule_days || 0) > 0 ||
+      !!item.capsule_date ||
+      !!item.capsule_release_at
+    );
+  }).length;
+}
+
 function buildMarkPermalink(mark) {
   var markId = mark && typeof mark === 'object' ? mark.id : mark;
   if (!markId) return getAppBaseUrl();
@@ -116,7 +141,9 @@ function getCapsuleUnavailableMessage() {
 }
 
 function getMarkSelectFieldCandidates() {
-  return [CAPSULE_MARK_SELECT_FIELDS, LEGACY_MARK_SELECT_FIELDS];
+  return supportsSplitCapsuleBackend()
+    ? [CAPSULE_MARK_SELECT_FIELDS, LEGACY_MARK_SELECT_FIELDS]
+    : [LEGACY_MARK_SELECT_FIELDS];
 }
 
 function getValidDate(value) {
