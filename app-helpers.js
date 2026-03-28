@@ -1,5 +1,5 @@
-﻿var MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id';
-var LEGACY_MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id';
+﻿var MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,capsule_date,capsule_for,is_public,created_at,user_id';
+var LEGACY_MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,capsule_date,capsule_for,is_public,created_at,user_id';
 var CAPSULE_MARK_SELECT_FIELDS = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,capsule_date,capsule_for,is_public,capsule_status,capsule_release_at,capsule_opened_at,created_at,user_id';
 var CAPSULE_SELECT_FIELDS = 'id,name,owner_email,message,occasion,recipient_type,recipient_email,visibility,open_at,has_location,country_code,country_name,lat,lon,status,delivery_status,opened_at,recipient_notified_at,owner_notified_at,published_mark_id,created_at,user_id';
 var MARK_SELECT_FIELDS = LEGACY_MARK_SELECT_FIELDS;

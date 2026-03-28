@@ -921,7 +921,7 @@ var ST = window.ST || {
 var COUNTRIES = window.COUNTRIES || [];
 var countryLabelNodes = window.countryLabelNodes || [];
 var cityLabelNodes = window.cityLabelNodes || [];
-var LEGACY_MARK_FIELDS_LOCAL = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id';
+var LEGACY_MARK_FIELDS_LOCAL = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,capsule_date,capsule_for,is_public,created_at,user_id';
 var SPLIT_MARK_FIELDS_LOCAL = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,capsule_date,capsule_for,is_public,capsule_status,capsule_release_at,capsule_opened_at,created_at,user_id';
 
 function usesSplitCapsuleBackend() {
@@ -3275,7 +3275,7 @@ function loadStats() {
     _supabase.from('marks').select(
       usesSplitCapsuleBackend()
         ? 'id,country_code,country_name,capsule_days,capsule_date,capsule_release_at'
-        : 'id,country_code,country_name,capsule_days',
+        : 'id,country_code,country_name,capsule_days,capsule_date',
       { count: 'exact' }
     ).limit(500)
   ];
