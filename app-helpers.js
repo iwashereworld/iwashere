@@ -35,9 +35,15 @@ function getSupabaseProjectRef() {
   }
 }
 
-function supportsSplitCapsuleBackend() {
+function getCapsuleBackendMode() {
+  var configured = String((window.IWH_CONFIG && IWH_CONFIG.CAPSULE_BACKEND_MODE) || '').trim().toLowerCase();
+  if (configured === 'split' || configured === 'legacy') return configured;
   var ref = getSupabaseProjectRef();
-  return ref === 'qejlooembmhiidlumrma';
+  return ref === 'qejlooembmhiidlumrma' ? 'split' : 'legacy';
+}
+
+function supportsSplitCapsuleBackend() {
+  return getCapsuleBackendMode() === 'split';
 }
 
 function countLegacyCapsules(items) {

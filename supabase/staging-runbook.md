@@ -8,6 +8,7 @@ online in a staging environment before touching production.
 - create or select a staging Supabase project
 - connect Supabase CLI to the staging project
 - set staging secrets from `env.example.md`
+- set preview/staging frontend env `CAPSULE_BACKEND_MODE=split`
 - if Supabase branching is unavailable on the current plan, use a dedicated
   staging project instead of a branch
 
@@ -19,9 +20,11 @@ Apply the staged migration bundle:
 supabase db push --include-all --yes --workdir <repo>
 ```
 
-Expected remote migration:
+Expected remote migrations:
 
 - `20260327183000_capsule_hardening.sql`
+- `20260327194500_fix_capsule_delivery_function.sql`
+- `20260327211000_capsules_split_model.sql`
 
 ## 3. Deploy Functions
 
@@ -48,15 +51,15 @@ supabase functions deploy capsule-dispatch
 
 ## 6. Verify Capsule Delivery Queue
 
-- inspect `public.capsule_deliveries`
+- inspect `public.capsule_dispatch_queue`
 - confirm a row exists for the self capsule
 - confirm a row exists for the recipient-targeted capsule
-- set `scheduled_for` to the current time in staging
+- confirm `scheduled_for` is populated for both queue rows
 - invoke the `capsule-dispatch` function
 - trigger the `capsule-dispatch` GitHub Actions workflow manually
-- if email secrets are configured, confirm the row becomes `sent` or `failed`
-- if email secrets are not configured yet, confirm self capsules still reveal
-  and gift jobs return to `pending`
+- if email secrets are configured, confirm the queue row becomes `completed`
+- if email secrets are not configured yet, confirm self capsules still open
+  and recipient jobs become `failed` with a clear missing-config error
 
 ## 7. Exit Criteria
 

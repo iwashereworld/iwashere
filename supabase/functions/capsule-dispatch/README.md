@@ -5,10 +5,11 @@ capsules.
 
 ## Purpose
 
-- atomically claim due `pending` rows from `public.capsule_deliveries`
-- reveal self capsules when their release time arrives
+- atomically claim due `pending` rows from `public.capsule_dispatch_queue`
+- open self capsules when their release time arrives
 - send recipient email for gift capsules through a provider such as Resend
-- mark jobs as `revealed`, `sent`, `failed`, or return them to `pending`
+- notify the owner after recipient delivery succeeds
+- mark jobs as `completed` or `failed` with explicit delivery metadata
 
 ## Required Secrets
 
@@ -41,5 +42,6 @@ The scheduled job should:
 Use service role credentials only inside the function runtime. Never expose them
 to the frontend.
 
-If email delivery secrets are missing, gift jobs should be returned to
-`pending`, while normal self-reveal capsules can still be opened safely.
+If email delivery secrets are missing, owner-only capsules can still open
+safely while recipient deliveries should fail with an explicit missing-config
+error.

@@ -38,7 +38,7 @@
 
 - create a capsule mark for `myself`
 - create a capsule mark for `other`
-- confirm `capsule_deliveries` rows are created for both
+- confirm `capsule_dispatch_queue` rows are created for both
 - move `scheduled_for` to the current time in staging
 - invoke the `capsule-dispatch` function
 - trigger the `capsule-dispatch` GitHub Actions workflow

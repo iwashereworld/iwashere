@@ -898,10 +898,10 @@ window.addEventListener('load', initCookieBanner);
 </div>
 
 <script src="/api/runtime-config.js"></script>
-<script src="app-config.js?v=20260328-1"></script>
-<script src="app-i18n.js?v=20260328-1"></script>
-<script src="app-helpers.js?v=20260328-1"></script>
-<script src="app-ui.js?v=20260328-1"></script>
+<script src="app-config.js?v=20260328-2"></script>
+<script src="app-i18n.js?v=20260328-2"></script>
+<script src="app-helpers.js?v=20260328-2"></script>
+<script src="app-ui.js?v=20260328-2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 function getRuntimeConfigErrors() {
@@ -927,7 +927,12 @@ var LEGACY_MARK_FIELDS_LOCAL = 'id,name,country_code,country_name,lat,lon,messag
 var SPLIT_MARK_FIELDS_LOCAL = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,capsule_date,capsule_for,is_public,capsule_status,capsule_release_at,capsule_opened_at,created_at,user_id';
 
 function usesSplitCapsuleBackend() {
+  if (typeof getCapsuleBackendMode === 'function') {
+    return getCapsuleBackendMode() === 'split';
+  }
   try {
+    var configured = String((window.IWH_CONFIG && IWH_CONFIG.CAPSULE_BACKEND_MODE) || '').trim().toLowerCase();
+    if (configured === 'split' || configured === 'legacy') return configured === 'split';
     var url = String((window.IWH_CONFIG && IWH_CONFIG.SUPABASE_URL) || '');
     return /https:\/\/qejlooembmhiidlumrma\.supabase\.co/i.test(url);
   } catch (err) {
