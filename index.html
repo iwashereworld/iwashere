@@ -915,12 +915,29 @@ var IWH_DEBUG = /(?:\?|&)debug=1(?:&|$)/.test(window.location.search || '') || /
 var ST = window.ST || {
   pins: [],
   capsules: [],
-  capsuleFeatureAvailable: false,
+  capsuleFeatureAvailable: true,
   capsuleFeatureChecked: false
 };
 var COUNTRIES = window.COUNTRIES || [];
 var countryLabelNodes = window.countryLabelNodes || [];
 var cityLabelNodes = window.cityLabelNodes || [];
+var LEGACY_MARK_FIELDS_LOCAL = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,created_at,user_id';
+var SPLIT_MARK_FIELDS_LOCAL = 'id,name,country_code,country_name,lat,lon,message,photo,capsule_days,capsule_date,capsule_for,is_public,capsule_status,capsule_release_at,capsule_opened_at,created_at,user_id';
+
+function usesSplitCapsuleBackend() {
+  try {
+    var url = String((window.IWH_CONFIG && IWH_CONFIG.SUPABASE_URL) || '');
+    return /https:\/\/qejlooembmhiidlumrma\.supabase\.co/i.test(url);
+  } catch (err) {
+    return false;
+  }
+}
+
+function getLocalMarkFieldCandidates() {
+  return usesSplitCapsuleBackend()
+    ? [SPLIT_MARK_FIELDS_LOCAL, LEGACY_MARK_FIELDS_LOCAL]
+    : [LEGACY_MARK_FIELDS_LOCAL];
+}
 
 function debugLog() {
   if (!IWH_DEBUG || !window.console || !console.log) return;
@@ -963,7 +980,6 @@ function updateCapsuleEntryAvailability() {
   var startCapsuleBtn = document.getElementById('start-capsule-btn');
   [fabCapsule, startCapsuleBtn].forEach(function(el) {
     if (!el) return;
-    el.disabled = unavailable;
     el.setAttribute('aria-disabled', unavailable ? 'true' : 'false');
     if (unavailable) {
       el.classList.add('disabled');
@@ -991,11 +1007,11 @@ function markCapsuleFeatureUnavailable(error) {
 
 function probeCapsuleFeatureAvailability() {
   if (typeof ST === 'undefined' || !ST) return Promise.resolve(false);
-  if (typeof supportsSplitCapsuleBackend === 'function' && !supportsSplitCapsuleBackend()) {
-    ST.capsuleFeatureAvailable = false;
+  if (!usesSplitCapsuleBackend()) {
+    ST.capsuleFeatureAvailable = true;
     ST.capsuleFeatureChecked = true;
     updateCapsuleEntryAvailability();
-    return Promise.resolve(false);
+    return Promise.resolve(true);
   }
   if (!_supabase || ST.capsuleFeatureChecked) return Promise.resolve(ST.capsuleFeatureAvailable);
   ST.capsuleFeatureChecked = true;
@@ -1135,7 +1151,7 @@ ST = {
   capsuleVisibility: 'private',
   capsuleOccasion: 'future_self',
   capsuleHasLocation: false,
-  capsuleFeatureAvailable: typeof supportsSplitCapsuleBackend === 'function' ? supportsSplitCapsuleBackend() : false,
+  capsuleFeatureAvailable: true,
   capsuleFeatureChecked: false,
   composerType: 'mark',
   createMode: false,
@@ -2943,6 +2959,9 @@ function saveCapsuleToDB(pin) {
   if (!_supabase) {
     return Promise.resolve({ error: new Error('Missing runtime config for Supabase client') });
   }
+  if (!usesSplitCapsuleBackend()) {
+    return saveMarkToDB(pin);
+  }
   if (ST.capsuleFeatureAvailable === false) {
     return Promise.resolve({ error: new Error(typeof getCapsuleUnavailableMessage === 'function' ? getCapsuleUnavailableMessage() : 'Capsules are temporarily unavailable right now.') });
   }
@@ -3000,9 +3019,7 @@ function loadMarks() {
   }
   if (_marksLoadPromise) return _marksLoadPromise;
   debugLog('[IWH] Loading marks from Supabase...');
-  var fieldCandidates = typeof getMarkSelectFieldCandidates === 'function'
-    ? getMarkSelectFieldCandidates()
-    : [MARK_SELECT_FIELDS];
+  var fieldCandidates = getLocalMarkFieldCandidates();
   setMarksLoading(true);
 
   function applyMarks(res) {
@@ -3066,6 +3083,10 @@ function loadCapsules() {
     ST.capsules = [];
     return Promise.resolve([]);
   }
+  if (!usesSplitCapsuleBackend()) {
+    ST.capsules = [];
+    return Promise.resolve([]);
+  }
   if (ST.capsuleFeatureAvailable === false) {
     ST.capsules = [];
     return Promise.resolve([]);
@@ -3122,9 +3143,7 @@ function fetchRequestedMarkById(markId) {
   if (!markId) return Promise.resolve(null);
   if (!_supabase) return Promise.resolve(null);
   if (_requestedMarkFetchPromise) return _requestedMarkFetchPromise;
-  var fieldCandidates = typeof getMarkSelectFieldCandidates === 'function'
-    ? getMarkSelectFieldCandidates()
-    : [MARK_SELECT_FIELDS];
+  var fieldCandidates = getLocalMarkFieldCandidates();
 
   function finalizeRequestedMark(res) {
     if (!res.data) {
@@ -3253,9 +3272,14 @@ function loadStats() {
     return;
   }
   var requests = [
-    _supabase.from('marks').select('id,country_code,country_name,capsule_days,capsule_date,capsule_release_at', { count: 'exact' }).limit(500)
+    _supabase.from('marks').select(
+      usesSplitCapsuleBackend()
+        ? 'id,country_code,country_name,capsule_days,capsule_date,capsule_release_at'
+        : 'id,country_code,country_name,capsule_days',
+      { count: 'exact' }
+    ).limit(500)
   ];
-  if (ST.capsuleFeatureAvailable) {
+  if (usesSplitCapsuleBackend() && ST.capsuleFeatureAvailable) {
     requests.push(_supabase.from('capsules').select('id', { count: 'exact' }).limit(500));
   }
   Promise.all(requests).then(function(results) {
