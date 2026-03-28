@@ -73,9 +73,9 @@ $capsuleDispatchIndex = Get-Content -Raw $capsuleDispatchIndexPath
 $capsuleReadiness = Get-Content -Raw $capsuleReadinessPath
 
 Assert-Contains $index '<script src="/api/runtime-config.js"></script>' 'index.html must load the runtime config endpoint.'
-Assert-Contains $index '<script src="app-config.js"></script>' 'index.html must load app-config.js.'
-Assert-Contains $index '<script src="app-helpers.js"></script>' 'index.html must load app-helpers.js.'
-Assert-Contains $index '<script src="app-ui.js"></script>' 'index.html must load app-ui.js.'
+Assert-Contains $index '<script src="app-config.js?v=' 'index.html must load versioned app-config.js.'
+Assert-Contains $index '<script src="app-helpers.js?v=' 'index.html must load versioned app-helpers.js.'
+Assert-Contains $index '<script src="app-ui.js?v=' 'index.html must load versioned app-ui.js.'
 Assert-NotContains $index 'app-i18n-overrides.js' 'index.html must not load app-i18n-overrides.js anymore.'
 Assert-NotContains $index 'app-ui-overrides.js' 'index.html must not load app-ui-overrides.js anymore.'
 Assert-Contains $index 'Message for This Memory' 'index.html must keep the text-based memory step.'
