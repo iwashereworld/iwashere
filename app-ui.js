@@ -389,6 +389,7 @@ function sRC(r) {
   if (r === 'o' && ST.capsuleOccasion === 'future_self') {
     setCapsuleOccasion('gift');
   }
+  updateCapsuleUI();
 }
 
 function setCapsuleOccasion(occasion) {
@@ -434,6 +435,7 @@ function updateCapsuleUI() {
   var recipientBlock = document.getElementById('recipient-block');
   var recipientOther = document.getElementById('oo');
   var recipientEmailWrap = document.getElementById('re');
+  var recipientHelp = document.getElementById('recipient-help');
   var note = document.getElementById('capsule-note');
   var preview = document.getElementById('opens-preview');
   var locationNote = document.getElementById('capsule-location-note');
@@ -446,17 +448,25 @@ function updateCapsuleUI() {
   }
   if (recipientBlock) recipientBlock.classList.toggle('section-hidden', !hasCapsule);
   if (recipientOther) {
-    recipientOther.classList.toggle('section-hidden', !emailEnabled);
+    recipientOther.classList.remove('section-hidden');
+    recipientOther.classList.toggle('locked', !emailEnabled);
     recipientOther.setAttribute('aria-disabled', emailEnabled ? 'false' : 'true');
   }
-  if (recipientEmailWrap && !emailEnabled) recipientEmailWrap.style.display = 'none';
+  if (recipientEmailWrap) recipientEmailWrap.style.display = emailEnabled && ST.rc === 'o' ? 'block' : 'none';
   if (emailVisibility) {
-    emailVisibility.classList.toggle('section-hidden', !emailEnabled);
+    emailVisibility.classList.remove('section-hidden');
+    emailVisibility.classList.toggle('locked', !emailEnabled);
     emailVisibility.setAttribute('aria-disabled', emailEnabled ? 'false' : 'true');
   }
   if (giftOccasion) {
-    giftOccasion.classList.toggle('section-hidden', !emailEnabled);
+    giftOccasion.classList.remove('section-hidden');
+    giftOccasion.classList.toggle('locked', !emailEnabled);
     giftOccasion.setAttribute('aria-disabled', emailEnabled ? 'false' : 'true');
+  }
+  if (recipientHelp) {
+    recipientHelp.textContent = !emailEnabled
+      ? t('recipient_hint_disabled')
+      : (ST.rc === 'o' ? t('recipient_hint_other') : t('recipient_hint_self'));
   }
   if (note) {
     if (!hasCapsule) {

@@ -269,6 +269,8 @@ select option{background:#0e1624;}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:.9rem;}
 .oc{background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:8px;padding:8px 6px;cursor:pointer;text-align:center;transition:all .2s;font-size:.74rem;color:var(--muted);}
 .oc:hover,.oc.on{border-color:var(--gold);color:var(--gold);background:rgba(200,169,110,.05);}
+.oc.locked{opacity:.48;cursor:not-allowed;}
+.oc.locked:hover{border-color:var(--border);color:var(--muted);background:rgba(18,26,42,.9);}
 .oc .ic{font-size:1rem;display:block;margin-bottom:2px;}
 .oc.a2:hover,.oc.a2.on{border-color:#7c6fcd;color:#7c6fcd;}
 .pb{background:rgba(18,26,42,.9);border:1px solid var(--border);border-radius:10px;padding:.9rem;margin-bottom:1.1rem;}
@@ -754,6 +756,7 @@ window.addEventListener('load', initCookieBanner);
         <div class="oc a2" id="oo" onclick="sRC('o')" role="button" tabindex="0" aria-pressed="false" data-i18n="someone_else">Someone Else</div>
       </div>
       <div id="re" style="display:none;"><label class="fl" data-i18n="recipient_email">Recipient Email</label><input type="email" id="iem" placeholder="their@email.com" maxlength="254" data-i18n-placeholder="recipient_email_placeholder"></div>
+      <p class="soft-help" id="recipient-help" data-i18n="recipient_hint_self">When it opens, the reminder comes back to you.</p>
       </div>
       <label class="fl" id="capsule-visibility-label">When it opens, what should happen?</label>
       <div class="g3">
@@ -944,10 +947,10 @@ window.addEventListener('load', initCookieBanner);
 </div>
 
 <script src="/api/runtime-config.js"></script>
-<script src="app-config.js?v=20260328-6"></script>
-<script src="app-i18n.js?v=20260328-6"></script>
-<script src="app-helpers.js?v=20260328-6"></script>
-<script src="app-ui.js?v=20260328-6"></script>
+<script src="app-config.js?v=20260328-7"></script>
+<script src="app-i18n.js?v=20260328-7"></script>
+<script src="app-helpers.js?v=20260328-7"></script>
+<script src="app-ui.js?v=20260328-7"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 function getRuntimeConfigErrors() {
