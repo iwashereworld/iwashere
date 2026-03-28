@@ -117,6 +117,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:.85rem 2.5rem;displa
 .sn2{font-family:'Cormorant Garamond',serif;font-size:3.5rem;font-weight:300;color:rgba(200,169,110,.2);line-height:1;margin-bottom:1.2rem;}
 .stit{font-family:'Cormorant Garamond',serif;font-size:1.4rem;margin-bottom:.75rem;}
 .sdes{font-size:.82rem;color:var(--muted);line-height:1.75;}
+.use-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:2.25rem;}
+.use-card{border:1px solid var(--border);border-radius:16px;padding:1.5rem;position:relative;transition:all .3s;text-align:left;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));}
+.use-card:hover{border-color:rgba(200,169,110,.28);transform:translateY(-3px);}
+.use-kicker{font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem;}
+.use-title{font-family:'Cormorant Garamond',serif;font-size:1.35rem;margin-bottom:.45rem;}
+.use-body{font-size:.82rem;color:var(--muted);line-height:1.8;}
 #quote{position:relative;z-index:10;padding:6rem 3rem;text-align:center;border-top:1px solid var(--border);border-bottom:1px solid var(--border);max-width:800px;margin:0 auto;}
 .bq{font-family:'Cormorant Garamond',serif;font-size:clamp(1.6rem,4vw,2.8rem);font-weight:300;font-style:italic;line-height:1.4;margin-bottom:2rem;}
 .bq em{color:var(--gold2);font-style:normal;}
@@ -463,7 +469,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   .hs2{max-width:unset;}
   .hst{gap:1.25rem;width:100%;padding:0 1rem;justify-content:center;margin-top:2rem;}
   .sec,#quote{padding:5rem 1rem;}
-  .steps,.pcards{grid-template-columns:1fr;}
+  .steps,.pcards,.use-grid{grid-template-columns:1fr;}
   .sc:first-child,.sc:last-child{border-radius:12px;}
   footer{flex-direction:column;gap:.75rem;text-align:center;}
   #globe-app header .logo{font-size:1.15rem;}
@@ -553,6 +559,27 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <section id="quote">
   <blockquote class="bq reveal">"In a universe of 200 billion galaxies, on a pale blue dot, <em>you existed</em>. That matters."</blockquote>
   <cite class="qa reveal">I Was Here Manifesto</cite>
+</section>
+<section class="sec" id="use-cases">
+  <div class="secl reveal" data-i18n="use_cases_label">Use Cases</div>
+  <h2 class="sect reveal" data-i18n-html="use_cases_title_html">What can you <em>use it for</em>?</h2>
+  <div class="use-grid reveal">
+    <div class="use-card">
+      <div class="use-kicker">01</div>
+      <div class="use-title" data-i18n="use_case_1_title">Future Self</div>
+      <p class="use-body" data-i18n="use_case_1_body">Leave yourself a message that opens months or years later when you need perspective, closure, or a reminder.</p>
+    </div>
+    <div class="use-card">
+      <div class="use-kicker">02</div>
+      <div class="use-title" data-i18n="use_case_2_title">Birthdays & Anniversaries</div>
+      <p class="use-body" data-i18n="use_case_2_body">Plan a capsule that opens on a meaningful date and turns a short message into a memorable delivery.</p>
+    </div>
+    <div class="use-card">
+      <div class="use-kicker">03</div>
+      <div class="use-title" data-i18n="use_case_3_title">Places That Matter</div>
+      <p class="use-body" data-i18n="use_case_3_body">Save a public mark for a place that shaped you, then decide whether it should stay visible or open later as a capsule.</p>
+    </div>
+  </div>
 </section>
 <section class="sec">
   <div class="secl reveal" data-i18n="pricing_label">What You Can Save</div>
