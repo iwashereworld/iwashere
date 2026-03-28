@@ -944,6 +944,7 @@ function copyTextWithFallback(text) {
 }
 
 function updateCapsuleEntryAvailability() {
+  if (typeof ST === 'undefined' || !ST) return;
   var unavailable = ST.capsuleFeatureAvailable === false;
   var message = typeof getCapsuleUnavailableMessage === 'function'
     ? getCapsuleUnavailableMessage()
@@ -971,6 +972,7 @@ function updateCapsuleEntryAvailability() {
 }
 
 function markCapsuleFeatureUnavailable(error) {
+  if (typeof ST === 'undefined' || !ST) return;
   ST.capsuleFeatureAvailable = false;
   ST.capsuleFeatureChecked = true;
   ST.capsules = [];
@@ -979,6 +981,7 @@ function markCapsuleFeatureUnavailable(error) {
 }
 
 function probeCapsuleFeatureAvailability() {
+  if (typeof ST === 'undefined' || !ST) return Promise.resolve(false);
   if (!_supabase || ST.capsuleFeatureChecked) return Promise.resolve(ST.capsuleFeatureAvailable);
   ST.capsuleFeatureChecked = true;
   return _supabase.from('capsules').select('id', { head: true, count: 'exact' }).then(function(res) {
@@ -1007,7 +1010,6 @@ var _supabase = _runtimeConfigErrors.length ? null : supabase.createClient(
 
 // AUTH STATE LISTENER
 if (_supabase) {
-  probeCapsuleFeatureAvailability();
   _supabase.auth.getSession().then(function(r) {
     if (r.data && r.data.session) {
       var u = r.data.session.user;
@@ -1035,8 +1037,6 @@ if (_supabase) {
 } else {
   console.error('[IWH] Runtime config is incomplete. Missing:', _runtimeConfigErrors.join(', '));
 }
-
-updateCapsuleEntryAvailability();
 
 window.addEventListener('error', function(event) {
   console.error('[IWH] Unhandled error:', event.error || event.message || event);
@@ -1168,6 +1168,9 @@ var _imageryUpgradePromise = null;
 var _marksLoadPromise = null;
 var _marksLoadedOnce = false;
 window._marksLoading = false;
+
+probeCapsuleFeatureAvailability();
+updateCapsuleEntryAvailability();
 
 function setGlobeLoading(active) {
   var overlay = document.getElementById('globe-loading');
@@ -1338,6 +1341,9 @@ async function initCesium() {
     if (!_supabase) throw new Error('Missing runtime config for Supabase.');
     if (!IWH_CONFIG.FUNCTIONS_BASE_URL) throw new Error('Missing runtime config for FUNCTIONS_BASE_URL.');
     warmCesiumToken();
+    var osmImageryProvider = new Cesium.OpenStreetMapImageryProvider({
+      url: 'https://tile.openstreetmap.org/'
+    });
 
     viewer = new Cesium.Viewer('cesiumContainer', {
       animation: false,
@@ -1351,6 +1357,7 @@ async function initCesium() {
       selectionIndicator: false,
       navigationHelpButton: false,
       baseLayerPicker: false,
+      imageryProvider: osmImageryProvider,
       skyAtmosphere: new Cesium.SkyAtmosphere(),
       scene3DOnly: true,
       shadows: false,
@@ -1378,9 +1385,6 @@ async function initCesium() {
 
     // Remove default imagery and show a fast fallback layer first.
     viewer.imageryLayers.removeAll();
-    var osmImageryProvider = new Cesium.OpenStreetMapImageryProvider({
-      url: 'https://tile.openstreetmap.org/'
-    });
     bingImagery = viewer.imageryLayers.addImageryProvider(osmImageryProvider);
     upgradeGlobeImageryAsync();
 
@@ -2334,11 +2338,13 @@ async function tglImagery() {
 
 function ensureCountryLabels() {
   if (!viewer) return;
+  if (!Array.isArray(countryLabelNodes)) countryLabelNodes = [];
   if (!countryLabelNodes.length) rebuildCountryLabelNodes();
 }
 
 function ensureCityLabels() {
   if (!viewer) return;
+  if (!Array.isArray(cityLabelNodes)) cityLabelNodes = [];
   if (!cityLabelNodes.length) rebuildCityLabelNodes();
 }
 
@@ -3288,6 +3294,7 @@ function updateStats() {
 function populateDrop() {
   var sel = document.getElementById('csel');
   if (!sel || sel.options.length > 1) return;
+  if (!Array.isArray(COUNTRIES) || !COUNTRIES.length) return;
   
   COUNTRIES.slice().sort(function(a, b) { return a.name.localeCompare(b.name); }).forEach(function(c) {
     var o = document.createElement('option');
