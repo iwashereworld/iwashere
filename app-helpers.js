@@ -42,6 +42,10 @@ function getCapsuleBackendMode() {
   return ref === 'qejlooembmhiidlumrma' ? 'split' : 'legacy';
 }
 
+function isCapsuleEmailEnabled() {
+  return String((window.IWH_CONFIG && IWH_CONFIG.CAPSULE_EMAIL_ENABLED) || '').trim().toLowerCase() === 'true';
+}
+
 function supportsSplitCapsuleBackend() {
   return getCapsuleBackendMode() === 'split';
 }

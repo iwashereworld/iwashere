@@ -75,6 +75,7 @@ GitHub Actions now runs both checks on pushes to `main` and on pull requests.
 - Vercel overrides are served from `/api/runtime-config.js`.
 - Use `app-config.example.js` and `supabase/vercel-env-map.md` when wiring staging or production envs.
 - Capsule backend mode is controlled with `CAPSULE_BACKEND_MODE` so production can stay on `legacy` until the split rollout is fully migrated.
+- Recipient delivery UI is controlled with `CAPSULE_EMAIL_ENABLED` and should stay `false` until the email secrets are configured.
 
 ## Priority Areas
 

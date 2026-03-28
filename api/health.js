@@ -4,6 +4,7 @@ module.exports = (req, res) => {
   const origin = host ? `${protocol}://${host}` : "";
   const supabaseUrl = process.env.SUPABASE_URL || "";
   const capsuleBackendMode = process.env.CAPSULE_BACKEND_MODE || (/https:\/\/qejlooembmhiidlumrma\.supabase\.co/i.test(supabaseUrl) ? "split" : "legacy");
+  const capsuleEmailEnabled = String(process.env.CAPSULE_EMAIL_ENABLED || "false").toLowerCase() === "true";
 
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Cache-Control", "no-store, max-age=0");
@@ -17,6 +18,7 @@ module.exports = (req, res) => {
       hasFunctionsBaseUrl: !!process.env.FUNCTIONS_BASE_URL,
       publicAppUrl: process.env.PUBLIC_APP_URL || origin,
       capsuleBackendMode,
+      capsuleEmailEnabled,
     },
   });
 };

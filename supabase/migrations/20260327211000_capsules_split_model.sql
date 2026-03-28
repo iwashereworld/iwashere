@@ -20,7 +20,7 @@ create table if not exists public.capsules (
   opened_at timestamptz,
   recipient_notified_at timestamptz,
   owner_notified_at timestamptz,
-  published_mark_id uuid references public.marks(id) on delete set null,
+  published_mark_id bigint references public.marks(id) on delete set null,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now()),
   constraint capsules_recipient_consistency check (

@@ -545,7 +545,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div class="pcards reveal">
     <div class="pc"><div class="pbg alt" data-i18n="pricing_now_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_public_name">Public Mark</div><div class="pam">$1 <span>one-time</span></div><p class="pds" data-i18n="pricing_public_desc">Save a public mark with your name, coordinates, and written message.</p><ul class="pft"><li data-i18n="pricing_public_feat1">Permanent globe placement</li><li data-i18n="pricing_public_feat2">Optional photo</li><li data-i18n="pricing_public_feat3">Country attribution</li></ul></div>
     <div class="pc ft"><div class="pbg" data-i18n="pricing_now_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_capsule_name">Mark + Capsule</div><div class="pam">$3 <span>one-time</span></div><p class="pds" data-i18n="pricing_capsule_desc">Save your mark now and choose a future opening date for the capsule view.</p><ul class="pft"><li data-i18n="pricing_capsule_feat1">Everything in Public Mark</li><li data-i18n="pricing_capsule_feat2">Text message support</li><li data-i18n="pricing_capsule_feat3">Future opening date</li></ul></div>
-    <div class="pc"><div class="pbg alt" data-i18n="pricing_limited_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_gift_name">Gift Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds" data-i18n="pricing_gift_desc">Send a capsule with a recipient email and a scheduled opening date.</p><ul class="pft"><li data-i18n="pricing_gift_feat1">Recipient email field</li><li data-i18n="pricing_gift_feat2">Capsule timing options</li><li data-i18n="pricing_gift_feat3">Share card after save</li></ul></div>
+    <div class="pc" id="pricing-gift-card"><div class="pbg alt" data-i18n="pricing_limited_badge">Available Now</div><span class="pi2"></span><div class="pnm" data-i18n="pricing_gift_name">Gift Capsule</div><div class="pam">$4 <span>one-time</span></div><p class="pds" data-i18n="pricing_gift_desc">Send a capsule with a recipient email and a scheduled opening date.</p><ul class="pft"><li data-i18n="pricing_gift_feat1">Recipient email field</li><li data-i18n="pricing_gift_feat2">Capsule timing options</li><li data-i18n="pricing_gift_feat3">Share card after save</li></ul></div>
   </div>
   <p class="pricing-note reveal" data-i18n="pricing_note">Every memory starts with a place and a written note. Add a photo if you want, then decide whether it stays public or opens later as a capsule.</p>
 </section>
@@ -898,10 +898,10 @@ window.addEventListener('load', initCookieBanner);
 </div>
 
 <script src="/api/runtime-config.js"></script>
-<script src="app-config.js?v=20260328-2"></script>
-<script src="app-i18n.js?v=20260328-2"></script>
-<script src="app-helpers.js?v=20260328-2"></script>
-<script src="app-ui.js?v=20260328-2"></script>
+<script src="app-config.js?v=20260328-3"></script>
+<script src="app-i18n.js?v=20260328-3"></script>
+<script src="app-helpers.js?v=20260328-3"></script>
+<script src="app-ui.js?v=20260328-3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 function getRuntimeConfigErrors() {
@@ -1622,9 +1622,11 @@ function updateCreateFlowUI() {
   var panel = document.getElementById('create-flow');
   if (panel) panel.classList.remove('show');
   applyBodyModeState();
+  var emailEnabled = typeof isCapsuleEmailEnabled === 'function' ? isCapsuleEmailEnabled() : false;
   var dock = document.getElementById('fab-dock');
   var markFab = document.getElementById('fab-mark');
   var capsuleFab = document.getElementById('fab-capsule');
+  var giftPricingCard = document.getElementById('pricing-gift-card');
   var sidebar = document.getElementById('sb');
   var activeStep = sidebar ? sidebar.querySelector('.step.active') : null;
   var activeStepId = activeStep ? activeStep.id : '';
@@ -1632,6 +1634,7 @@ function updateCreateFlowUI() {
   if (dock) {
     dock.style.display = sidebar && !sidebar.classList.contains('hidden') ? 'none' : 'flex';
   }
+  if (giftPricingCard) giftPricingCard.classList.toggle('section-hidden', !emailEnabled);
   if (markFab) markFab.classList.toggle('create-active', !sidebar || sidebar.classList.contains('hidden') ? false : !isCapsuleFlow);
   if (capsuleFab) capsuleFab.classList.toggle('create-active', !sidebar || sidebar.classList.contains('hidden') ? false : isCapsuleFlow);
   var flowTitle = document.getElementById('create-flow-title');

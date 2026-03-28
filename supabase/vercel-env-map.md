@@ -8,6 +8,7 @@ Use this map when wiring the frontend deployment to the Supabase environments.
 - `SUPABASE_ANON_KEY` -> staging Supabase anon key
 - `FUNCTIONS_BASE_URL` -> `https://<staging-project-ref>.supabase.co/functions/v1`
 - `CAPSULE_BACKEND_MODE` -> `split`
+- `CAPSULE_EMAIL_ENABLED` -> `false` until email delivery secrets are configured
 - current staging project ref: `qejlooembmhiidlumrma`
 
 ## Vercel Production
@@ -16,6 +17,7 @@ Use this map when wiring the frontend deployment to the Supabase environments.
 - `SUPABASE_ANON_KEY` -> production Supabase anon key
 - `FUNCTIONS_BASE_URL` -> `https://<production-project-ref>.supabase.co/functions/v1`
 - `CAPSULE_BACKEND_MODE` -> `legacy` until production Supabase rollout is migrated
+- `CAPSULE_EMAIL_ENABLED` -> `false` until production email delivery is configured
 - current production project ref: `ctjgxonismqdxprlohcz`
 
 ## Frontend Wiring
@@ -25,6 +27,7 @@ This project reads runtime config from `/api/runtime-config.js`.
 - `app-config.js` is now a safe empty fallback and must not contain production keys
 - `PUBLIC_APP_URL` is derived from the incoming request host if no explicit env is set
 - `CAPSULE_BACKEND_MODE` must be explicit whenever preview and production use different capsule backends
+- `CAPSULE_EMAIL_ENABLED` should stay `false` unless the target environment is ready to send recipient delivery email
 - frontend runtime must never silently fall back from preview to production values
 
 ## Safe Rollout Rule

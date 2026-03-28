@@ -322,6 +322,10 @@ function goBackFromCapsuleStep() {
 }
 
 function sRC(r) {
+  if (r === 'o' && typeof isCapsuleEmailEnabled === 'function' && !isCapsuleEmailEnabled()) {
+    showToast(getCurrentLanguage() === 'tr' ? 'Aliciya teslim ozelligi henuz acik degil.' : 'Recipient delivery is not enabled yet.', 'error');
+    return;
+  }
   ST.rc = r;
   document.getElementById('os').classList.toggle('on', r === 's');
   document.getElementById('oo').classList.toggle('on', r === 'o');
@@ -349,6 +353,10 @@ function setCapsuleOccasion(occasion) {
 }
 
 function setCapsuleVisibility(visibility) {
+  if (visibility === 'email' && typeof isCapsuleEmailEnabled === 'function' && !isCapsuleEmailEnabled()) {
+    showToast(getCurrentLanguage() === 'tr' ? 'Sadece email secenegi henuz aktif degil.' : 'Email-only capsules are not enabled yet.', 'error');
+    return;
+  }
   ST.capsuleVisibility = visibility || 'private';
   ['private', 'public', 'email'].forEach(function(key) {
     var el = document.getElementById('capsule-vis-' + key);
@@ -368,15 +376,41 @@ function setCapsuleVisibility(visibility) {
 
 function updateCapsuleUI() {
   var hasCapsule = ST.composerType === 'capsule';
+  var emailEnabled = typeof isCapsuleEmailEnabled === 'function' ? isCapsuleEmailEnabled() : false;
   var recipientBlock = document.getElementById('recipient-block');
+  var recipientOther = document.getElementById('oo');
+  var recipientEmailWrap = document.getElementById('re');
   var note = document.getElementById('capsule-note');
   var preview = document.getElementById('opens-preview');
   var locationNote = document.getElementById('capsule-location-note');
   var skipLocation = document.getElementById('btn-skip-location');
+  var emailVisibility = document.getElementById('capsule-vis-email');
+  var giftOccasion = document.getElementById('capsule-occ-gift');
+  if (!emailEnabled) {
+    if (ST.rc === 'o') ST.rc = 's';
+    if (ST.capsuleVisibility === 'email') ST.capsuleVisibility = 'private';
+  }
   if (recipientBlock) recipientBlock.classList.toggle('section-hidden', !hasCapsule);
+  if (recipientOther) {
+    recipientOther.classList.toggle('section-hidden', !emailEnabled);
+    recipientOther.setAttribute('aria-disabled', emailEnabled ? 'false' : 'true');
+  }
+  if (recipientEmailWrap && !emailEnabled) recipientEmailWrap.style.display = 'none';
+  if (emailVisibility) {
+    emailVisibility.classList.toggle('section-hidden', !emailEnabled);
+    emailVisibility.setAttribute('aria-disabled', emailEnabled ? 'false' : 'true');
+  }
+  if (giftOccasion) {
+    giftOccasion.classList.toggle('section-hidden', !emailEnabled);
+    giftOccasion.setAttribute('aria-disabled', emailEnabled ? 'false' : 'true');
+  }
   if (note) {
     if (!hasCapsule) {
       note.textContent = t('visibility_note_public');
+    } else if (!emailEnabled && ST.capsuleVisibility !== 'public') {
+      note.textContent = getCurrentLanguage() === 'tr'
+        ? 'Kapsul acilana kadar gizli kalir. Aliciya email teslimati bu ortamda henuz aktif degil.'
+        : 'The capsule stays hidden until it opens. Recipient email delivery is not enabled in this environment yet.';
     } else if (ST.capsuleVisibility === 'public') {
       note.textContent = getCurrentLanguage() === 'tr'
         ? 'Acildiginda haritada yayinlanir. Bu secimde konum zorunludur.'

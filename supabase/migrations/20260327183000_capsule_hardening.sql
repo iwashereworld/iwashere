@@ -8,6 +8,23 @@ alter table public.marks
 alter table public.marks
   drop constraint if exists marks_capsule_recipient_consistency;
 
+update public.marks
+set capsule_for = case
+  when capsule_for = 'o' then 'other'
+  when capsule_for = 's' then 'myself'
+  when capsule_for = 'other' and nullif(lower(trim(coalesce(recipient_email, ''))), '') is null then 'myself'
+  else coalesce(capsule_for, 'myself')
+end;
+
+update public.marks
+set recipient_email = nullif(lower(trim(coalesce(recipient_email, ''))), '');
+
+update public.marks
+set recipient_email = null,
+    capsule_for = 'myself'
+where coalesce(capsule_days, 0) <= 0
+   or capsule_for = 'myself';
+
 alter table public.marks
   add constraint marks_capsule_consistency check (
     (capsule_days = 0 and capsule_date is null)

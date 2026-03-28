@@ -12,6 +12,7 @@ module.exports = (req, res) => {
     FUNCTIONS_BASE_URL: process.env.FUNCTIONS_BASE_URL || "",
     PUBLIC_APP_URL: process.env.PUBLIC_APP_URL || derivedPublicAppUrl,
     CAPSULE_BACKEND_MODE: process.env.CAPSULE_BACKEND_MODE || derivedCapsuleBackendMode,
+    CAPSULE_EMAIL_ENABLED: process.env.CAPSULE_EMAIL_ENABLED || "false",
   };
 
   res.setHeader("Content-Type", "application/javascript; charset=utf-8");
